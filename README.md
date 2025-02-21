@@ -1,5 +1,2 @@
 # SoftEdge
-Web aplication what will permit users to generate User Stories and Software Requirements through the use of Artifical Intelligence.
-
-## Developer installation and run in terminal:
-(To be added)
+En la gestión de proyectos, se pueden enfrentar retos relacionados con la organización de tareas, la definición correcta de historias de usuario y la coordinación entre diferentes roles dentro del equipo. La falta de automatización y herramientas integradas puede dificultar el seguimiento del progreso y la resolución de errores, lo que impacta la eficiencia del proceso. En este contexto, surge la necesidad de una solución que facilite la planificación y ejecución de proyectos mediante tecnologías como la inteligencia artificial y la automatización, permitiendo una gestión más estructurada y dinámica.
