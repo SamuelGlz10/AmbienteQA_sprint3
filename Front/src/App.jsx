@@ -1,15 +1,21 @@
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+
+import './css/App.css'
+
 import Login from './pages/Login'
 import Home from './pages/Home'
 
-import './css/App.css'
 
 function App() {
   const [isLogin, setIsLogin] = useState(() => {
     // return localStorage.getItem('token') ? true : false;
     return false;
   });
+
+  const tryLogin = () => {
+    return true;
+  };
 
   return (
     <>
@@ -24,7 +30,7 @@ function App() {
           <Route
             path="/login" // Ruta login
             element={
-              isLogin ? <Navigate to="/home" /> : <Login /* Agregar funcion para login fetch, la que está es de prueba */ setIsLogin={setIsLogin} /> // Pasamos setIsLogin como prop
+              isLogin ? <Navigate to="/home" /> : <Login /* Agregar funcion para login fetch, la que está es de prueba */ tryLogin={tryLogin} /> // Pasamos setIsLogin como prop
             }
           />
           <Route 

@@ -1,0 +1,16 @@
+#login-button {
+  padding: 15px;
+}
+
+.login-input {
+  background-color: #f3edf7;
+  color: #9e72be;
+}
+
+input[type="text"] {
+  color: #9e72be;
+}
+
+input[type="password"] {
+  color: #9e72be;
+}
