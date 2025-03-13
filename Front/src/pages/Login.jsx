@@ -1,5 +1,5 @@
 import { Box, Button, TextField } from "@mui/material";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import "../css/Login.css";
@@ -7,8 +7,22 @@ import "../css/Login.css";
 const Login = ({ tryLogin }) => {
   const navigate = useNavigate();
 
+  const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const getTest = async () => {
+    const result = await fetch("http://localhost:5001");
+    console.log(result);
+    const text = await result.text();
+    console.log(text);
+    setMessage(text);
+  };
+
+  // Hook para cargar el mensaje al cargar la página
+  useEffect(() => {
+    getTest();
+  }, []);
 
   const onsubmit = async (e) => {
     e.preventDefault();
@@ -39,6 +53,7 @@ const Login = ({ tryLogin }) => {
         marginTop={10}
       >
         <h1>Inicio de Sesión</h1>
+        {message !== "" ? <p>{message}</p> : <p>Mensaje aun no recibido...</p>}
         <TextField
           className={"login-input"}
           id={"login-input"}
