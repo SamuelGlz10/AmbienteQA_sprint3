@@ -4,9 +4,9 @@ En la gestión de proyectos, se pueden enfrentar retos relacionados con la organ
 ## Instrucciones de ejecución:
 ### En terminal dividida:
 #### T1:
-cd Front
+cd Front \n
 npm run dev
 
 ### T2:
-cd back
+cd back \n
 npm start
