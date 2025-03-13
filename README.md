@@ -8,5 +8,5 @@ cd Front\
 npm run dev
 
 ### T2:
-cd back\
+cd Back\
 npm start
