@@ -4,6 +4,7 @@ import morgan from "morgan";
 import express from "express";
 import indexRoutes from "./routes/index.routes.js";
 import loginRoutes from "./routes/login.routes.js";
+import projectsFBRouters from "./routes/projectsFB.routes.js";
 
 const app = express();
 
@@ -13,6 +14,7 @@ app.use(express.json());
 
 app.use(indexRoutes);
 app.use(loginRoutes);
+app.use(projectsFBRouters);
 
 app.listen(
   process.env.BACK_PORT,
