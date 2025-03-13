@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Router } from "react-router-dom";
 
 import "./css/App.css";
 
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import Generate from "./pages/Generate";
 
 function App() {
   const [isLogin, setIsLogin] = useState(() => {
-    // return localStorage.getItem('token') ? true : false;
-    return false;
+    return localStorage.getItem("isLogin") === "true" || false;
+    // return false;
   });
 
   const tryLogin = async (user) => {
@@ -60,20 +61,16 @@ function App() {
           <Route
             path="/login" // Ruta login
             element={
-              isLogin ? (
-                <Navigate to="/home" />
-              ) : (
-                <Login
-                  /* Agregar funcion para login fetch, la que está es de prueba */ tryLogin={
-                    tryLogin
-                  }
-                />
-              ) // Pasamos setIsLogin como prop
+              isLogin ? <Navigate to="/home" /> : <Login tryLogin={ tryLogin } /> // Pasamos setIsLogin como prop
             }
           />
           <Route
             path="/home" // Ruta home
             element={isLogin ? <Home /> : <Navigate to="/login" />} // Protección de rutas
+          />
+          <Route
+            path="/generate" // Ruta generate
+            element={isLogin ? <Generate /> : <Navigate to="/login" />} // Protección de rutas
           />
           <Route
             path="*" // Ruta no encontrada
