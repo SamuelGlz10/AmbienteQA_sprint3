@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import "../css/Home.css"; // Import the CSS file
 
 const Home = () => {
   const [projects, setProjects] = useState([]);
@@ -35,28 +36,28 @@ const Home = () => {
   }, [location.state]);
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
+    <div className="home-container">
       {/* Header */}
-      <header className="bg-purple-100 p-6 text-center rounded-md shadow-md">
-        <h1 className="text-2xl font-semibold">Mis Proyectos</h1>
+      <header className="home-header">
+        <h1>Mis Proyectos</h1>
       </header>
 
       {/* Projects Table */}
-      <div className="mt-6 flex justify-center">
-        <table className="min-w-full bg-white shadow-md rounded-md">
+      <div className="table-container">
+        <table className="projects-table">
           <thead>
             <tr>
-              <th className="py-2 px-4 border-b">Nombre</th>
-              <th className="py-2 px-4 border-b">Descripción</th>
-              <th className="py-2 px-4 border-b">Estatus</th>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Estatus</th>
             </tr>
           </thead>
           <tbody>
             {projects.map((project) => (
               <tr key={project.id}>
-                <td className="py-2 px-4 border-b">{project.id}</td>
-                <td className="py-2 px-4 border-b">{project.descripcion}</td>
-                <td className="py-2 px-4 border-b">{project.estatus}</td>
+                <td>{project.id}</td>
+                <td>{project.descripcion}</td>
+                <td>{project.estatus}</td>
               </tr>
             ))}
           </tbody>
@@ -64,15 +65,9 @@ const Home = () => {
       </div>
 
       {/* New Project Button */}
-      <div className="flex justify-center mt-6">
-        <button
-          onClick={() => navigate("/generate")}
-          className="flex flex-col items-center px-6 py-4 bg-purple-100 rounded-full shadow-md"
-        >
-          <span className="text-2xl">+</span>
-          <span className="text-sm font-semibold text-white">
-            Nuevo Proyecto
-          </span>
+      <div className="button-container">
+        <button onClick={() => navigate("/generate")} className="main-button">
+          <span className="button-text"> + Nuevo Proyecto</span>
         </button>
       </div>
     </div>
