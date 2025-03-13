@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { Box, TextField } from "@mui/material";
 
 function Generate() {
   const navigate = useNavigate();
@@ -25,12 +26,34 @@ function Generate() {
   return (
     <div>
       <form onSubmit={onSubmit}>
-        <p>Prompt:</p>
-        <input type="text" name="prompt" id="prompt" />
-        <br />
-        <button className="main-button" type="submit">
-          Generar
-        </button>
+        <Box
+          margin={"auto"}
+          flexDirection={"column"}
+          display={"flex"}
+          width={400}
+          marginTop={10}
+        >
+          <TextField
+            className={"login-input"}
+            name={"prompt"}
+            id={"prompt"}
+            label={"Prompt"}
+            variant={"outlined"}
+            margin={"normal"}
+            autoComplete="off"
+            // Se utiliza para modificar el estilo de los elementos internos del TextField de mui materials:
+            slotProps={{
+              inputLabel: {
+                sx: {
+                  color: "#9e72be",
+                },
+              },
+            }}
+          />
+          <button className="main-button" type="submit">
+            Generar
+          </button>
+        </Box>
       </form>
     </div>
   );
