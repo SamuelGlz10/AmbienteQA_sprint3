@@ -57,12 +57,25 @@ button:focus-visible {
 }
 
 .main-button {
+  width: 25%;
   background-color: #9e72be;
   color: white;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .main-button:hover {
   background-color: #b481d8;
+}
+
+.secondary-button {
+  width: 17%;
+  background-color: #eddff6;
+  color: #9e72be;
+  border: 1px solid #979797;
+}
+.secondary-button:hover {
+  background-color: #e1d3e8;
 }
 
 @media (prefers-color-scheme: light) {
