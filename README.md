@@ -9,7 +9,7 @@ npm i @mui/material @emotion/styled react react-dom react-router-dom
 
 ### T2:
 cd Back\
-npm i cors dotenv express firebase-admin mongoose morgan mssql nodemon
+npm i cors dotenv express firebase-admin mongoose morgan mssql nodemon swagger-ui-express yamljs
 
 ## Instrucciones de ejecución:
 ### En terminal dividida:
