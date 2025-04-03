@@ -13,7 +13,24 @@ function Generate() {
   const [history, setHistory] = useState(["1", "2", "3", "4"]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
 
-  const promptRules = `Please create a JSON object that returns an array of responses where the only headers that exist are 'title' of the generated text and 'data' being the actual text generated for each element in the array. Do not include aditional text inside or outside the json. Do not include the word json, headers, or any punctuation of any kind. The output should only be the brackets from the json and its content. The list should be a list of ${selectedOption} ${limit} elements. Do not go over the limit if 'MAX' is indicated no matter what. Do not go under the limit if 'MIN' is indicated no matter what. If a list has been asked, but the MAX is set to 1, only create 1 response for that list. This applies to any combination of MAX and a number, or any combination of MIN and a number. Do not make up data that has not been asked. `;
+  const promptRules = `Please create a JSON object with the following structure: 
+{
+  "projectName": "The name of the project",
+  "description": "A brief description of the project",
+  "epics": [
+    { "title": "Epic title", "data": "Epic description" }
+  ],
+  "functionalRequirements": [
+    { "title": "Requirement title", "data": "Requirement description" }
+  ],
+  "nonFunctionalRequirements": [
+    { "title": "Requirement title", "data": "Requirement description" }
+  ],
+  "userStories": [
+    { "title": "User story title", "data": "User story description" }
+  ]
+}
+The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. Do not include additional text inside or outside the JSON. Do not make up data that has not been asked.`;
 
   const onSubmit = async (e) => {
     e.preventDefault();
