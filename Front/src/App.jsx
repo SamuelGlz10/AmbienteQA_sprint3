@@ -6,6 +6,7 @@ import "./css/App.css";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Generate from "./pages/Generate";
+import RevisionIA from "./pages/RevisionIA";
 
 function App() {
   const [isLogin, setIsLogin] = useState(() => {
@@ -72,6 +73,9 @@ function App() {
             path="/generate" // Ruta generate
             element={isLogin ? <Generate /> : <Navigate to="/login" />} // Protección de rutas
           />
+          <Route 
+            path="/revisionIA" 
+            element={<RevisionIA />} /> 
           <Route
             path="*" // Ruta no encontrada
             element={<Navigate to="/" />}
