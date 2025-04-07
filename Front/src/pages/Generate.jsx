@@ -14,23 +14,26 @@ function Generate() {
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
 
   const promptRules = `Please create a JSON object with the following structure: 
-{
-  "projectName": "The name of the project",
-  "description": "A brief description of the project",
-  "epics": [
-    { "title": "Epic title", "data": "Epic description" }
-  ],
-  "functionalRequirements": [
-    { "title": "Requirement title", "data": "Requirement description" }
-  ],
-  "nonFunctionalRequirements": [
-    { "title": "Requirement title", "data": "Requirement description" }
-  ],
-  "userStories": [
-    { "title": "User story title", "data": "User story description" }
-  ]
-}
-The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. Do not include additional text inside or outside the JSON. Do not make up data that has not been asked.`;
+  {
+    'nombreProyecto': 'The name of the project',
+    'descripcion': 'A brief description of the project',
+    'estatus': 'Abierto/Cerrado',
+    'EP': [
+      { 'id': 'EP01', 'titulo': 'Titulo de Epica', 'data': 'Descripcion de epica' }
+    ],
+    'RF': [
+      { 'id': 'RF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento' }
+    ],
+    'RNF': [
+      { 'id': 'RNF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento' }
+    ],
+    'HU': [
+      { 'id': 'HU01', 'titulo': 'Titulo de historia de usuario', 'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])' }
+    ]
+  }
+  The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. 
+  Please do not include \`\`\`json or \`\`\` markers in the response.
+  Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -50,7 +53,7 @@ The number of elements in each list should be ${selectedOption} ${limit}, respec
       const result = await fetch("http://localhost:5001/generateEpic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: structuredPrompt }),
+        body: JSON.stringify({ prompt: prompt, rules: promptRules }),
       });
       const response = await result.json();
       const generatedText = response.data;
@@ -277,7 +280,7 @@ The number of elements in each list should be ${selectedOption} ${limit}, respec
           type="button"
           onClick={() => navigate("/revisionIA")}
         >
-        Prueba
+          Prueba
         </button>
       </form>
       {/* Pantalla de carga */}
