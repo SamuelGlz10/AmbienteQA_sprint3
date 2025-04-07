@@ -60,7 +60,7 @@ function App() {
               isLogin ? <Navigate to="/home" /> : <Login tryLogin={tryLogin} /> // Pasamos setIsLogin como prop
             }
           />
-          <Route path="/register" element={<Registro />} />
+          <Route path="/registro" element={<Registro />} />
           <Route
             path="/home" // Ruta home
             element={isLogin ? <Home /> : <Navigate to="/login" />} // Protección de rutas
