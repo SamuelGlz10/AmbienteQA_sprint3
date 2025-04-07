@@ -28,6 +28,22 @@ body {
     letter-spacing: 0.5px;
   }
   
+  .project-description {
+    max-width: 800px;
+    margin: 0.5rem auto 0;
+    color: #5a287d;
+    font-size: 0.95rem;
+  }
+  
+  .project-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: #6b3d8a;
+  }
+  
   /* CONTENEDOR PRINCIPAL */
   .revision-container {
     max-width: 900px;
@@ -38,7 +54,7 @@ body {
     box-shadow: 0 2px 15px rgba(0,0,0,0.08);
   }
   
-  /* BOTONES SUPERIORES CON ANIMACIÓN */
+  /* BOTONES DE PESTAÑAS */
   .tabs-container {
     display: flex;
     gap: 10px;
@@ -73,6 +89,7 @@ body {
   .tab.active {
     background-color: #9a64d8;
     color: white;
+    font-weight: bold;
   }
   
   .tab:hover {
@@ -96,7 +113,7 @@ body {
     opacity: 1;
   }
   
-  /* TABLA DESPLAZADA A LA IZQUIERDA */
+  /* TABLA */
   .table-container {
     overflow-x: auto;
     margin-left: -15px;
@@ -119,12 +136,23 @@ body {
     position: sticky;
     top: 0;
     font-weight: 600;
+    font-size: 1.1rem;
   }
   
   .table td {
     padding: 0.8rem;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
+    height: 50px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .delete-cell {
+    width: 40px;
+    text-align: center;
   }
   
   .table tr:not(:last-child) td {
@@ -135,17 +163,66 @@ body {
     background-color: #faf5ff;
   }
   
-  .stars {
-    color: #f5c518;
+  /* TÍTULOS CLICKEABLES */
+  .clickable-title {
+    cursor: pointer;
+    color: #6b3d8a;
+    transition: all 0.2s ease;
+    font-weight: 500;
+  }
+  
+  .clickable-title:hover {
+    color: #9a64d8;
+    text-decoration: underline;
+  }
+  
+  /* ICONO DE ELIMINAR */
+  .delete-icon {
+    background: none;
+    border: none;
+    color: #f0a3c2;
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  
+  .delete-icon:hover {
+    background-color: #f0a3c2;
+    color: white;
+    transform: scale(1.1);
+  }
+  
+  /* ESTRELLAS DE VALORACIÓN */
+  .stars-container {
+    display: inline-flex;
+    gap: 2px;
+  }
+  
+  .star {
+    cursor: pointer;
     font-size: 1.25rem;
-    letter-spacing: 2px;
+    color: #ddd;
+    transition: all 0.2s;
+  }
+  
+  .star.filled {
+    color: #f5c518;
+  }
+  
+  .star:hover {
+    transform: scale(1.2);
   }
   
   /* BOTONES INFERIORES */
   .buttons {
     display: flex;
-    justify-content: center;
-    gap: 20px;
+    justify-content: space-between;
     margin-top: 2.5rem;
   }
   
@@ -165,49 +242,138 @@ body {
     color: white;
   }
   
-  .edit {
-    background-color: #e0c7fa;
-    color: #4b006e;
-  }
-  
   .delete {
     background-color: #f0a3c2;
     color: white;
   }
-  s
+  
   .buttons button:hover {
     transform: translateY(-3px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   }
   
-  /* Efecto de click */
   .buttons button:active {
     transform: translateY(1px);
   }
-
-  /* Agrega esto a tu archivo RevisionIA.css */
-.stars-container {
-    display: inline-flex;
-    gap: 2px;
+  
+  .delete:hover {
+    background-color: #e67a9e;
   }
   
-  .star {
+  /* ESTILOS PARA EL POPUP */
+  .popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(3px);
+  }
+  
+  .popup-content {
+    background-color: white;
+    padding: 25px;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 1px solid #e0c7fa;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .popup-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
     cursor: pointer;
-    font-size: 1.25rem;
-    color: #ddd;
-    transition: color 0.2s;
+    color: #9a64d8;
+    transition: all 0.2s;
   }
   
-  .star.filled {
-    color: #f5c518;
+  .popup-close:hover {
+    color: #6b3d8a;
+    transform: scale(1.1);
   }
   
-  .star:hover {
-    transform: scale(1.2);
+  .popup-title {
+    color: #6b3d8a;
+    margin-top: 0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f2e7fc;
   }
   
-  /* Asegúrate de que las estrellas no afecten el alto de la fila */
-  .table td {
-    vertical-align: middle;
-    height: 50px;
+  .popup-details {
+    margin-bottom: 20px;
+    color: #555;
+    flex-grow: 1;
+  }
+  
+  .popup-details p {
+    margin: 0.8rem 0;
+  }
+  
+  .popup-details strong {
+    color: #4b006e;
+  }
+  
+  .edit-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    margin-top: 10px;
+  }
+  
+  .popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    margin-top: auto;
+  }
+  
+  .popup-edit, .popup-save {
+    background-color: #9a64d8;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+  }
+  
+  .popup-edit:hover, .popup-save:hover {
+    background-color: #7e4db6;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  }
+  
+  .popup-edit:active, .popup-save:active {
+    transform: translateY(0);
+  }
+  
+  .popup-edit svg {
+    width: 16px;
+    height: 16px;
   }
