@@ -1,25 +1,28 @@
-import { Box, TextField } from "@mui/material";
+import { Box, TextField, Typography, Button } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "../css/Login.css";
+import "../css/Login.css"; // Asegúrate de que la ruta es correcta
 
 const Login = ({ tryLogin }) => {
   const navigate = useNavigate();
-
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const getTest = async () => {
-    const result = await fetch("http://localhost:5001");
-    console.log(result);
-    const text = await result.text();
-    console.log(text);
-    setMessage(text);
+    try {
+      const result = await fetch("http://localhost:5001");
+      const text = await result.text();
+      console.log(text);
+      if (!text.includes("<!DOCTYPE")) {
+        setMessage(text);
+      }
+    } catch (error) {
+      console.error("Error al conectar con la API:", error);
+    }
   };
 
-  // Hook para cargar el mensaje al cargar la página
   useEffect(() => {
     getTest();
   }, []);
@@ -31,7 +34,7 @@ const Login = ({ tryLogin }) => {
       return;
     }
 
-    const isLogin = await tryLogin({ username, password }); // Esto da un objeto "abstracto" con propiedades 'usernam' y 'password'
+    const isLogin = await tryLogin({ username, password });
 
     if (isLogin) {
       setUsername("");
@@ -44,59 +47,42 @@ const Login = ({ tryLogin }) => {
   };
 
   return (
-    <form onSubmit={onsubmit}>
-      <Box
-        margin={"auto"}
-        flexDirection={"column"}
-        display={"flex"}
-        width={400}
-        marginTop={10}
-      >
-        <h1>Inicio de Sesión</h1>
-        {message !== "" ? <p>{message}</p> : <p>Mensaje aun no recibido...</p>}
-        <TextField
-          className={"login-input"}
-          id={"login-input"}
-          label={"Usuario o Correo Electrónico"}
-          variant={"outlined"}
-          margin={"normal"}
-          autoComplete="off"
-          onChange={(e) => setUsername(e.target.value)}
-          // Se utiliza para modificar el estilo de los elementos internos del TextField de mui materials:
-          slotProps={{
-            inputLabel: {
-              sx: {
-                color: "#9e72be",
-              },
-            },
-          }}
-        />
-        <TextField
-          className={"login-input"}
-          label={"Contraseña"}
-          variant={"outlined"}
-          margin={"normal"}
-          type={"password"}
-          onChange={(e) => setPassword(e.target.value)}
-          // Se utiliza para modificar el estilo de los elementos internos del TextField de mui materials:
-          slotProps={{
-            inputLabel: {
-              sx: {
-                color: "#9e72be",
-              },
-            },
-          }}
-        />
-        <button
-          type={"submit"}
-          variant={"contained"}
-          className={"main-button"}
-          id={"login-button"}
-        >
-          Iniciar Sesión
-        </button>
-      </Box>
-    </form>
+    <div className="login-container">
+      <div className="login-left">
+        <img src="/softedge_logo.png" alt="Logo Softedge" className="logo" />
+        <h1 className="title">Inicia Sesión</h1>
+        <h2 className="subtitle">FRIDA Product Planner</h2>
+        <p className="login-text">
+        Si todavía no tienes una cuenta.         
+        <br /> <br />
+        <a href="/register" className="register-link">¡Regístrate Aquí!</a>
+        </p>
+        <img src="/Login.png" alt="Login Illustration" className="illustration" />
+      </div>
+
+      <div className="login-right">
+        <form className="form" onSubmit={onsubmit}>
+          <h2 className="form-title">Inicio de Sesión</h2>
+          <input
+            className="input"
+            type="text"
+            placeholder="Usuario"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+          <input
+            className="input"
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit" className="main-button">
+            Iniciar Sesión
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 

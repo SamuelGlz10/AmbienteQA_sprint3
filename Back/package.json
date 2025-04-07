@@ -8,7 +8,9 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "firebase-admin": "^13.2.0",
-    "mongoose": "^8.13.1",
+
+    "mongoose": "^8.13.2",
+
     "morgan": "^1.10.0",
     "mssql": "^11.0.1",
     "nodemon": "^3.1.9",
