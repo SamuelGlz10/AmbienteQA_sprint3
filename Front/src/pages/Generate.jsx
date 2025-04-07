@@ -274,6 +274,13 @@ The number of elements in each list should be ${selectedOption} ${limit}, respec
             </button>
           </Box>
         </Box>
+        <button
+          className="main-button"
+          type="button"
+          onClick={() => navigate("/revisionIA")}
+        >
+        Prueba
+        </button>
       </form>
       {/* Pantalla de carga */}
       {loading && (
