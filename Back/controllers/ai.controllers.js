@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 
 export const generateEpic = async (req, res) => {
-  const { prompt } = req.body;
+  const { prompt, rules } = req.body;
 
   console.log("Received prompt:", prompt);
 
@@ -13,7 +13,12 @@ export const generateEpic = async (req, res) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt, data: {} }),
+        body: JSON.stringify({
+          prompt,
+          data: {
+            rules,
+          },
+        }),
       }
     );
 
