@@ -14,6 +14,7 @@ function Generate() {
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
 
   const promptRules = `Please create a JSON object with the following structure: 
+
   {
     'nombreProyecto': 'The name of the project',
     'descripcion': 'A brief description of the project',
@@ -53,7 +54,9 @@ function Generate() {
       const result = await fetch("http://localhost:5001/generateEpic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+
         body: JSON.stringify({ prompt: prompt, rules: promptRules }),
+
       });
       const response = await result.json();
       const generatedText = response.data;

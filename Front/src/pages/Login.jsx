@@ -1,4 +1,6 @@
+
 import { Box, TextField, Typography, Button } from "@mui/material";
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,6 +13,7 @@ const Login = ({ tryLogin }) => {
   const [password, setPassword] = useState("");
 
   const getTest = async () => {
+
     try {
       const result = await fetch("http://localhost:5001");
       const text = await result.text();
@@ -21,6 +24,7 @@ const Login = ({ tryLogin }) => {
     } catch (error) {
       console.error("Error al conectar con la API:", error);
     }
+
   };
 
   useEffect(() => {
@@ -44,6 +48,10 @@ const Login = ({ tryLogin }) => {
     } else {
       alert("Login fallido: Usuario o contraseña incorrectos.");
     }
+  };
+
+  const goToRegister = () => {
+    navigate("/registro");
   };
 
   return (
@@ -87,3 +95,4 @@ const Login = ({ tryLogin }) => {
 };
 
 export default Login;
+
