@@ -12,7 +12,7 @@ function RevisionIA() {
     // Cargar los datos desde la API
     const fetchData = async () => {
       try {
-        const requirementsResponse = await fetch("http://localhost:5001/api/projectsFB/");
+        const requirementsResponse = await fetch("http://localhost:5001/projectsFB/");
         if (!requirementsResponse.ok) {
           throw new Error(`Error HTTP: ${requirementsResponse.status}`);
         }

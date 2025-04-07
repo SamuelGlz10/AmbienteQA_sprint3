@@ -11,7 +11,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // Rutas
-app.use("/api", projectsFBRoutes); // Aplica el prefijo "/api" a las rutas de projectsFB
+app.use(projectsFBRoutes);
 
 // Inicia el servidor
 const PORT = process.env.BACK_PORT || 5001;

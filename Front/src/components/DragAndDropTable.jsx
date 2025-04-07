@@ -19,7 +19,7 @@ const DragAndDropTable = ({ requirements, setRequirements, ratings, setRatings }
     setRequirements(updatedRequirements);
   
     try {
-      const response = await fetch("http://localhost:5001/api/projectsFB/updateRequirements", {
+      const response = await fetch("http://localhost:5001/projectsFB/updateRequirements", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +54,7 @@ const DragAndDropTable = ({ requirements, setRequirements, ratings, setRatings }
       
         // Enviar las valoraciones actualizadas al backend
         try {
-          const response = await fetch("http://localhost:5001/api/projectsFB/updateRatings", {
+          const response = await fetch("http://localhost:5001/projectsFB/updateRatings", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",
