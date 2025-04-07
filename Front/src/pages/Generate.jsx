@@ -15,22 +15,24 @@ function Generate() {
 
   const promptRules = `Please create a JSON object with the following structure: 
 {
-  "projectName": "The name of the project",
-  "description": "A brief description of the project",
-  "epics": [
-    { "title": "Epic title", "data": "Epic description" }
+  "nombreProyecto": "The name of the project",
+  "descripcion": "A brief description of the project",
+  "estatus": "Abierto/Cerrado",
+  "fechaCreacion": "YYYY-MM-DD",
+  "EP": [
+    { "id": "EP01", "titulo": "Titulo de Epica", "data": "Descripcion de epica" }
   ],
-  "functionalRequirements": [
-    { "title": "Requirement title", "data": "Requirement description" }
+  "RF": [
+    { "id": "RF01", "titulo": "Titulo de Requerimiento", "data": "Descricpcion de requerimiento" }
   ],
-  "nonFunctionalRequirements": [
-    { "title": "Requirement title", "data": "Requirement description" }
+  "RNF": [
+    { "id": "FNR01", "titulo": "Titulo de Requerimiento", "data": "Descricpcion de requerimiento" }
   ],
-  "userStories": [
-    { "title": "User story title", "data": "User story description" }
+  "HU": [
+    { "id": "HU01", "titulo": "Titulo de historia de usuario", "data": "Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X]" }
   ]
 }
-The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. Do not include additional text inside or outside the JSON. Do not make up data that has not been asked.`;
+The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
 
   const onSubmit = async (e) => {
     e.preventDefault();
