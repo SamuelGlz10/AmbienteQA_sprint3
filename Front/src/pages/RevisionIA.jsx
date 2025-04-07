@@ -4,8 +4,6 @@ import "../css/RevisionIA.css";
 function RevisionIA() {
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
-<<<<<<< Updated upstream
-=======
   const [ratings, setRatings] = useState({
     RF: {},
     RNF: {},
@@ -19,7 +17,6 @@ function RevisionIA() {
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState("");
->>>>>>> Stashed changes
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -28,8 +25,6 @@ function RevisionIA() {
     { id: "EP", title: "EP", fullText: "Epicas" }
   ];
 
-<<<<<<< Updated upstream
-=======
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -63,13 +58,10 @@ function RevisionIA() {
     fetchData();
   }, []);
 
->>>>>>> Stashed changes
   const toggleExpand = (tabId) => {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
 
-<<<<<<< Updated upstream
-=======
   const InteractiveStars = ({ tabId, requirementId }) => {
     const currentRating = ratings[tabId]?.[requirementId] || 0;
     
@@ -169,15 +161,12 @@ function RevisionIA() {
     return <div className="page-container">No se pudieron cargar los datos del proyecto.</div>;
   }
 
->>>>>>> Stashed changes
   return (
     <div className="page-container">
-      {/* Header fuera del contenedor principal */}
       <div className="full-width-header">
         <h2>Revisión de datos - {projectData.nombreProyecto}</h2>
       </div>
 
-      {/* Contenedor principal con el contenido centrado */}
       <div className="revision-container">
         <div className="tabs-container">
           {tabs.map((tab) => (
@@ -211,45 +200,6 @@ function RevisionIA() {
               </tr>
             </thead>
             <tbody>
-<<<<<<< Updated upstream
-            <tr>
-              <td>Autenticación de usuario</td>
-              <td className="stars">★★★★★☆</td>
-            </tr>
-            <tr>
-              <td>Perfil de usuario</td>
-              <td className="stars">★★★★★★</td>
-            </tr>
-            <tr>
-              <td>Búsqueda y filtrado</td>
-              <td className="stars">★★★★★☆</td>
-            </tr>
-            <tr>
-              <td>Notificaciones push</td>
-              <td className="stars">★★★★★★</td>
-            </tr>
-            <tr>
-              <td>Integración con pasarelas de pago</td>
-              <td className="stars">★★★★★☆</td>
-            </tr>
-            <tr>
-              <td>Gestión de contenido</td>
-              <td className="stars">★★★★★☆</td>
-            </tr>
-            <tr>
-              <td>Geolocalización</td>
-              <td className="stars">★★★★★☆</td>
-            </tr>
-            <tr>
-              <td>Comunicación entre usuarios</td>
-              <td className="stars">★★★★★★</td>
-            </tr>
-            <tr>
-              <td>Soporte multiidioma</td>
-              <td className="stars">★★★★★☆</td>
-            </tr>
-          </tbody>
-=======
               {projectData[activeTab]?.map((req) => (
                 <tr key={req.id}>
                   <td 
@@ -275,16 +225,10 @@ function RevisionIA() {
                 </tr>
               ))}
             </tbody>
->>>>>>> Stashed changes
           </table>
         </div>
 
         <div className="buttons">
-<<<<<<< Updated upstream
-          <button className="confirm">Confirmar</button>
-          <button className="edit">Editar</button>
-          <button className="delete">Eliminar</button>
-=======
           <button 
             className="confirm"
             onClick={() => console.log("Ratings guardados:", {projectData, ratings})}
@@ -297,7 +241,6 @@ function RevisionIA() {
           >
             {showDeleteIcons ? "Cancelar" : "Eliminar"}
           </button>
->>>>>>> Stashed changes
         </div>
       </div>
 
@@ -331,7 +274,7 @@ function RevisionIA() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                   </svg>
-                  Editar 
+                  Editar
                 </button>
               )}
             </div>
