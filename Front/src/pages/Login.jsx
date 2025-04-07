@@ -1,4 +1,4 @@
-import { Box, TextField } from "@mui/material";
+import { Box, TextField, Button } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,13 +13,10 @@ const Login = ({ tryLogin }) => {
 
   const getTest = async () => {
     const result = await fetch("http://localhost:5001");
-    console.log(result);
     const text = await result.text();
-    console.log(text);
     setMessage(text);
   };
 
-  // Hook para cargar el mensaje al cargar la página
   useEffect(() => {
     getTest();
   }, []);
@@ -31,7 +28,7 @@ const Login = ({ tryLogin }) => {
       return;
     }
 
-    const isLogin = await tryLogin({ username, password }); // Esto da un objeto "abstracto" con propiedades 'usernam' y 'password'
+    const isLogin = await tryLogin({ username, password });
 
     if (isLogin) {
       setUsername("");
@@ -41,6 +38,10 @@ const Login = ({ tryLogin }) => {
     } else {
       alert("Login fallido: Usuario o contraseña incorrectos.");
     }
+  };
+
+  const goToRegister = () => {
+    navigate("/registro");
   };
 
   return (
@@ -62,7 +63,6 @@ const Login = ({ tryLogin }) => {
           margin={"normal"}
           autoComplete="off"
           onChange={(e) => setUsername(e.target.value)}
-          // Se utiliza para modificar el estilo de los elementos internos del TextField de mui materials:
           slotProps={{
             inputLabel: {
               sx: {
@@ -78,7 +78,6 @@ const Login = ({ tryLogin }) => {
           margin={"normal"}
           type={"password"}
           onChange={(e) => setPassword(e.target.value)}
-          // Se utiliza para modificar el estilo de los elementos internos del TextField de mui materials:
           slotProps={{
             inputLabel: {
               sx: {
@@ -89,15 +88,23 @@ const Login = ({ tryLogin }) => {
         />
         <button
           type={"submit"}
-          variant={"contained"}
           className={"main-button"}
           id={"login-button"}
         >
           Iniciar Sesión
         </button>
+
+        {/* Botón para ir a Registro */}
+        <Button
+          onClick={goToRegister}
+          style={{ marginTop: "1rem", color: "#9e72be" }}
+        >
+          ¿No tienes cuenta? Regístrate aquí
+        </Button>
       </Box>
     </form>
   );
 };
 
 export default Login;
+

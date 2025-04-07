@@ -1,6 +1,6 @@
 import sql from "mssql";
 
-const sqlConfig = {
+const sqlConfig = { // Localhost config
   user: process.env.DB_USER,
   password: process.env.DB_PWD,
   database: process.env.DB_NAME,
@@ -13,12 +13,24 @@ const sqlConfig = {
 
 const sqlConnect = async () => {
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await sql.connect(azureConfig);
+    console.log("Connected to SQL Server");
     return pool;
   } catch (err) {
     console.error("SQL Connection Error:", err);
     throw err;
   }
+};
+
+const azureConfig = {
+  server: process.env.AZURE_SQL_SERVER,
+  port: parseInt(process.env.AZURE_SQL_PORT, 10),
+  database: process.env.AZURE_SQL_DATABASE,
+  user: process.env.AZURE_SQL_USER,
+  password: process.env.AZURE_SQL_PASSWORD,
+  options: {
+    encrypt: true,
+  },
 };
 
 export { sqlConnect, sql };

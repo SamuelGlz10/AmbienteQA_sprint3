@@ -9,6 +9,28 @@ function Generate() {
   const [copiarText, setCopiarText] = useState("Copiar"); // Estado para controlar el texto copiado
   const [pegarText, setPegarText] = useState("Pegar"); // Estado para controlar el texto pegado
   const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
+  const [limit, setLimit] = useState(1); // Estado para controlar el límite
+  const [history, setHistory] = useState(["1", "2", "3", "4"]); // Estado para controlar el historial
+  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
+
+  const promptRules = `Please create a JSON object with the following structure: 
+{
+  "projectName": "The name of the project",
+  "description": "A brief description of the project",
+  "epics": [
+    { "title": "Epic title", "data": "Epic description" }
+  ],
+  "functionalRequirements": [
+    { "title": "Requirement title", "data": "Requirement description" }
+  ],
+  "nonFunctionalRequirements": [
+    { "title": "Requirement title", "data": "Requirement description" }
+  ],
+  "userStories": [
+    { "title": "User story title", "data": "User story description" }
+  ]
+}
+The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. Do not include additional text inside or outside the JSON. Do not make up data that has not been asked.`;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -16,20 +38,32 @@ function Generate() {
       alert("Por favor, ingresa un prompt apropiado.");
       return;
     }
-    const input = prompt;
-    const structuredPrompt =
-      "Please create a JSON object that returns headers with 'title' of the generated text, 'data' being the actual text generated from the following prompt. Do not include aditional text inside or outside the json. Do not include the word json or any punctuation of any kind. The output should only be the brackets from the json and its content: " +
-      input;
-    alert("Solicitud recibida, generando texto..." + structuredPrompt); // Aquí se muestra el mensaje de que se recibió la solicitud
-    const result = await fetch("http://localhost:5001/generateEpic", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: structuredPrompt }),
-    });
-    const response = await result.json();
-    const generatedText = response.data;
-    navigate("/home", { state: { generatedText } }); // Regresar el texto generado a la página de inicio
-    alert(generatedText); // Aquí se muestra el mensaje de que se generó el texto
+
+    setLoading(true); // Cambiar el estado de carga a verdadero
+
+    try {
+      addToHistory(prompt); // Agregar el prompt al historial
+
+      const structuredPrompt = promptRules + prompt;
+
+      alert("Solicitud recibida, generando texto... " + structuredPrompt); // Aquí se muestra el mensaje de que se recibió la solicitud
+      const result = await fetch("http://localhost:5001/generateEpic", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: structuredPrompt }),
+      });
+      const response = await result.json();
+      const generatedText = response.data;
+      // navigate("/home", { state: { generatedText } }); // Regresar el texto generado a la página de inicio
+      alert(generatedText); // Aquí se muestra el mensaje de que se generó el texto
+    } catch (error) {
+      // En caso de error
+      console.error("Error:", error);
+      alert("Error al generar el texto. Por favor, inténtalo de nuevo."); // Aquí se muestra el mensaje de error
+    } finally {
+      // Cambiar el estado de carga a falso
+      setLoading(false);
+    }
   };
 
   const handleErase = () => {
@@ -61,18 +95,29 @@ function Generate() {
     setSelectedOption(option); // Actualizar el estado de la opción seleccionada
   };
 
+  const addToHistory = (prompt) => {
+    setHistory((prevHistory) => {
+      const newHistory = [prompt, ...prevHistory]; // Agregar el nuevo prompt al historial
+      return newHistory.slice(0, 4);
+    });
+  };
+
+  const handleHistorialClick = (item) => {
+    setPrompt(item); // Actualizar el prompt con el elemento del historial seleccionado
+  };
+
   return (
-    <div>
-      <form onSubmit={onSubmit}>
+    <div style={{ width: 1400 }}>
+      <form style={{ width: 1400 }} onSubmit={onSubmit}>
         <Box // Cuerpo de pagina
           margin={"auto"}
-          width={1280}
+          width={1400}
           flexDirection={"row"}
           justifyContent={"space-between"}
           display={"flex"}
           marginTop={10}
         >
-          <div>
+          <div style={{ width: "48%" }}>
             <Box className="pink-box">
               {/* Caja de prompt */}
               <span className="prompt-text">
@@ -101,7 +146,7 @@ function Generate() {
                 variant={"outlined"}
                 margin={"normal"}
                 multiline={true}
-                rows={14}
+                rows={16}
                 autoComplete="off"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)} // Actualiza el estado del prompt
@@ -129,8 +174,10 @@ function Generate() {
               />
             </Box>
             <span className="button-container">
-              <button className="main-button" type="submit">
-                Generar
+              {/* Botones de generar y eliminar */}
+              <button className="main-button" type="submit" disabled={loading}>
+                {loading ? "Cargando..." : "Generar"}{" "}
+                {/* Cambia el texto del botón según el estado de carga */}
               </button>
               <button
                 className="main-button"
@@ -185,8 +232,10 @@ function Generate() {
               <input
                 className="input-options"
                 type="number"
-                min="0"
+                min="1"
                 max="25"
+                value={limit}
+                onChange={(e) => setLimit(e.target.value)} // Actualiza el estado del límite
                 placeholder="0"
               />
             </span>
@@ -194,9 +243,43 @@ function Generate() {
             <span className="prompt-options-text" style={{ marginTop: "10px" }}>
               <p id="prompt-options">Historial:</p>
             </span>
+            <div className="history-container">
+              {history.map(
+                (
+                  item,
+                  index // Mapeamos el historial
+                ) => (
+                  <div
+                    title={item} // Usamos el 'item' como título para el elemento
+                    key={index} // Usamos el 'indiex' como clave única
+                    className="history-item"
+                    onClick={() => handleHistorialClick(item)} // Manejador de clics para el historial
+                  >
+                    <span>
+                      {item || ""} {/* Manejar el caso de vacío */}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+            <button
+              className="secondary-button"
+              id="prompt-options-button"
+              type="button"
+              onClick={() => setHistory([])} // Limpiar el historial
+            >
+              Limpiar
+            </button>
           </Box>
         </Box>
       </form>
+      {/* Pantalla de carga */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Generando texto, por favor espere...</p>
+        </div>
+      )}
     </div>
   );
 }
