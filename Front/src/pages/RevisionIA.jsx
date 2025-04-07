@@ -1,59 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import DragAndDropTable from "../components/DragAndDropTable.jsx";
 import "../css/RevisionIA.css";
 
 function RevisionIA() {
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
-  const [ratings, setRatings] = useState({}); // Almacena los ratings por requisito
+  const [ratings, setRatings] = useState({});
+  const [requirements, setRequirements] = useState([]);
+
+  useEffect(() => {
+    // Cargar los datos desde la API
+    const fetchData = async () => {
+      try {
+        const requirementsResponse = await fetch("http://localhost:5001/projectsFB/");
+        if (!requirementsResponse.ok) {
+          throw new Error(`Error HTTP: ${requirementsResponse.status}`);
+        }
+        const requirementsData = await requirementsResponse.json();
+        setRequirements(requirementsData);
+      } catch (error) {
+        console.error("Error al cargar los datos desde la API:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
     { id: "RNF", title: "RNF", fullText: "Requerimientos no funcionales" },
     { id: "HU", title: "HU", fullText: "Historias de usuario" },
-    { id: "EP", title: "EP", fullText: "Epicas" }
-  ];
-
-  // Datos de ejemplo
-  const requirements = [
-    { id: 1, name: "Autenticación de usuario" },
-    { id: 2, name: "Perfil de usuario" },
-    { id: 3, name: "Búsqueda y filtrado" },
-    { id: 4, name: "Notificaciones push" },
-    { id: 5, name: "Integración con pasarelas de pago" },
-    { id: 6, name: "Gestión de contenido" },
-    { id: 7, name: "Geolocalización" },
-    { id: 8, name: "Comunicación entre usuarios" },
-    { id: 9, name: "Soporte multiidioma" }
+    { id: "EP", title: "EP", fullText: "Epicas" },
   ];
 
   const toggleExpand = (tabId) => {
     setExpandedTab(expandedTab === tabId ? null : tabId);
-  };
-
-  // Componente para las estrellas interactivas
-  const InteractiveStars = ({ requirementId }) => {
-    const currentRating = ratings[requirementId] || 0;
-    
-    const handleStarClick = (selectedRating) => {
-      setRatings({
-        ...ratings,
-        [requirementId]: selectedRating
-      });
-    };
-
-    return (
-      <div className="stars-container">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={`star ${star <= currentRating ? 'filled' : ''}`}
-            onClick={() => handleStarClick(star)}
-          >
-            {star <= currentRating ? '★' : '☆'}
-          </span>
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -83,37 +64,12 @@ function RevisionIA() {
           ))}
         </div>
 
-        <div className="table">
-          <table>
-            <thead>
-              <tr>
-                <th>Requerimientos</th>
-                <th>Valoración</th>
-              </tr>
-            </thead>
-            <tbody>
-              {requirements.map((req) => (
-                <tr key={req.id}>
-                  <td>{req.name}</td>
-                  <td>
-                    <InteractiveStars requirementId={req.id} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="buttons">
-          <button 
-            className="confirm"
-            onClick={() => console.log("Ratings guardados:", ratings)}
-          >
-            Confirmar
-          </button>
-          <button className="edit">Editar</button>
-          <button className="delete">Eliminar</button>
-        </div>
+        <DragAndDropTable
+          requirements={requirements}
+          setRequirements={setRequirements}
+          ratings={ratings}
+          setRatings={setRatings}
+        />
       </div>
     </div>
   );
