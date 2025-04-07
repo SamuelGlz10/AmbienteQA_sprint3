@@ -2,11 +2,8 @@ import { Box, TextField } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "../css/Login.css";
-
 const Login = ({ tryLogin }) => {
   const navigate = useNavigate();
-
   const [message, setMessage] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +16,6 @@ const Login = ({ tryLogin }) => {
     setMessage(text);
   };
 
-  // Hook para cargar el mensaje al cargar la página
   useEffect(() => {
     getTest();
   }, []);
