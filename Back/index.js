@@ -4,6 +4,7 @@ import cors from "cors";
 import morgan from "morgan";
 import indexRoutes from "./routes/index.routes.js";
 import loginRoutes from "./routes/login.routes.js";
+import registroRoutes from "./routes/registro.routes.js";
 import projectsFBRouters from "./routes/projectsFB.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import projectsFBRoutes from "./routes/projectsFB.routes.js";
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use(indexRoutes);
 app.use(loginRoutes);
+app.use(registroRoutes);
 app.use(projectsFBRouters);
 app.use(aiRoutes);
 // Rutas
