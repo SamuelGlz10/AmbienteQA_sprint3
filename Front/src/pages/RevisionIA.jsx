@@ -193,31 +193,41 @@ function RevisionIA() {
 
   const handleSaveEdit = async () => {
     if (!selectedItem || !projectData) return;
-    
+
     try {
       setSaveStatus({ loading: true, error: null, success: false });
-      
+
       // Simular una llamada a API
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setProjectData(prev => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Actualizar el estado de projectData
+      setProjectData((prev) => {
         const updatedTab = [...prev[activeTab]];
-        const itemIndex = updatedTab.findIndex(item => item.id === selectedItem.id);
+        const itemIndex = updatedTab.findIndex((item) => item.id === selectedItem.id);
         if (itemIndex !== -1) {
           updatedTab[itemIndex] = {
             ...updatedTab[itemIndex],
             titulo: editData.title,
-            data: editData.description
+            data: editData.description,
           };
         }
-        
+
         return {
           ...prev,
-          [activeTab]: updatedTab
+          [activeTab]: updatedTab,
         };
       });
-      
+
+      // Actualizar el estado de selectedItem para reflejar los cambios en el popup
+      setSelectedItem((prev) => ({
+        ...prev,
+        titulo: editData.title,
+        data: editData.description,
+      }));
+
       setSaveStatus({ loading: false, error: null, success: true });
+
+      // Mantener el modo de edición desactivado después de guardar
       setTimeout(() => setEditing(false), 1000);
     } catch (error) {
       setSaveStatus({ loading: false, error: "Error al guardar", success: false });
@@ -248,6 +258,13 @@ function RevisionIA() {
       await new Promise((resolve) => setTimeout(resolve, 800));
 
       setSaveStatus({ loading: false, error: null, success: true });
+
+      // Actualizar el estado de projectData
+      setProjectData((prev) => ({
+        ...prev,
+        nombreProyecto: projectData.nombreProyecto,
+        descripcion: projectData.descripcion,
+      }));
 
       // Ocultar el mensaje de éxito después de 2 segundos y salir del modo edición
       setTimeout(() => {
