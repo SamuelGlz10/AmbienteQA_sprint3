@@ -31,36 +31,39 @@ function RevisionIA() {
 
   // Transformar datos al formato requerido
 
-  const transformGeneratedData = (generatedData) => {
-    if (!generatedData) return null;
-    
+  const transformGeneratedData = (data) => {
+    const parseSection = (section, prefix) => {
+      if (!section) return [];
+      if (Array.isArray(section)) {
+        return section.map((item, i) => ({
+          id: `${prefix}${i + 1}`,
+          titulo: item.title || `${prefix} ${i + 1}`,
+          data: item.data || "Sin descripción"
+        }));
+      }
+      if (typeof section === 'object') {
+        return Object.entries(section).map(([title, desc], i) => ({
+          id: `${prefix}${i + 1}`,
+          titulo: title,
+          data: desc || "Sin descripción"
+        }));
+      }
+      return [];
+    };
+  
     return {
-      nombreProyecto: generatedData.projectName || "Proyecto sin nombre",
-      descripcion: generatedData.description || "Sin descripción",
+      nombreProyecto: data.projectName || "Proyecto sin nombre",
+      descripcion: data.description || "Sin descripción",
       estatus: "Abierto",
       fechaCreacion: new Date().toISOString().split('T')[0],
-      EP: generatedData.epics?.map((epic, i) => ({
-        id: `EP${i+1}`,
-        titulo: epic.title || `Épica ${i+1}`,
-        data: epic.data || "Sin descripción"
-      })) || [],
-      RF: generatedData.functionalRequirements?.map((req, i) => ({
-        id: `RF${i+1}`,
-        titulo: req.title || `Requerimiento funcional ${i+1}`,
-        data: req.data || "Sin descripción"
-      })) || [],
-      RNF: generatedData.nonFunctionalRequirements?.map((req, i) => ({
-        id: `RNF${i+1}`,
-        titulo: req.title || `Requerimiento no funcional ${i+1}`,
-        data: req.data || "Sin descripción"
-      })) || [],
-      HU: generatedData.userStories?.map((story, i) => ({
-        id: `HU${i+1}`,
-        titulo: story.title || `Historia de usuario ${i+1}`,
-        data: story.data || "Sin descripción"
-      })) || []
+      EP: parseSection(data.epics, "EP"),
+      RF: parseSection(data.functionalRequirements, "RF"),
+      RNF: parseSection(data.nonFunctionalRequirements, "RNF"),
+      HU: parseSection(data.userStories, "HU"),
     };
   };
+  
+  
 
   useEffect(() => {
     const loadData = async () => {
