@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../css/Registro.css"; // Aquí puedes agregar más clases si lo necesitas
+import "../css/Registro.css"; 
 
 const Registro = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Registro = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        username: usuario,
+        name: usuario,
         email: correo,
         phone: telefono,
         password: contrasena,
@@ -40,7 +40,8 @@ const Registro = () => {
       alert("¡Registro exitoso!");
       navigate("/login");
     } else {
-      alert("Error al registrarse.");
+      const errorData = await response.json();
+      alert(`Error al registrarse: ${errorData.message || "Error desconocido"}`);
     }
   };
 
@@ -71,7 +72,7 @@ const Registro = () => {
           <input
             className="input"
             type="text"
-            placeholder="Usuario"
+            placeholder="Nombre"
             onChange={(e) => setUsuario(e.target.value)}
           />
           <input
@@ -102,7 +103,6 @@ const Registro = () => {
 };
 
 export default Registro;
-
 
 
 

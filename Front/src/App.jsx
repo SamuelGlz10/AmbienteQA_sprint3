@@ -6,7 +6,7 @@ import "./css/App.css";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Generate from "./pages/Generate";
-import Registro from "./pages/Registro"; // Importación correcta
+import Registro from "./pages/Registro";
 import RevisionIA from "./pages/RevisionIA";
 
 function App() {
@@ -70,7 +70,10 @@ function App() {
             path="/generate" // Ruta generate
             element={isLogin ? <Generate /> : <Navigate to="/login" />} // Protección de rutas
           />
-          <Route path="/revisionIA" element={<RevisionIA />} />
+          <Route
+            path="/revisionIA"
+            element={isLogin ? <RevisionIA /> : <Navigate to="/login" />}
+          />
           <Route
             path="*" // Ruta no encontrada
             element={<Navigate to="/" />}
