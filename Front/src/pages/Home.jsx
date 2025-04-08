@@ -8,9 +8,22 @@ const Home = () => {
   const location = useLocation();
 
   const getProjects = async () => {
-    const result = await fetch("http://localhost:5001/projectsFB/");
-    const data = await result.json();
-    setProjects(data);
+    const userId = localStorage.getItem("UserID"); // Get the userId from localStorage
+
+    if (!userId) {
+      console.error("User ID not found in localStorage.");
+      return;
+    }
+
+    try {
+      const result = await fetch(
+        `http://localhost:5001/projectsFB/?userId=${userId}`
+      );
+      const data = await result.json();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
   };
 
   useEffect(() => {
