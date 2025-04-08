@@ -1,0 +1,18 @@
+{
+    "nombreProyecto": "The name of the project",
+    "descripcion": "A brief description of the project",
+    "estatus": "Abierto/Cerrado",
+    "fechaCreacion": "YYYY-MM-DD",
+    "EP": [
+      { "id": "EP01", "titulo": "Titulo de Epica", "data": "Descripcion de epica" }
+    ],
+    "RF": [
+      { "id": "RF01", "titulo": "Titulo de Requerimiento", "data": "Descricpcion de requerimiento" }
+    ],
+    "RNF": [
+      { "id": "FNR01", "titulo": "Titulo de Requerimiento", "data": "Descricpcion de requerimiento" }
+    ],
+    "HU": [
+      { "id": "HU01", "titulo": "Titulo de historia de usuario", "data": "Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])"}
+  ]
+  }

@@ -30,6 +30,7 @@ function RevisionIA() {
   ];
 
   // Transformar datos al formato requerido
+
   const transformGeneratedData = (generatedData) => {
     if (!generatedData) return null;
     
@@ -66,6 +67,8 @@ function RevisionIA() {
       try {
         setLoading(true);
         
+        // 1. Primero intentar usar datos generados (si vienen de Generate)
+
         if (location.state?.generatedText) {
           try {
             const generatedData = JSON.parse(location.state.generatedText);
@@ -74,6 +77,7 @@ function RevisionIA() {
           } catch (error) {
             console.error("Error parsing generated data:", error);
           }
+
         } else {
           // Datos de ejemplo
           const mockData = {
@@ -94,6 +98,7 @@ function RevisionIA() {
               { id: "HU01", titulo: "Como usuario quiero iniciar sesión", data: "Como usuario registrado, quiero iniciar sesión con mi email y contraseña para acceder al sistema" }
             ]
           };
+
           setProjectData(mockData);
         }
       } catch (error) {
@@ -227,7 +232,9 @@ function RevisionIA() {
   };
 
   const handleConfirm = () => {
-    console.log("Datos a guardar:", projectData);
+
+    // Aquí iría la lógica para guardar todo en la base de datos
+    console.log("Datos a guardar:", { projectData, ratings });
     alert("Proyecto confirmado y guardado correctamente");
     navigate("/home");
   };

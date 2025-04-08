@@ -15,6 +15,7 @@
   padding: 20px;
   background-color: #f8f1fc;
   box-sizing: border-box;  
+
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -44,6 +45,7 @@
   display: flex;
   margin-bottom: 20px;
   border-bottom: 2px solid #b775f0;
+
 }
 
 .tab {
@@ -311,6 +313,7 @@ td {
   resize: vertical;
   min-height: 150px;
   line-height: 1.5;
+
   font-family: Arial, Helvetica, sans-serif;
 }
 
