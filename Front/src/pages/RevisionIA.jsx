@@ -173,7 +173,7 @@ function RevisionIA() {
 
   const handleSaveEdit = async () => {
     if (!selectedItem || !projectData) return;
-
+    
     try {
       setSaveStatus({ loading: true, error: null, success: false });
       
@@ -181,31 +181,22 @@ function RevisionIA() {
       
       setProjectData(prev => {
         const updatedTab = [...prev[activeTab]];
-        const itemIndex = updatedTab.findIndex((item) => item.id === selectedItem.id);
+        const itemIndex = updatedTab.findIndex(item => item.id === selectedItem.id);
         if (itemIndex !== -1) {
           updatedTab[itemIndex] = {
             ...updatedTab[itemIndex],
             titulo: editData.title,
-            data: editData.description,
+            data: editData.description
           };
         }
-
+        
         return {
           ...prev,
-          [activeTab]: updatedTab,
+          [activeTab]: updatedTab
         };
       });
-
-      // Actualizar el estado de selectedItem para reflejar los cambios en el popup
-      setSelectedItem((prev) => ({
-        ...prev,
-        titulo: editData.title,
-        data: editData.description,
-      }));
-
+      
       setSaveStatus({ loading: false, error: null, success: true });
-
-      // Mantener el modo de edición desactivado después de guardar
       setTimeout(() => setEditing(false), 1000);
     } catch (error) {
       setSaveStatus({ loading: false, error: "Error al guardar", success: false });
@@ -216,32 +207,6 @@ function RevisionIA() {
     console.log("Datos a guardar:", { projectData, ratings });
     alert("Proyecto confirmado y guardado correctamente");
     navigate("/home");
-  };
-
-  const handleSaveProjectChanges = async () => {
-    try {
-      setSaveStatus({ loading: true, error: null, success: false });
-
-      // Simular una llamada a API
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      setSaveStatus({ loading: false, error: null, success: true });
-
-      // Actualizar el estado de projectData
-      setProjectData((prev) => ({
-        ...prev,
-        nombreProyecto: projectData.nombreProyecto,
-        descripcion: projectData.descripcion,
-      }));
-
-      // Ocultar el mensaje de éxito después de 2 segundos y salir del modo edición
-      setTimeout(() => {
-        setSaveStatus({ loading: false, error: null, success: false });
-        setEditingProject(false); // Salir del modo edición
-      }, 2000);
-    } catch (error) {
-      setSaveStatus({ loading: false, error: "Error al guardar", success: false });
-    }
   };
 
   if (loading) {
@@ -272,62 +237,8 @@ function RevisionIA() {
   return (
     <div className="page-container">
       <div className="full-width-header">
-        {editingProject ? (
-          <>
-            <label htmlFor="project-name" className="label-title">Nombre del Proyecto:</label>
-            <input
-              id="project-name"
-              type="text"
-              name="nombreProyecto"
-              value={projectData.nombreProyecto}
-              onChange={(e) =>
-                setProjectData((prev) => ({
-                  ...prev,
-                  nombreProyecto: e.target.value,
-                }))
-              }
-              className="edit-input"
-            />
-            <label htmlFor="project-description" className="label-title">Descripción:</label>
-            <textarea
-              id="project-description"
-              name="descripcion"
-              value={projectData.descripcion}
-              onChange={(e) =>
-                setProjectData((prev) => ({
-                  ...prev,
-                  descripcion: e.target.value,
-                }))
-              }
-              className="edit-textarea"
-              rows="4"
-            />
-          </>
-        ) : (
-          <>
-            <h2>Revisión de datos - {projectData.nombreProyecto}</h2>
-            <p className="project-description">{projectData.descripcion}</p>
-          </>
-        )}
-        <div className="center-button-container">
-          <button
-            className="edit-project-button"
-            onClick={editingProject ? handleSaveProjectChanges : () => setEditingProject(true)}
-            disabled={saveStatus.loading}
-          >
-            {editingProject
-              ? saveStatus.loading
-                ? "Guardando..."
-                : "Guardar Cambios"
-              : "Editar Proyecto"}
-          </button>
-        </div>
-        {saveStatus.success && (
-          <div className="save-success">¡Cambios guardados!</div>
-        )}
-        {saveStatus.error && (
-          <div className="save-error">{saveStatus.error}</div>
-        )}
+        <h2>Revisión de datos - {projectData.nombreProyecto}</h2>
+        <p className="project-description">{projectData.descripcion}</p>
       </div>
 
       <div className="revision-container">
