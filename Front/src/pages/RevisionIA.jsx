@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
+<<<<<<< HEAD
+=======
+import DragAndDropTable from "../components/DragAndDropTable.jsx";
+>>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
 import "../css/RevisionIA.css";
 
 function RevisionIA() {
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
+<<<<<<< HEAD
   const [ratings, setRatings] = useState({
     RF: {},
     RNF: {},
@@ -17,11 +22,34 @@ function RevisionIA() {
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState("");
+=======
+  const [ratings, setRatings] = useState({});
+  const [requirements, setRequirements] = useState([]);
+
+  useEffect(() => {
+    // Cargar los datos desde la API
+    const fetchData = async () => {
+      try {
+        const requirementsResponse = await fetch("http://localhost:5001/projectsFB/");
+        if (!requirementsResponse.ok) {
+          throw new Error(`Error HTTP: ${requirementsResponse.status}`);
+        }
+        const requirementsData = await requirementsResponse.json();
+        setRequirements(requirementsData);
+      } catch (error) {
+        console.error("Error al cargar los datos desde la API:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+>>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
     { id: "RNF", title: "RNF", fullText: "Requerimientos no funcionales" },
     { id: "HU", title: "HU", fullText: "Historias de usuario" },
+<<<<<<< HEAD
     { id: "EP", title: "EP", fullText: "Epicas" }
   ];
 
@@ -57,11 +85,16 @@ function RevisionIA() {
 
     fetchData();
   }, []);
+=======
+    { id: "EP", title: "EP", fullText: "Epicas" },
+  ];
+>>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
 
   const toggleExpand = (tabId) => {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
 
+<<<<<<< HEAD
   const InteractiveStars = ({ tabId, requirementId }) => {
     const currentRating = ratings[tabId]?.[requirementId] || 0;
     
@@ -161,6 +194,8 @@ function RevisionIA() {
     return <div className="page-container">No se pudieron cargar los datos del proyecto.</div>;
   }
 
+=======
+>>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
   return (
     <div className="page-container">
       <div className="full-width-header">
@@ -188,6 +223,7 @@ function RevisionIA() {
           ))}
         </div>
 
+<<<<<<< HEAD
         <div className="table">
           <table>
             <thead>
@@ -242,6 +278,14 @@ function RevisionIA() {
             {showDeleteIcons ? "Cancelar" : "Eliminar"}
           </button>
         </div>
+=======
+        <DragAndDropTable
+          requirements={requirements}
+          setRequirements={setRequirements}
+          ratings={ratings}
+          setRatings={setRatings}
+        />
+>>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
       </div>
 
       {/* Popup para mostrar detalles */}
