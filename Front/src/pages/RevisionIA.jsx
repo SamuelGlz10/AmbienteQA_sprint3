@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from "react";
-<<<<<<< HEAD
-=======
-import DragAndDropTable from "../components/DragAndDropTable.jsx";
->>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
+import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
 
 function RevisionIA() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
-<<<<<<< HEAD
   const [ratings, setRatings] = useState({
     RF: {},
     RNF: {},
@@ -21,84 +19,103 @@ function RevisionIA() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editData, setEditData] = useState("");
-=======
-  const [ratings, setRatings] = useState({});
-  const [requirements, setRequirements] = useState([]);
-
-  useEffect(() => {
-    // Cargar los datos desde la API
-    const fetchData = async () => {
-      try {
-        const requirementsResponse = await fetch("http://localhost:5001/projectsFB/");
-        if (!requirementsResponse.ok) {
-          throw new Error(`Error HTTP: ${requirementsResponse.status}`);
-        }
-        const requirementsData = await requirementsResponse.json();
-        setRequirements(requirementsData);
-      } catch (error) {
-        console.error("Error al cargar los datos desde la API:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
->>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
+  const [editData, setEditData] = useState({ title: "", description: "" });
+  const [saveStatus, setSaveStatus] = useState({ loading: false, error: null, success: false });
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
     { id: "RNF", title: "RNF", fullText: "Requerimientos no funcionales" },
     { id: "HU", title: "HU", fullText: "Historias de usuario" },
-<<<<<<< HEAD
     { id: "EP", title: "EP", fullText: "Epicas" }
   ];
 
+  // Transformar datos al formato requerido
+  const transformGeneratedData = (generatedData) => {
+    if (!generatedData) return null;
+    
+    return {
+      nombreProyecto: generatedData.projectName || "Proyecto sin nombre",
+      descripcion: generatedData.description || "Sin descripción",
+      estatus: "Abierto",
+      fechaCreacion: new Date().toISOString().split('T')[0],
+      EP: generatedData.epics?.map((epic, i) => ({
+        id: `EP${i+1}`,
+        titulo: epic.title || `Épica ${i+1}`,
+        data: epic.data || "Sin descripción"
+      })) || [],
+      RF: generatedData.functionalRequirements?.map((req, i) => ({
+        id: `RF${i+1}`,
+        titulo: req.title || `Requerimiento funcional ${i+1}`,
+        data: req.data || "Sin descripción"
+      })) || [],
+      RNF: generatedData.nonFunctionalRequirements?.map((req, i) => ({
+        id: `RNF${i+1}`,
+        titulo: req.title || `Requerimiento no funcional ${i+1}`,
+        data: req.data || "Sin descripción"
+      })) || [],
+      HU: generatedData.userStories?.map((story, i) => ({
+        id: `HU${i+1}`,
+        titulo: story.title || `Historia de usuario ${i+1}`,
+        data: story.data || "Sin descripción"
+      })) || []
+    };
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
+    const loadData = async () => {
       try {
-        const mockData = {
-          nombreProyecto: "The name of the project",
-          descripcion: "A brief description of the project",
-          estatus: "Abierto",
-          fechaCreacion: "2023-01-01",
-          EP: [
-            { id: "EP01", titulo: "Titulo de Epica", data: "Descripcion de epica" }
-          ],
-          RF: [
-            { id: "RF01", titulo: "Titulo de Requerimiento", data: "Descricpcion de requerimiento" }
-          ],
-          RNF: [
-            { id: "FNR01", titulo: "Titulo de Requerimiento", data: "Descricpcion de requerimiento" }
-          ],
-          HU: [
-            { id: "HU01", titulo: "Titulo de historia de usuario", data: "Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])" }
-          ]
-        };
+        setLoading(true);
         
-        setProjectData(mockData);
-        setLoading(false);
+        if (location.state?.generatedText) {
+          try {
+            const generatedData = JSON.parse(location.state.generatedText);
+            const transformedData = transformGeneratedData(generatedData);
+            setProjectData(transformedData);
+          } catch (error) {
+            console.error("Error parsing generated data:", error);
+          }
+        } else {
+          // Datos de ejemplo
+          const mockData = {
+            nombreProyecto: "Sistema de Gestión de Proyectos",
+            descripcion: "Plataforma para gestión ágil de proyectos de desarrollo",
+            estatus: "Abierto",
+            fechaCreacion: "2023-10-15",
+            EP: [
+              { id: "EP01", titulo: "Gestión de Requerimientos", data: "Épica para manejar todos los requerimientos del sistema" }
+            ],
+            RF: [
+              { id: "RF01", titulo: "Registro de usuarios", data: "El sistema debe permitir el registro de nuevos usuarios con email y contraseña" }
+            ],
+            RNF: [
+              { id: "RNF01", titulo: "Seguridad de datos", data: "Todos los datos sensibles deben estar encriptados usando AES-256" }
+            ],
+            HU: [
+              { id: "HU01", titulo: "Como usuario quiero iniciar sesión", data: "Como usuario registrado, quiero iniciar sesión con mi email y contraseña para acceder al sistema" }
+            ]
+          };
+          setProjectData(mockData);
+        }
       } catch (error) {
-        console.error("Error al cargar los datos:", error);
+        console.error("Error loading data:", error);
+      } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, []);
-=======
-    { id: "EP", title: "EP", fullText: "Epicas" },
-  ];
->>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
+    loadData();
+  }, [location.state]);
 
   const toggleExpand = (tabId) => {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
 
-<<<<<<< HEAD
-  const InteractiveStars = ({ tabId, requirementId }) => {
+  const InteractiveStars = ({ tabId, requirementId, interactive = true }) => {
     const currentRating = ratings[tabId]?.[requirementId] || 0;
     
     const handleStarClick = (selectedRating) => {
+      if (!interactive) return;
+      
       setRatings(prev => ({
         ...prev,
         [tabId]: {
@@ -109,7 +126,7 @@ function RevisionIA() {
     };
 
     return (
-      <div className="stars-container">
+      <div className={`stars-container ${interactive ? 'interactive' : ''}`}>
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
@@ -125,6 +142,10 @@ function RevisionIA() {
 
   const handleDeleteItem = (tabId, id) => {
     if (!projectData) return;
+    
+    if (!window.confirm("¿Estás seguro de que quieres eliminar este elemento?")) {
+      return;
+    }
     
     setProjectData(prev => ({
       ...prev,
@@ -146,7 +167,10 @@ function RevisionIA() {
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
-    setEditData(item.data);
+    setEditData({
+      title: item.titulo,
+      description: item.data
+    });
     setEditing(false);
     setShowPopup(true);
   };
@@ -154,52 +178,89 @@ function RevisionIA() {
   const closePopup = () => {
     setShowPopup(false);
     setEditing(false);
+    setSaveStatus({ loading: false, error: null, success: false });
   };
 
   const handleEditClick = () => {
     setEditing(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!selectedItem || !projectData) return;
     
-    setProjectData(prev => {
-      const updatedTab = [...prev[activeTab]];
-      const itemIndex = updatedTab.findIndex(item => item.id === selectedItem.id);
-      if (itemIndex !== -1) {
-        updatedTab[itemIndex] = {
-          ...updatedTab[itemIndex],
-          data: editData
-        };
-      }
+    try {
+      setSaveStatus({ loading: true, error: null, success: false });
       
-      return {
-        ...prev,
-        [activeTab]: updatedTab
-      };
-    });
-    
-    setEditing(false);
+      // Simular una llamada a API
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setProjectData(prev => {
+        const updatedTab = [...prev[activeTab]];
+        const itemIndex = updatedTab.findIndex(item => item.id === selectedItem.id);
+        if (itemIndex !== -1) {
+          updatedTab[itemIndex] = {
+            ...updatedTab[itemIndex],
+            titulo: editData.title,
+            data: editData.description
+          };
+        }
+        
+        return {
+          ...prev,
+          [activeTab]: updatedTab
+        };
+      });
+      
+      setSaveStatus({ loading: false, error: null, success: true });
+      setTimeout(() => setEditing(false), 1000);
+    } catch (error) {
+      setSaveStatus({ loading: false, error: "Error al guardar", success: false });
+    }
   };
 
-  const handleEditChange = (e) => {
-    setEditData(e.target.value);
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleConfirm = () => {
+    console.log("Datos a guardar:", projectData);
+    alert("Proyecto confirmado y guardado correctamente");
+    navigate("/home");
   };
 
   if (loading) {
-    return <div className="page-container">Cargando datos...</div>;
+    return (
+      <div className="page-container">
+        <div className="loading-spinner">
+          <div></div>
+          <p>Cargando proyecto...</p>
+        </div>
+      </div>
+    );
   }
 
   if (!projectData) {
-    return <div className="page-container">No se pudieron cargar los datos del proyecto.</div>;
+    return (
+      <div className="page-container">
+        <div className="error-message">
+          <h3>No se pudieron cargar los datos del proyecto</h3>
+          <button onClick={() => navigate("/generate")}>
+            Volver a Generar Proyecto
+          </button>
+        </div>
+      </div>
+    );
   }
 
-=======
->>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
   return (
     <div className="page-container">
       <div className="full-width-header">
         <h2>Revisión de datos - {projectData.nombreProyecto}</h2>
+        <p className="project-description">{projectData.descripcion}</p>
       </div>
 
       <div className="revision-container">
@@ -223,101 +284,138 @@ function RevisionIA() {
           ))}
         </div>
 
-<<<<<<< HEAD
-        <div className="table">
+        <div className="table-container">
           <table>
             <thead>
               <tr>
-                <th>{activeTab === "RF" ? "Requerimientos funcionales" : 
-                     activeTab === "RNF" ? "Requerimientos no funcionales" :
-                     activeTab === "HU" ? "Historias de usuario" : "Epicas"}</th>
+                <th>
+                  {activeTab === "RF" ? "Requerimientos funcionales" : 
+                   activeTab === "RNF" ? "Requerimientos no funcionales" :
+                   activeTab === "HU" ? "Historias de usuario" : "Epicas"}
+                </th>
                 <th>Valoración</th>
-                {showDeleteIcons && <th></th>}
+                {showDeleteIcons && <th>Acciones</th>}
               </tr>
             </thead>
             <tbody>
-              {projectData[activeTab]?.map((req) => (
-                <tr key={req.id}>
-                  <td 
-                    className="clickable-title"
-                    onClick={() => handleItemClick(req)}
-                  >
-                    {req.titulo}
-                  </td>
-                  <td>
-                    <InteractiveStars tabId={activeTab} requirementId={req.id} />
-                  </td>
-                  {showDeleteIcons && (
-                    <td className="delete-cell">
-                      <button 
-                        className="delete-icon" 
-                        onClick={() => handleDeleteItem(activeTab, req.id)}
-                        aria-label="Eliminar"
-                      >
-                        ×
-                      </button>
+              {projectData[activeTab]?.length > 0 ? (
+                projectData[activeTab].map((item) => (
+                  <tr key={item.id}>
+                    <td 
+                      className="clickable-title"
+                      onClick={() => handleItemClick(item)}
+                    >
+                      {item.titulo}
                     </td>
-                  )}
+                    <td>
+                      <InteractiveStars 
+                        tabId={activeTab} 
+                        requirementId={item.id} 
+                      />
+                    </td>
+                    {showDeleteIcons && (
+                      <td className="actions-cell">
+                        <button 
+                          className="delete-icon" 
+                          onClick={() => handleDeleteItem(activeTab, item.id)}
+                          aria-label="Eliminar"
+                        >
+                          ×
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={showDeleteIcons ? 3 : 2} className="no-items">
+                    No hay elementos en esta categoría
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
 
-        <div className="buttons">
+        <div className="buttons-container">
           <button 
-            className="confirm"
-            onClick={() => console.log("Ratings guardados:", {projectData, ratings})}
+            className="confirm-button"
+            onClick={handleConfirm}
           >
             Confirmar
           </button>
           <button 
-            className="delete"
+            className={`delete-button ${showDeleteIcons ? 'cancel' : ''}`}
             onClick={toggleDeleteMode}
           >
-            {showDeleteIcons ? "Cancelar" : "Eliminar"}
+            {showDeleteIcons ? "Cancelar" : "Modo Eliminación"}
           </button>
         </div>
-=======
-        <DragAndDropTable
-          requirements={requirements}
-          setRequirements={setRequirements}
-          ratings={ratings}
-          setRatings={setRatings}
-        />
->>>>>>> 6bfcbbcc98966450ad17d472376a67e8aaaddac7
       </div>
 
-      {/* Popup para mostrar detalles */}
+      {/* Popup de detalles */}
       {showPopup && selectedItem && (
         <div className="popup-overlay" onClick={closePopup}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <button className="popup-close" onClick={closePopup}>×</button>
-            <h3 className="popup-title">{selectedItem.titulo}</h3>
-            <div className="popup-details">
-              <p><strong>ID:</strong> {selectedItem.id}</p>
-              <p><strong>Descripción:</strong></p>
-              {editing ? (
-                <textarea
-                  value={editData}
-                  onChange={handleEditChange}
-                  className="edit-textarea"
-                  rows="5"
-                />
-              ) : (
-                <p>{selectedItem.data}</p>
-              )}
+            
+            <div className="popup-header">
+              <h3 className="popup-title">{selectedItem.titulo}</h3>
+              <p className="popup-id"><strong>ID:</strong> {selectedItem.id}</p>
             </div>
+            
+            <div className="popup-body">
+              <div className="description-section">
+                <h4>Descripción:</h4>
+                {editing ? (
+                  <textarea
+                    name="description"
+                    value={editData.description}
+                    onChange={handleInputChange}
+                    className="edit-textarea"
+                    rows="8"
+                  />
+                ) : (
+                  <div className="description-text">
+                    {selectedItem.data}
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <div className="popup-footer">
+              {saveStatus.success && (
+                <div className="save-success">¡Cambios guardados!</div>
+              )}
+              {saveStatus.error && (
+                <div className="save-error">{saveStatus.error}</div>
+              )}
+              
               {editing ? (
-                <button className="popup-save" onClick={handleSaveEdit}>
-                  Guardar cambios
-                </button>
+                <>
+                  <button 
+                    className="popup-button secondary"
+                    onClick={() => {
+                      setEditing(false);
+                      setSaveStatus({ loading: false, error: null, success: false });
+                    }}
+                    disabled={saveStatus.loading}
+                  >
+                    Cancelar
+                  </button>
+                  <button 
+                    className="popup-button primary"
+                    onClick={handleSaveEdit}
+                    disabled={saveStatus.loading}
+                  >
+                    {saveStatus.loading ? "Guardando..." : "Guardar Cambios"}
+                  </button>
+                </>
               ) : (
-                <button className="popup-edit" onClick={handleEditClick}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                  </svg>
+                <button 
+                  className="popup-button primary"
+                  onClick={handleEditClick}
+                >
                   Editar
                 </button>
               )}
