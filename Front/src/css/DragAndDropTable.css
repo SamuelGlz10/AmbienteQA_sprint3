@@ -1,0 +1,27 @@
+tr[draggable] {
+    background-color: #f9f9f9;
+    transition: background-color 0.2s ease;
+  }
+  
+  tr[draggable]:hover {
+    background-color: #e0e0e0;
+    cursor: grab;
+  }
+  
+  tr[draggable]:active {
+    cursor: grabbing;
+  }
+  
+  .stars-container {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .star {
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .star.filled {
+    color: gold;
+  }

@@ -5,6 +5,7 @@ export const login = async (req, res) => {
     const pool = await sqlConnect();
     const data = await pool
       .request()
+
       .input("email", sql.VarChar, req.body.email)
       .query("SELECT * FROM dbo.Users WHERE email = @email");
 
