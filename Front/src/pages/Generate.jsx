@@ -56,11 +56,10 @@ function Generate() {
         headers: { "Content-Type": "application/json" },
 
         body: JSON.stringify({ prompt: prompt, rules: promptRules }),
-
       });
       const response = await result.json();
       const generatedText = response.data;
-      // navigate("/home", { state: { generatedText } }); // Regresar el texto generado a la página de inicio
+      navigate("/revisionIA", { state: { generatedText } }); // Regresar el texto generado a la página de inicio
       alert(generatedText); // Aquí se muestra el mensaje de que se generó el texto
     } catch (error) {
       // En caso de error
@@ -278,6 +277,13 @@ function Generate() {
             </button>
           </Box>
         </Box>
+        <button
+          className="main-button"
+          type="button"
+          onClick={() => navigate("/revisionIA")}
+        >
+          Prueba
+        </button>
       </form>
       {/* Pantalla de carga */}
       {loading && (
