@@ -8,11 +8,14 @@
 }
 
 .full-width-header {
-  width: 100%;
+  width: 100vw;           
+  margin-left: -50vw;     
+  left: 50%;              
+  position: relative;     
   padding: 20px;
   background-color: #f8f1fc;
-  border-radius: 10px;
-  margin-bottom: 30px;
+  box-sizing: border-box;  
+
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
@@ -41,7 +44,8 @@
 .tabs-container {
   display: flex;
   margin-bottom: 20px;
-  border-bottom: 2px solid #e0d0ee;
+  border-bottom: 2px solid #b775f0;
+
 }
 
 .tab {
@@ -49,19 +53,22 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 16px;  
   font-weight: 600;
   color: #7a5a96;
+  background-color: #f0e5fa;
   position: relative;
   transition: all 0.3s ease;
 }
 
 .tab:hover {
-  color: #5d3a7f;
+  color: #7a5a96
 }
 
 .tab.active {
-  color: #5d3a7f;
+  color: #f8f1fc;
+  background-color: #9e72be;
+  border: none;
 }
 
 .tab.active::after {
@@ -171,19 +178,18 @@ td {
 }
 
 .delete-button {
-  background-color: #f0e5fa;
-  color: #9e72be;
-  border: 2px solid #9e72be;
+  background-color: #ff7b7b;
+  color: #ffffff;
   padding: 10px 20px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 600;
   transition: all 0.3s;
-}
+} 
 
 .delete-button:hover {
-  background-color: #f8f1fc;
+  background-color: #ffd1d1;
 }
 
 .delete-button.cancel {
@@ -248,7 +254,12 @@ td {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #999;
+  color: #dc3545;
+}
+
+
+.popup-close:hover {
+  color: #7f3a3a;
 }
 
 .popup-title {
@@ -294,7 +305,7 @@ td {
 }
 
 .edit-textarea {
-  width: 100%;
+  width:90%;
   padding: 15px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -302,6 +313,8 @@ td {
   resize: vertical;
   min-height: 150px;
   line-height: 1.5;
+
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .popup-footer {
@@ -342,13 +355,11 @@ td {
 .save-success {
   color: #28a745;
   font-weight: 600;
-  margin-right: auto;
 }
 
 .save-error {
   color: #dc3545;
   font-weight: 600;
-  margin-right: auto;
 }
 
 /* Loading */
@@ -433,4 +444,73 @@ td {
   .confirm-button, .delete-button {
     width: 100%;
   }
+}
+
+/* Edit Input */
+.edit-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+.label-title {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 4px;
+  display: block;
+  color: #333;
+}
+
+/* Edit Project Button */
+.edit-project-button {
+  background-color: #9e72be;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.edit-project-button:hover {
+  background-color: #7a5a96;
+}
+
+.edit-input,
+.edit-textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-input:focus,
+.edit-textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+/* Center Button Container */
+.center-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
