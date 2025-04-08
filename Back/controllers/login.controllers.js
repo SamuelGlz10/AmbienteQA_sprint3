@@ -6,7 +6,7 @@ export const login = async (req, res) => {
     const data = await pool
       .request()
       .input("username", sql.VarChar, req.body.username)
-      .query("SELECT * FROM Users WHERE username = @username");
+      .query("SELECT * FROM Users WHERE email = @username");
 
     // console.log(data.recordset);
 
