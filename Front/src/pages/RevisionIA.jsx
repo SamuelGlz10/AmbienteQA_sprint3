@@ -7,20 +7,20 @@ function RevisionIA() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
-  const [ratings, setRatings] = useState({
-    RF: {},
-    RNF: {},
-    HU: {},
-    EP: {}
-  });
+  const [ratings, setRatings] = useState({ RF: {}, RNF: {}, HU: {}, EP: {} });
   const [showDeleteIcons, setShowDeleteIcons] = useState(false);
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({ title: "", description: "" });
-  const [saveStatus, setSaveStatus] = useState({ loading: false, error: null, success: false });
+  const [saveStatus, setSaveStatus] = useState({ 
+    loading: false, 
+    error: null, 
+    success: false 
+  });
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -29,35 +29,38 @@ function RevisionIA() {
     { id: "EP", title: "EP", fullText: "Epicas" }
   ];
 
-  // Transformar datos del formato Generate al formato que espera RevisionIA
-  const transformGeneratedData = (generatedData) => {
-    if (!generatedData) return null;
-    
+  const transformGeneratedData = (data) => {
+    const parseSection = (section, prefix) => {
+      if (!section) return [];
+      
+      if (Array.isArray(section)) {
+        return section.map((item, i) => ({
+          id: item.id || `${prefix}${(i + 1).toString().padStart(2, '0')}`,
+          titulo: item.title || item.titulo || `${prefix} ${i + 1}`,
+          data: item.data || item.descripcion || "Sin descripción"
+        }));
+      }
+      
+      if (typeof section === 'object') {
+        return Object.entries(section).map(([titulo, data], i) => ({
+          id: `${prefix}${(i + 1).toString().padStart(2, '0')}`,
+          titulo,
+          data: data || "Sin descripción"
+        }));
+      }
+      
+      return [];
+    };
+
     return {
-      nombreProyecto: generatedData.projectName || "Proyecto sin nombre",
-      descripcion: generatedData.description || "Sin descripción",
-      estatus: "Abierto",
-      fechaCreacion: new Date().toISOString().split('T')[0],
-      EP: generatedData.epics?.map((epic, i) => ({
-        id: `EP${i+1}`,
-        titulo: epic.title || `Épica ${i+1}`,
-        data: epic.data || "Sin descripción"
-      })) || [],
-      RF: generatedData.functionalRequirements?.map((req, i) => ({
-        id: `RF${i+1}`,
-        titulo: req.title || `Requerimiento funcional ${i+1}`,
-        data: req.data || "Sin descripción"
-      })) || [],
-      RNF: generatedData.nonFunctionalRequirements?.map((req, i) => ({
-        id: `RNF${i+1}`,
-        titulo: req.title || `Requerimiento no funcional ${i+1}`,
-        data: req.data || "Sin descripción"
-      })) || [],
-      HU: generatedData.userStories?.map((story, i) => ({
-        id: `HU${i+1}`,
-        titulo: story.title || `Historia de usuario ${i+1}`,
-        data: story.data || "Sin descripción"
-      })) || []
+      nombreProyecto: data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+      descripcion: data.description || data.descripcion || "Sin descripción",
+      estatus: data.estatus || "Abierto",
+      fechaCreacion: data.fechaCreacion || new Date().toISOString().split('T')[0],
+      EP: parseSection(data.epics || data.EP, "EP"),
+      RF: parseSection(data.functionalRequirements || data.RF, "RF"),
+      RNF: parseSection(data.nonFunctionalRequirements || data.RNF, "RNF"),
+      HU: parseSection(data.userStories || data.HU, "HU")
     };
   };
 
@@ -65,39 +68,37 @@ function RevisionIA() {
     const loadData = async () => {
       try {
         setLoading(true);
+        setError(null);
+
+        if (!location.state?.generatedText) {
+          throw new Error("No se recibieron datos del proyecto");
+        }
+
+        let jsonData = location.state.generatedText
+          .replace(/```json|```/g, '')
+          .replace(/'/g, '"')
+          .trim();
+
+        const parsedData = JSON.parse(jsonData);
+        const transformedData = transformGeneratedData(parsedData);
+
+        console.log("Datos transformados:", transformedData);
+        setProjectData(transformedData);
+
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+        setError(`Error al procesar los datos: ${err.message}`);
         
-        // 1. Primero intentar usar datos generados (si vienen de Generate)
-        if (location.state?.generatedText) {
-          try {
-            const generatedData = JSON.parse(location.state.generatedText);
-            const transformedData = transformGeneratedData(generatedData);
-            setProjectData(transformedData);
-          } catch (error) {
-            console.error("Error parsing generated data:", error);
-          }
-        }
-        // 2. Si no hay datos generados, cargar datos mock (para desarrollo)
-        else {
-          const mockData = transformGeneratedData({
-            projectName: "Proyecto de ejemplo",
-            description: "Este es un proyecto generado automáticamente",
-            epics: [
-              { title: "Épica principal", data: "Descripción de la épica principal" }
-            ],
-            functionalRequirements: [
-              { title: "RF1", data: "El sistema debe permitir..." }
-            ],
-            nonFunctionalRequirements: [
-              { title: "RNF1", data: "El sistema debe responder en menos de 2 segundos" }
-            ],
-            userStories: [
-              { title: "HU1", data: "Como usuario quiero..." }
-            ]
-          });
-          setProjectData(mockData);
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
+        setProjectData({
+          nombreProyecto: "Proyecto de Ejemplo",
+          descripcion: "Datos de ejemplo cargados por error en los datos originales",
+          estatus: "Abierto",
+          fechaCreacion: new Date().toISOString().split('T')[0],
+          EP: [{ id: "EP01", titulo: "Ejemplo Épica", data: "Descripción de épica de ejemplo" }],
+          RF: [{ id: "RF01", titulo: "Ejemplo RF", data: "Descripción de requerimiento funcional" }],
+          RNF: [{ id: "RNF01", titulo: "Ejemplo RNF", data: "Descripción de requerimiento no funcional" }],
+          HU: [{ id: "HU01", titulo: "Ejemplo HU", data: "Como usuario quiero..." }]
+        });
       } finally {
         setLoading(false);
       }
@@ -110,12 +111,10 @@ function RevisionIA() {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
 
-  const InteractiveStars = ({ tabId, requirementId, interactive = true }) => {
+  const InteractiveStars = ({ tabId, requirementId }) => {
     const currentRating = ratings[tabId]?.[requirementId] || 0;
     
     const handleStarClick = (selectedRating) => {
-      if (!interactive) return;
-      
       setRatings(prev => ({
         ...prev,
         [tabId]: {
@@ -126,7 +125,7 @@ function RevisionIA() {
     };
 
     return (
-      <div className={`stars-container ${interactive ? 'interactive' : ''}`}>
+      <div className="stars-container interactive">
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
@@ -161,28 +160,15 @@ function RevisionIA() {
     });
   };
 
-  const toggleDeleteMode = () => {
-    setShowDeleteIcons(!showDeleteIcons);
-  };
-
   const handleItemClick = (item) => {
     setSelectedItem(item);
     setEditData({
       title: item.titulo,
       description: item.data
     });
-    setEditing(false);
     setShowPopup(true);
-  };
-
-  const closePopup = () => {
-    setShowPopup(false);
     setEditing(false);
     setSaveStatus({ loading: false, error: null, success: false });
-  };
-
-  const handleEditClick = () => {
-    setEditing(true);
   };
 
   const handleSaveEdit = async () => {
@@ -191,7 +177,6 @@ function RevisionIA() {
     try {
       setSaveStatus({ loading: true, error: null, success: false });
       
-      // Simular una llamada a API
       await new Promise(resolve => setTimeout(resolve, 800));
       
       setProjectData(prev => {
@@ -218,16 +203,7 @@ function RevisionIA() {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
   const handleConfirm = () => {
-    // Aquí iría la lógica para guardar todo en la base de datos
     console.log("Datos a guardar:", { projectData, ratings });
     alert("Proyecto confirmado y guardado correctamente");
     navigate("/home");
@@ -244,11 +220,12 @@ function RevisionIA() {
     );
   }
 
-  if (!projectData) {
+  if (error) {
     return (
       <div className="page-container">
         <div className="error-message">
-          <h3>No se pudieron cargar los datos del proyecto</h3>
+          <h3>{error}</h3>
+          <p>Se cargaron datos de ejemplo para continuar.</p>
           <button onClick={() => navigate("/generate")}>
             Volver a Generar Proyecto
           </button>
@@ -347,32 +324,22 @@ function RevisionIA() {
           </button>
           <button 
             className={`delete-button ${showDeleteIcons ? 'cancel' : ''}`}
-            onClick={toggleDeleteMode}
+            onClick={() => setShowDeleteIcons(!showDeleteIcons)}
           >
             {showDeleteIcons ? "Cancelar" : "Modo Eliminación"}
           </button>
         </div>
       </div>
 
-      {/* Popup de detalles */}
       {showPopup && selectedItem && (
-        <div className="popup-overlay" onClick={closePopup}>
+        <div className="popup-overlay" onClick={() => setShowPopup(false)}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-            <button className="popup-close" onClick={closePopup}>×</button>
+            <button className="popup-close" onClick={() => setShowPopup(false)}>×</button>
             
-            <h3 className="popup-title">
-              {editing ? (
-                <input
-                  type="text"
-                  name="title"
-                  value={editData.title}
-                  onChange={handleInputChange}
-                  className="edit-title-input"
-                />
-              ) : (
-                selectedItem.titulo
-              )}
-            </h3>
+            <div className="popup-header">
+              <h3 className="popup-title">{selectedItem.titulo}</h3>
+              <p className="popup-id"><strong>ID:</strong> {selectedItem.id}</p>
+            </div>
             
             <div className="popup-details">
               <p><strong>ID:</strong> {selectedItem.id}</p>
@@ -380,13 +347,26 @@ function RevisionIA() {
               <div className="description-section">
                 <p><strong>Descripción:</strong></p>
                 {editing ? (
-                  <textarea
-                    name="description"
-                    value={editData.description}
-                    onChange={handleInputChange}
-                    className="edit-textarea"
-                    rows="6"
-                  />
+                  <>
+                    <TextField
+                      name="title"
+                      value={editData.title}
+                      onChange={(e) => setEditData({...editData, title: e.target.value})}
+                      label="Título"
+                      fullWidth
+                      margin="normal"
+                    />
+                    <TextField
+                      name="description"
+                      value={editData.description}
+                      onChange={(e) => setEditData({...editData, description: e.target.value})}
+                      label="Descripción"
+                      multiline
+                      rows={6}
+                      fullWidth
+                      margin="normal"
+                    />
+                  </>
                 ) : (
                   <div className="description-text">{selectedItem.data}</div>
                 )}
@@ -414,10 +394,7 @@ function RevisionIA() {
                 <>
                   <button 
                     className="popup-button secondary"
-                    onClick={() => {
-                      setEditing(false);
-                      setSaveStatus({ loading: false, error: null, success: false });
-                    }}
+                    onClick={() => setEditing(false)}
                     disabled={saveStatus.loading}
                   >
                     Cancelar
@@ -433,7 +410,7 @@ function RevisionIA() {
               ) : (
                 <button 
                   className="popup-button primary"
-                  onClick={handleEditClick}
+                  onClick={() => setEditing(true)}
                 >
                   Editar Elemento
                 </button>
