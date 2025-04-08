@@ -1,15 +1,14 @@
-
 import { Box, TextField, Typography, Button } from "@mui/material";
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "../css/Login.css"; // Asegúrate de que la ruta es correcta
+import "../css/Login.css"; 
 
 const Login = ({ tryLogin }) => {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const getTest = async () => {
@@ -33,20 +32,20 @@ const Login = ({ tryLogin }) => {
 
   const onsubmit = async (e) => {
     e.preventDefault();
-    if (!username || !password) {
+    if (!email || !password) {
       alert("Favor de llenar todos los campos.");
       return;
     }
 
-    const isLogin = await tryLogin({ username, password });
+    const isLogin = await tryLogin({ email, password });
 
     if (isLogin) {
-      setUsername("");
+      setEmail("");
       setPassword("");
       alert("Login logrado!");
       navigate("/dungeon");
     } else {
-      alert("Login fallido: Usuario o contraseña incorrectos.");
+      alert("Login fallido: Email o contraseña incorrectos.");
     }
   };
 
@@ -63,7 +62,7 @@ const Login = ({ tryLogin }) => {
         <p className="login-text">
         Si todavía no tienes una cuenta.         
         <br /> <br />
-        <a href="/register" className="register-link">¡Regístrate Aquí!</a>
+        <span className="register-link" onClick={goToRegister}>¡Regístrate Aquí!</span>
         </p>
         <img src="/Login.png" alt="Login Illustration" className="illustration" />
       </div>
@@ -73,10 +72,10 @@ const Login = ({ tryLogin }) => {
           <h2 className="form-title">Inicio de Sesión</h2>
           <input
             className="input"
-            type="text"
-            placeholder="Usuario"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            placeholder="Correo Electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <input
             className="input"
@@ -95,4 +94,5 @@ const Login = ({ tryLogin }) => {
 };
 
 export default Login;
+
 
