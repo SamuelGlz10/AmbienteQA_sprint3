@@ -3,7 +3,8 @@ import { sqlConnect, sql } from "../utils/sql.js";
 
 export const getProjects = async (req, res) => {
   try {
-    const { userId } = req.params; // Obtener el userId de los parámetros de la solicitud
+    const { userId } = req.query; // Obtener el userId de la query de la solicitud
+    console.log("User ID:", userId); // Log para verificar el userId recibido
 
     // Validar que se haya proporcionado el userId
     if (!userId) {
@@ -18,6 +19,7 @@ export const getProjects = async (req, res) => {
       .query("SELECT ProjectID FROM Users_Projects WHERE UserID = @userId"); // Query para obtener los IDs del usuario
 
     const projectIds = userProjects.recordset.map((row) => row.ProjectID); // Obtener los IDs de los proyectos
+    console.log("Project IDs:", projectIds); // Log para verificar los IDs obtenidos
 
     if (projectIds.length === 0) {
       return res.json([]); // Si no hay proyectos, devolver un array vacío

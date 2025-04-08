@@ -32,7 +32,7 @@ function App() {
       if (data.isLogin) {
         setIsLogin(true);
         localStorage.setItem("isLogin", "true");
-        localStorage.setItem("userId", data.userId); // Guardar el userId en localStorage
+        localStorage.setItem("UserID", data.user.UserID); // Guardar el userId en localStorage
         return true;
       } else {
         setIsLogin(false);
