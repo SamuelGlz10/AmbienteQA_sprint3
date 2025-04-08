@@ -1,19 +1,43 @@
 import db from "../utils/firebase.js";
+import { sqlConnect, sql } from "../utils/sql.js";
 
 export const getProjects = async (req, res) => {
   try {
-    const projects = await db.collection("proyectos").get();
-    const list = [];
-    projects.forEach((doc) => {
-      list.push({
-        id: doc.id,
-        descripcion: doc.data().descripcion,
-        estatus: doc.data().estatus,
-      });
-    });
-    res.json(list);
+    const { userId } = req.params; // Obtener el userId de los parámetros de la solicitud
+
+    // Validar que se haya proporcionado el userId
+    if (!userId) {
+      return res.status(400).json({ error: "UserId is required" });
+    }
+
+    // 1: Obtener los IDs de los proyectos del usuario
+    const pool = await sqlConnect();
+    const userProjects = await pool
+      .request()
+      .input("userId", sql.Int, userId) // Usar sql.Int para el tipo de dato correcto
+      .query("SELECT ProjectID FROM Users_Projects WHERE UserID = @userId"); // Query para obtener los IDs del usuario
+
+    const projectIds = userProjects.recordset.map((row) => row.ProjectID); // Obtener los IDs de los proyectos
+
+    if (projectIds.length === 0) {
+      return res.json([]); // Si no hay proyectos, devolver un array vacío
+    }
+
+    // 2: Obtener los detalles de los proyectos desde Firebase
+    const projects = [];
+    for (const projectId of projectIds) {
+      const projectDoc = await db.collection("proyectos").doc(projectId).get();
+      if (projectDoc.exists) {
+        projects.push({
+          id: projectDoc.id,
+          ...projectDoc.data(),
+        });
+      }
+    }
+
+    res.json(projects); // Regresar los proyectos filtrados
   } catch (err) {
-    console.error("Firebase Error:", err);
+    console.error("Error fetching projects:", err);
     res.status(500).send("Server Error");
   }
 };
@@ -70,12 +94,17 @@ export const updateRequirements = async (req, res) => {
     const batch = db.batch(); // Usar un batch para realizar múltiples operaciones
     requirements.forEach((req) => {
       const docRef = db.collection("proyectos").doc(req.id); // Referencia al documento
-      batch.update(docRef, { descripcion: req.descripcion, estatus: req.estatus });
+      batch.update(docRef, {
+        descripcion: req.descripcion,
+        estatus: req.estatus,
+      });
     });
 
     await batch.commit(); // Ejecutar todas las operaciones en el batch
 
-    res.status(200).json({ message: "Requerimientos actualizados correctamente" });
+    res
+      .status(200)
+      .json({ message: "Requerimientos actualizados correctamente" });
   } catch (err) {
     console.error("Firebase Error:", err);
     res.status(500).send("Server Error");
@@ -90,13 +119,14 @@ export const updateRatings = async (req, res) => {
     const docRef = db.collection("proyectos").doc("ratings"); // Documento donde se guardan las valoraciones
     await docRef.set({ ratings }, { merge: true }); // Actualizar o fusionar los datos
 
-    res.status(200).json({ message: "Valoraciones actualizadas correctamente" });
+    res
+      .status(200)
+      .json({ message: "Valoraciones actualizadas correctamente" });
   } catch (err) {
     console.error("Firebase Error:", err);
     res.status(500).send("Server Error");
   }
 };
-
 
 export const deleteProject = async (req, res) => {
   try {
