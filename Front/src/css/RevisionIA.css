@@ -355,13 +355,11 @@ td {
 .save-success {
   color: #28a745;
   font-weight: 600;
-  margin-right: auto;
 }
 
 .save-error {
   color: #dc3545;
   font-weight: 600;
-  margin-right: auto;
 }
 
 /* Loading */
@@ -472,4 +470,47 @@ td {
   margin-bottom: 4px;
   display: block;
   color: #333;
+}
+
+/* Edit Project Button */
+.edit-project-button {
+  background-color: #9e72be;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.3s;
+}
+
+.edit-project-button:hover {
+  background-color: #7a5a96;
+}
+
+.edit-input,
+.edit-textarea {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-input:focus,
+.edit-textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+/* Center Button Container */
+.center-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
