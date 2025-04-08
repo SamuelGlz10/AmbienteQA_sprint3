@@ -370,8 +370,24 @@ function RevisionIA() {
             <button className="popup-close" onClick={closePopup}>×</button>
             
             <div className="popup-header">
-              <h3 className="popup-title">{selectedItem.titulo}</h3>
-              <p className="popup-id"><strong>ID:</strong> {selectedItem.id}</p>
+              {editing ? (
+                <>
+                  <label htmlFor="title-input" className="label-title">Título:</label>
+                  <input
+                    id="title-input"
+                    type="text"
+                    name="title"
+                    value={editData.title}
+                    onChange={handleInputChange}
+                    className="edit-input"
+                  />
+                </>
+              ) : (
+                <>
+                  <h3 className="popup-title">{selectedItem.titulo}</h3>
+                  <p className="popup-id"><strong>ID:</strong> {selectedItem.id}</p>
+                </>
+              )}
             </div>
             
             <div className="popup-body">
