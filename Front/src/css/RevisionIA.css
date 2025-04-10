@@ -514,3 +514,31 @@ td {
   justify-content: center;
   margin-top: 20px;
 }
+
+/* Back to Generate button */
+.back-to-generate-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #9e72be;
+  color: white;
+  font-size: 24px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+}
+
+.back-to-generate-button:hover {
+  background-color: #8d60b4;
+  transform: scale(1.05);
+}
+
+.back-to-generate-button:active {
+  transform: scale(0.95);
+  background-color: #7a5a96;
+}

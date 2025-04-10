@@ -329,6 +329,15 @@ function RevisionIA() {
     }));
   };
 
+  const handleBackToGenerate = () => {
+    // Limpiar sessionStorage
+    sessionStorage.removeItem('projectData');
+    sessionStorage.removeItem('projectRatings');
+    
+    // Navegar a la página de Generate
+    navigate("/generate");
+  };
+
   if (loading) {
     return (
       <div className="page-container">
@@ -357,6 +366,15 @@ function RevisionIA() {
   return (
     <div className="page-container">
       <div className="full-width-header">
+        {/* Botón de volver a generate */}
+        <button 
+          className="back-to-generate-button"
+          onClick={handleBackToGenerate}
+          aria-label="Volver a Generate"
+        >
+          ←
+        </button>
+        
         {editingProject ? (
           <>
             <label htmlFor="project-name" className="label-title">Nombre del Proyecto:</label>
