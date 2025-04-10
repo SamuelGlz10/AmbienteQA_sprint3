@@ -1,65 +1,212 @@
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: white;
+}
+
 .home-container {
-  padding: 24px;
-  background-color: #f3f4f6;
+  padding: 0;
+  background-color: white;
   min-height: 100vh;
+  font-family: 'Arial', -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  align-items: center;
 }
 
-.home-header {
-  background-color: #e9d5ff;
-  padding: 24px;
+.main-title {
+  background-color: #f0e6ff;
+  padding: 15px 0;
+  width: 100%;
   text-align: center;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.home-header h1 {
-  font-size: 24px;
+.main-title h1 {
+  font-size: 28px;
   font-weight: 600;
+  color: #333;
+  margin: 0;
 }
 
-.table-container {
-  margin-top: 24px;
+.controls-container {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  margin: 10px auto;
+  width: 100%;
+  max-width: 1000px;
+  background-color: white;
+}
+
+.pagination-info {
+  color: #666;
+  font-size: 14px;
+}
+
+.sort-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+}
+
+.sort-select {
+  padding: 4px 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 300px));
+  gap: 50px;
+  padding: 20px;
+  width: 100%;
+  max-width: 1000px;
+  background-color: white;
+  margin: 0 auto;
   justify-content: center;
 }
 
-.projects-table {
-  min-width: 100%;
-  background-color: #ffffff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+.project-card {
+  background-color: white;
   border-radius: 8px;
-}
-
-.projects-table th,
-.projects-table td {
-  padding: 8px 16px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.button-container {
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  height: 250px;
   display: flex;
-  justify-content: center;
-  margin-top: 24px;
+  flex-direction: column;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
 }
 
-.new-project-button {
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.project-image {
+  height: 170px;
+  background-color: #e0e0e0;
+  background-size: cover;
+  background-position: center;
+}
+
+.project-info {
+  padding: 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.project-info h3 {
+  margin: 0 0 6px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+}
+
+.project-info p {
+  margin: 0;
+  color: #666;
+  font-size: 13px;
+  display: -webkit-box;
+  line-clamp: 2;
+  box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+
+.new-project-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 24px;
-  background-color: #e9d5ff;
-  border-radius: 9999px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  background-color: transparent;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+  height: 250px;
   cursor: pointer;
-  border: none;
+  transition: transform 0.2s, background-color 0.2s;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
 }
 
-.plus-sign {
-  font-size: 24px;
+.new-project-card:hover {
+  background-color: #f9f5ff;
+  transform: translateY(-3px);
 }
 
-.button-text {
-  font-size: 14px;
+.plus-icon {
+  width: 60px;
+  height: 60px;
+  background-color: #9370DB;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  margin-bottom: 15px;
+}
+
+.new-project-text {
+  color: #9370DB;
+  font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
+  text-align: center;
+}
+
+@media (max-width: 1200px) {
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .projects-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .controls-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    padding: 10px 20px;
+  }
+  
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 0 20px 40px;
+  }
+}
+
+@media (max-width: 576px) {
+  .projects-grid {
+    grid-template-columns: 1fr;
+  }
 }
