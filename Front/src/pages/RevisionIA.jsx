@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
+import "../css/DragAndDropTable.css";
 import DragAndDropTable from "../components/DragAndDropTable";
 
 function RevisionIA() {
