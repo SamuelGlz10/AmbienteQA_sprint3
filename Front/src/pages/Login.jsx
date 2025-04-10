@@ -12,7 +12,6 @@ const Login = ({ tryLogin }) => {
   const [password, setPassword] = useState("");
 
   const getTest = async () => {
-
     try {
       const result = await fetch("http://localhost:5001");
       const text = await result.text();
@@ -23,7 +22,6 @@ const Login = ({ tryLogin }) => {
     } catch (error) {
       console.error("Error al conectar con la API:", error);
     }
-
   };
 
   useEffect(() => {
@@ -60,11 +58,17 @@ const Login = ({ tryLogin }) => {
         <h1 className="title">Inicia Sesión</h1>
         <h2 className="subtitle">FRIDA Product Planner</h2>
         <p className="login-text">
+
         Si todavía no tienes una cuenta.         
         <br /> <br />
         <span className="register-link" onClick={goToRegister}>¡Regístrate Aquí!</span>
+
         </p>
-        <img src="/Login.png" alt="Login Illustration" className="illustration" />
+        <img
+          src="/Login.png"
+          alt="Login Illustration"
+          className="illustration"
+        />
       </div>
 
       <div className="login-right">
@@ -94,5 +98,3 @@ const Login = ({ tryLogin }) => {
 };
 
 export default Login;
-
-
