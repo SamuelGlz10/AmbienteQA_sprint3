@@ -71,24 +71,40 @@ function RevisionIA() {
     setDraggedItem(item);
   };
 
+  const saveOrderToBackend = (updatedTab) => {
+    console.log("Orden actualizado localmente:", {
+      tabId: activeTab,
+      requirements: updatedTab,
+    });
+  
+    // Actualizar el estado local
+    setProjectData((prev) => ({
+      ...prev,
+      [activeTab]: updatedTab,
+    }));
+  };
+  
   const handleDrop = (targetItem) => {
     if (!draggedItem || !projectData) return;
-
+  
     setProjectData((prev) => {
       const updatedTab = [...prev[activeTab]];
       const draggedIndex = updatedTab.findIndex((item) => item.id === draggedItem.id);
       const targetIndex = updatedTab.findIndex((item) => item.id === targetItem.id);
-
+  
       // Reorganizar los elementos
       updatedTab.splice(draggedIndex, 1);
       updatedTab.splice(targetIndex, 0, draggedItem);
-
+  
+      // Guardar el nuevo orden en el backend
+      saveOrderToBackend(updatedTab);
+  
       return {
         ...prev,
         [activeTab]: updatedTab,
       };
     });
-
+  
     setDraggedItem(null);
   };
 
@@ -245,30 +261,28 @@ function RevisionIA() {
     }
 };
 
-  const handleConfirm = async () => {
-    try {
-      // Simular el envío de datos
-      const response = await fetch("http://localhost:5001/projectsFB/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(projectData),
-      });
+const handleConfirm = async () => {
+  try {
+    const response = await fetch("http://localhost:5001/projectsFB/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(projectData), // Enviar el JSON completo
+    });
 
-      if (response.ok) {
-        alert("Proyecto confirmado y guardado correctamente");
-        // Redirigir al usuario después de confirmar
-        navigate("/home");
-      } else {
-        const errorData = await response.json();
-        alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
-      }
-    } catch (error) {
-      console.error("Error al guardar el proyecto:", error);
-      alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
+    if (response.ok) {
+      alert("Proyecto confirmado y guardado correctamente");
+      navigate("/home"); // Redirigir al usuario después de confirmar
+    } else {
+      const errorData = await response.json();
+      alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
     }
-  };
+  } catch (error) {
+    console.error("Error al guardar el proyecto:", error);
+    alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
+  }
+};
 
   const handleSaveProjectChanges = async () => {
     try {
