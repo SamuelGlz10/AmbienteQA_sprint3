@@ -1,5 +1,7 @@
 import db from "../utils/firebase.js";
 import { sqlConnect, sql } from "../utils/sql.js";
+import { getStorage } from 'firebase-admin/storage';
+import {v4 as uuidv4 } from 'uuid';
 
 export const getProjects = async (req, res) => {
   try {
@@ -137,5 +139,42 @@ export const deleteProject = async (req, res) => {
   } catch (err) {
     console.error("Firebase Error:", err);
     res.status(500).send("Server Error");
+  }
+};
+
+export const uploadProjectImage = async (req, res) => {
+  try {
+    const { projectId } = req.body;
+    const file = req.file;
+
+    if (!file || !projectId) {
+      return res.status(400).json({ error: "File and projectId are required" });
+    }
+
+    const storage = getStorage(app);
+    const bucket = storage.bucket();
+    const fileName = `projects/${projectId}/${uuidv4()}_${file.originalname}`; // Se guarda en su propia carpeta
+
+    const fileUpload = bucket.file(fileName);
+
+    // Subir a Firebase Storage
+    await fileUpload.save(file.buffer, {
+      metadata: { contentType: file.mimetype },
+    });
+
+    // Obtener URL del archivo subido
+    const [url] = await fileUpload.getSignedUrl({
+      action: "read",
+      expires: "12-31-2100", // Expira en 100 años para no hacerse bolas
+    });
+
+    // Guardar la URL en Firestore bajo el ID del proyecto
+    const projectRef = db.collection("proyectos").doc(projectId);
+    await projectRef.update({ imageUrl: url });
+
+    res.status(200).json({ success: true, imageUrl: url });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ error: "Failed to upload image" });
   }
 };

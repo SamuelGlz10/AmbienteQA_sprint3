@@ -31,23 +31,6 @@ const Home = () => {
     getProjects();
   }, []);
 
-  useEffect(() => {
-    // Hook para agregar proyecto generado
-    if (location.state && location.state.generatedText) {
-      try {
-        const generatedProject = JSON.parse(location.state.generatedText);
-        const newProject = {
-          id: generatedProject.title, // Use the title as the ID
-          descripcion: generatedProject.data,
-          estatus: "Nuevo",
-        };
-        setProjects((prevProjects) => [...prevProjects, newProject]);
-      } catch (error) {
-        console.error("Failed to parse generated text:", error);
-      }
-    }
-  }, [location.state]);
-
   return (
     <div className="home-container">
       {/* Header */}
