@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
+import "../css/DragAndDropTable.css";
+import DragAndDropTable from "../components/DragAndDropTable";
 
 function RevisionIA() {
   const location = useLocation();
@@ -22,6 +24,7 @@ function RevisionIA() {
     success: false 
   });
   const [editingProject, setEditingProject] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -65,30 +68,82 @@ function RevisionIA() {
     };
   };
 
+  const handleDragStart = (item) => {
+    setDraggedItem(item);
+  };
+
+  const saveOrderToBackend = (updatedTab) => {
+    console.log("Orden actualizado localmente:", {
+      tabId: activeTab,
+      requirements: updatedTab,
+    });
+  
+    // Actualizar el estado local
+    setProjectData((prev) => ({
+      ...prev,
+      [activeTab]: updatedTab,
+    }));
+  };
+  
+  const handleDrop = (targetItem) => {
+    if (!draggedItem || !projectData) return;
+  
+    setProjectData((prev) => {
+      const updatedTab = [...prev[activeTab]];
+      const draggedIndex = updatedTab.findIndex((item) => item.id === draggedItem.id);
+      const targetIndex = updatedTab.findIndex((item) => item.id === targetItem.id);
+  
+      // Reorganizar los elementos
+      updatedTab.splice(draggedIndex, 1);
+      updatedTab.splice(targetIndex, 0, draggedItem);
+  
+      // Guardar el nuevo orden en el backend
+      saveOrderToBackend(updatedTab);
+  
+      return {
+        ...prev,
+        [activeTab]: updatedTab,
+      };
+    });
+  
+    setDraggedItem(null);
+  };
+
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        if (!location.state?.generatedText) {
+        const sessionData = sessionStorage.getItem('projectData');
+        
+        if (sessionData) {
+          setProjectData(JSON.parse(sessionData));
+          
+          const sessionRatings = sessionStorage.getItem('projectRatings');
+          if (sessionRatings) {
+            setRatings(JSON.parse(sessionRatings));
+          }
+        } 
+        else if (location.state?.generatedText) {
+          let jsonData = location.state.generatedText
+            .replace(/```json|```/g, '')
+            .replace(/'/g, '"')
+            .trim();
+
+          const parsedData = JSON.parse(jsonData);
+          const transformedData = transformGeneratedData(parsedData);
+
+          setProjectData(transformedData);
+          
+          sessionStorage.setItem('projectData', JSON.stringify(transformedData));
+        } else {
           throw new Error("No se recibieron datos del proyecto");
         }
-
-        let jsonData = location.state.generatedText
-          .replace(/```json|```/g, '')
-          .replace(/'/g, '"')
-          .trim();
-
-        const parsedData = JSON.parse(jsonData);
-        const transformedData = transformGeneratedData(parsedData);
-
-        setProjectData(transformedData);
-
       } catch (err) {
         setError(`Error al procesar los datos: ${err.message}`);
         
-        setProjectData({
+        const fallbackData = {
           nombreProyecto: "Proyecto de Ejemplo",
           descripcion: "Datos de ejemplo cargados por error en los datos originales",
           estatus: "Abierto",
@@ -97,13 +152,37 @@ function RevisionIA() {
           RF: [{ id: "RF01", titulo: "Ejemplo RF", data: "Descripción de requerimiento funcional" }],
           RNF: [{ id: "RNF01", titulo: "Ejemplo RNF", data: "Descripción de requerimiento no funcional" }],
           HU: [{ id: "HU01", titulo: "Ejemplo HU", data: "Como usuario quiero..." }]
-        });
+        };
+        
+        setProjectData(fallbackData);
+        sessionStorage.setItem('projectData', JSON.stringify(fallbackData));
       } finally {
         setLoading(false);
       }
     };
 
     loadData();
+
+    const handleBeforeUnload = (e) => {
+      if (e.currentTarget.performance?.navigation?.type === 1) {
+        return;
+      }
+      
+      sessionStorage.setItem('isNavigatingAway', 'true');
+    };
+
+    const handlePopState = () => {
+      sessionStorage.removeItem('projectData');
+      sessionStorage.removeItem('projectRatings');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [location.state]);
 
   const toggleExpand = (tabId) => {
@@ -114,13 +193,19 @@ function RevisionIA() {
     const currentRating = ratings[tabId]?.[requirementId] || 0;
     
     const handleStarClick = (selectedRating) => {
-      setRatings(prev => ({
-        ...prev,
-        [tabId]: {
-          ...prev[tabId],
-          [requirementId]: selectedRating
-        }
-      }));
+      setRatings(prev => {
+        const newRatings = {
+          ...prev,
+          [tabId]: {
+            ...prev[tabId],
+            [requirementId]: selectedRating
+          }
+        };
+        
+        sessionStorage.setItem('projectRatings', JSON.stringify(newRatings));
+        
+        return newRatings;
+      });
     };
 
     return (
@@ -145,16 +230,21 @@ function RevisionIA() {
       return;
     }
     
-    setProjectData(prev => ({
-      ...prev,
-      [tabId]: prev[tabId].filter(req => req.id !== id)
-    }));
+    setProjectData(prev => {
+      const updatedData = {
+        ...prev,
+        [tabId]: prev[tabId].filter(req => req.id !== id)
+      };
+      sessionStorage.setItem('projectData', JSON.stringify(updatedData));
+      return updatedData;
+    });
     
     setRatings(prev => {
       const newRatings = {...prev};
       if (newRatings[tabId]?.[id]) {
         delete newRatings[tabId][id];
       }
+      sessionStorage.setItem('projectRatings', JSON.stringify(newRatings));
       return newRatings;
     });
   };
@@ -176,10 +266,8 @@ function RevisionIA() {
     try {
         setSaveStatus({ loading: true, error: null, success: false });
 
-        // Simular una llamada a API
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        // Actualizar el estado de projectData
         setProjectData((prev) => {
             const updatedTab = [...prev[activeTab]];
             const itemIndex = updatedTab.findIndex((item) => item.id === selectedItem.id);
@@ -191,13 +279,16 @@ function RevisionIA() {
                 };
             }
 
-            return {
+            const updatedData = {
                 ...prev,
                 [activeTab]: updatedTab,
             };
+            
+            sessionStorage.setItem('projectData', JSON.stringify(updatedData));
+          
+            return updatedData;
         });
 
-        // Actualizar el estado de selectedItem para reflejar los cambios en el popup
         setSelectedItem((prev) => ({
             ...prev,
             titulo: editData.title,
@@ -208,7 +299,6 @@ function RevisionIA() {
 
         
 
-        // Cerrar el popup automáticamente después de guardar
         setTimeout(() => {
             setShowPopup(false);
             setEditing(false);
@@ -220,7 +310,15 @@ function RevisionIA() {
 
   const handleConfirm = async () => {
     try {
-      // Simular el envío de datos
+
+      const userId = localStorage.getItem("UserID");
+
+      if (!userId) {
+        alert("No se encontró el ID de usuario en el almacenamiento local.");
+        return;
+      }
+
+      // Hacer Post al proyecto
       const response = await fetch("http://localhost:5001/projectsFB/", {
         method: "POST",
         headers: {
@@ -229,30 +327,53 @@ function RevisionIA() {
         body: JSON.stringify(projectData),
       });
 
-      if (response.ok) {
-        alert("Proyecto confirmado y guardado correctamente");
-        // Redirigir al usuario después de confirmar
-        navigate("/home");
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
+        return;
       }
+
+      const projectResponse = await response.json();
+      const projectId = projectResponse.id;
+
+      // Linkear el proyecto al usuario
+      const linkResponse = await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          projectId: projectId,
+        }),
+      });
+
+      if (!linkResponse.ok) {
+        const errorData = await linkResponse.json();
+        alert(`Error al vincular el proyecto al usuario: ${errorData.message || "Error desconocido"}`);
+        return;
+      }
+
+      alert("Proyecto guardado exitosamente.");
+      sessionStorage.removeItem('projectData');
+      sessionStorage.removeItem('projectRatings');
+      navigate("/home"); // Redirigir a la página de inicio después de guardar
+
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
       alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
     }
+    
   };
 
   const handleSaveProjectChanges = async () => {
     try {
         setSaveStatus({ loading: true, error: null, success: false });
 
-        // Simular una llamada a API
         await new Promise((resolve) => setTimeout(resolve, 800));
 
         setSaveStatus({ loading: false, error: null, success: true });
 
-        // Actualizar el estado de projectData
         setProjectData((prev) => {
             const updatedData = {
                 ...prev,
@@ -261,10 +382,12 @@ function RevisionIA() {
             };
 
             console.log("JSON actualizado automáticamente:", JSON.stringify(updatedData, null, 2));
+            
+            sessionStorage.setItem('projectData', JSON.stringify(updatedData));
+            
             return updatedData;
         });
 
-        // Salir del modo edición después de guardar
         setTimeout(() => {
             setSaveStatus({ loading: false, error: null, success: false });
             setEditingProject(false);
@@ -280,6 +403,15 @@ function RevisionIA() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleBackToGenerate = () => {
+    // Limpiar sessionStorage
+    sessionStorage.removeItem('projectData');
+    sessionStorage.removeItem('projectRatings');
+    
+    // Navegar a la página de Generate
+    navigate("/generate");
   };
 
   if (loading) {
@@ -310,6 +442,15 @@ function RevisionIA() {
   return (
     <div className="page-container">
       <div className="full-width-header">
+        {/* Botón de volver a generate */}
+        <button 
+          className="back-to-generate-button"
+          onClick={handleBackToGenerate}
+          aria-label="Volver a Generate"
+        >
+          ←
+        </button>
+        
         {editingProject ? (
           <>
             <label htmlFor="project-name" className="label-title">Nombre del Proyecto:</label>
@@ -405,7 +546,13 @@ function RevisionIA() {
             <tbody>
               {projectData[activeTab]?.length > 0 ? (
                 projectData[activeTab].map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(item)}
+                    onDragOver={(e) => e.preventDefault()} // Permitir el drop
+                    onDrop={() => handleDrop(item)}
+                  >
                     <td 
                       className="clickable-title"
                       onClick={() => handleItemClick(item)}
