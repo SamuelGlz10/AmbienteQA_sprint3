@@ -36,6 +36,7 @@ export const getProjects = async (req, res) => {
           id: projectDoc.id,
           ...projectDoc.data(),
         });
+        console.log("Project Data:", projectDoc.data()); // Log para verificar los datos del proyecto
       }
     }
 
