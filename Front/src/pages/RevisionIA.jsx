@@ -247,7 +247,14 @@ function RevisionIA() {
 
   const handleConfirm = async () => {
     try {
-      // Simular el envío de datos
+      const userId = localStorage.getItem("UserID");
+
+      if (!userId) {
+        alert("No se encontró el ID de usuario en el almacenamiento local.");
+        return;
+      }
+
+      // Hacer Post al proyecto
       const response = await fetch("http://localhost:5001/projectsFB/", {
         method: "POST",
         headers: {
@@ -256,18 +263,41 @@ function RevisionIA() {
         body: JSON.stringify(projectData),
       });
 
-      if (response.ok) {
-        alert("Proyecto confirmado y guardado correctamente");
-        // Redirigir al usuario después de confirmar
-        navigate("/home");
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
+        return;
       }
+
+      const projectResponse = await response.json();
+      const projectId = projectResponse.id;
+
+      // Linkear el proyecto al usuario
+      const linkResponse = await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          projectId: projectId,
+        }),
+      });
+
+      if (!linkResponse.ok) {
+        const errorData = await linkResponse.json();
+        alert(`Error al vincular el proyecto al usuario: ${errorData.message || "Error desconocido"}`);
+        return;
+      }
+
+      alert("Proyecto guardado exitosamente.");
+      navigate("/home"); // Redirigir a la página de inicio después de guardar
+
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
       alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
     }
+    
   };
 
   const handleSaveProjectChanges = async () => {

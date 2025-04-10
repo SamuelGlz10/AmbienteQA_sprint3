@@ -76,6 +76,33 @@ export const postProject = async (req, res) => {
   }
 };
 
+export const linkUserToProject = async (req, res) => {
+  try {
+    const { userId, projectId } = req.body;
+
+    if (!userId || !projectId) {
+      return res.status(400).json({ error: "UserID and ProjectID are required" });
+    }
+
+    const pool = await sqlConnect();
+
+    // Insertar el usuario y el proyecto en la tabla Users_Projects
+    await pool
+      .request()
+      .input("UserID", sql.Int, userId)
+      .input("ProjectID", sql.VarChar, projectId)
+      .query(`
+        INSERT INTO Users_Projects (UserID, ProjectID)
+        VALUES (@UserID, @ProjectID)
+      `);
+
+    res.status(200).json({ success: true, message: "User linked to project successfully" });
+  } catch (err) {
+    console.error("Error linking user to project:", err);
+    res.status(500).json({ error: "Failed to link user to project" });
+  }
+};
+
 export const putProject = async (req, res) => {
   try {
     await db.collection("proyectos").doc(req.params.id).update(req.body);
