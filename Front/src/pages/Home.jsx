@@ -10,7 +10,7 @@ const Home = () => {
   const location = useLocation();
 
   const getProjects = async () => {
-    const userId = localStorage.getItem("UserID"); // Get the userId from localStorage
+    const userId = localStorage.getItem("UserID");
 
     if (!userId) {
       console.error("User ID not found in localStorage.");
