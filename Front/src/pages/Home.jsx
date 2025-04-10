@@ -10,30 +10,27 @@ const Home = () => {
   const location = useLocation();
 
   const getProjects = async () => {
-    const result = await fetch("http://localhost:5001/projectsFB/");
-    const data = await result.json();
-    setProjects(data);
+    const userId = localStorage.getItem("UserID"); // Get the userId from localStorage
+
+    if (!userId) {
+      console.error("User ID not found in localStorage.");
+      return;
+    }
+
+    try {
+      const result = await fetch(
+        `http://localhost:5001/projectsFB/?userId=${userId}`
+      );
+      const data = await result.json();
+      setProjects(data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+    }
   };
 
   useEffect(() => {
     getProjects();
   }, []);
-
-  useEffect(() => {
-    if (location.state && location.state.generatedText) {
-      try {
-        const generatedProject = JSON.parse(location.state.generatedText);
-        const newProject = {
-          id: generatedProject.title, 
-          descripcion: generatedProject.data,
-          estatus: "Nuevo",
-        };
-        setProjects((prevProjects) => [...prevProjects, newProject]);
-      } catch (error) {
-        console.error("Failed to parse generated text:", error);
-      }
-    }
-  }, [location.state]);
 
   const sortProjects = (projects) => {
     if (sortType === "Nombre") {
@@ -53,6 +50,7 @@ const Home = () => {
         <h1>Mis Proyectos</h1>
       </div>
 
+
       <div className="controls-container">
         <div className="pagination-info">
           Mostrando 1 - {Math.min(displayCount, projects.length)} de {projects.length}
@@ -69,6 +67,28 @@ const Home = () => {
             <option>Nombre</option>
           </select>
         </div>
+
+      {/* Projects Table */}
+      <div className="table-container">
+        <table className="projects-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Descripción</th>
+              <th>Estatus</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.map((project) => (
+              <tr key={project.id}>
+                <td>{project.nombreProyecto || project.id}</td>
+                <td>{project.descripcion}</td>
+                <td>{project.estatus}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
       </div>
 
       <div className="projects-grid">

@@ -38,35 +38,26 @@ function Generate() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (prompt.trim() === "") {
-      alert("Por favor, ingresa un prompt apropiado.");
-      return;
-    }
-
-    setLoading(true); // Cambiar el estado de carga a verdadero
-
+    setLoading(true);
     try {
-      addToHistory(prompt); // Agregar el prompt al historial
-
-      const structuredPrompt = promptRules + prompt;
-
-      alert("Solicitud recibida, generando texto... " + structuredPrompt); // Aquí se muestra el mensaje de que se recibió la solicitud
-      const result = await fetch("http://localhost:5001/generateEpic", {
+      const response = await fetch("http://localhost:5001/generateEpic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-
-        body: JSON.stringify({ prompt: prompt, rules: promptRules }),
+        body: JSON.stringify({ prompt, rules: promptRules }),
       });
-      const response = await result.json();
-      const generatedText = response.data;
-      navigate("/revisionIA", { state: { generatedText } }); // Regresar el texto generado a la página de inicio
-      alert(generatedText); // Aquí se muestra el mensaje de que se generó el texto
+      const { data } = await response.json();
+  
+      // Limpia el JSON (remueve ```json y comillas simples)
+      const cleanJSON = data.replace(/```json|```/g, '').replace(/'/g, '"').trim();
+      console.log("JSON limpio:", cleanJSON);
+  
+      // Valida y envía
+      JSON.parse(cleanJSON); // Si falla, lanzará error
+      navigate("/revisionIA", { state: { generatedText: cleanJSON } });
     } catch (error) {
-      // En caso de error
-      console.error("Error:", error);
-      alert("Error al generar el texto. Por favor, inténtalo de nuevo."); // Aquí se muestra el mensaje de error
+      alert("Error: El JSON generado no es válido. Verifica la consola.");
+      console.error("Error al procesar JSON:", error);
     } finally {
-      // Cambiar el estado de carga a falso
       setLoading(false);
     }
   };

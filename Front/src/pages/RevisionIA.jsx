@@ -7,20 +7,21 @@ function RevisionIA() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
-  const [ratings, setRatings] = useState({
-    RF: {},
-    RNF: {},
-    HU: {},
-    EP: {}
-  });
+  const [ratings, setRatings] = useState({ RF: {}, RNF: {}, HU: {}, EP: {} });
   const [showDeleteIcons, setShowDeleteIcons] = useState(false);
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({ title: "", description: "" });
-  const [saveStatus, setSaveStatus] = useState({ loading: false, error: null, success: false });
+  const [saveStatus, setSaveStatus] = useState({ 
+    loading: false, 
+    error: null, 
+    success: false 
+  });
+  const [editingProject, setEditingProject] = useState(false);
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -29,36 +30,38 @@ function RevisionIA() {
     { id: "EP", title: "EP", fullText: "Epicas" }
   ];
 
-  // Transformar datos al formato requerido
+  const transformGeneratedData = (data) => {
+    const parseSection = (section, prefix) => {
+      if (!section) return [];
+      
+      if (Array.isArray(section)) {
+        return section.map((item, i) => ({
+          id: item.id || `${prefix}${(i + 1).toString().padStart(2, '0')}`,
+          titulo: item.title || item.titulo || `${prefix} ${i + 1}`,
+          data: item.data || item.descripcion || "Sin descripción"
+        }));
+      }
+      
+      if (typeof section === 'object') {
+        return Object.entries(section).map(([titulo, data], i) => ({
+          id: `${prefix}${(i + 1).toString().padStart(2, '0')}`,
+          titulo,
+          data: data || "Sin descripción"
+        }));
+      }
+      
+      return [];
+    };
 
-  const transformGeneratedData = (generatedData) => {
-    if (!generatedData) return null;
-    
     return {
-      nombreProyecto: generatedData.projectName || "Proyecto sin nombre",
-      descripcion: generatedData.description || "Sin descripción",
-      estatus: "Abierto",
-      fechaCreacion: new Date().toISOString().split('T')[0],
-      EP: generatedData.epics?.map((epic, i) => ({
-        id: `EP${i+1}`,
-        titulo: epic.title || `Épica ${i+1}`,
-        data: epic.data || "Sin descripción"
-      })) || [],
-      RF: generatedData.functionalRequirements?.map((req, i) => ({
-        id: `RF${i+1}`,
-        titulo: req.title || `Requerimiento funcional ${i+1}`,
-        data: req.data || "Sin descripción"
-      })) || [],
-      RNF: generatedData.nonFunctionalRequirements?.map((req, i) => ({
-        id: `RNF${i+1}`,
-        titulo: req.title || `Requerimiento no funcional ${i+1}`,
-        data: req.data || "Sin descripción"
-      })) || [],
-      HU: generatedData.userStories?.map((story, i) => ({
-        id: `HU${i+1}`,
-        titulo: story.title || `Historia de usuario ${i+1}`,
-        data: story.data || "Sin descripción"
-      })) || []
+      nombreProyecto: data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+      descripcion: data.description || data.descripcion || "Sin descripción",
+      estatus: data.estatus || "Abierto",
+      fechaCreacion: data.fechaCreacion || new Date().toISOString().split('T')[0],
+      EP: parseSection(data.epics || data.EP, "EP"),
+      RF: parseSection(data.functionalRequirements || data.RF, "RF"),
+      RNF: parseSection(data.nonFunctionalRequirements || data.RNF, "RNF"),
+      HU: parseSection(data.userStories || data.HU, "HU")
     };
   };
 
@@ -66,43 +69,35 @@ function RevisionIA() {
     const loadData = async () => {
       try {
         setLoading(true);
-        
-        // 1. Primero intentar usar datos generados (si vienen de Generate)
+        setError(null);
 
-        if (location.state?.generatedText) {
-          try {
-            const generatedData = JSON.parse(location.state.generatedText);
-            const transformedData = transformGeneratedData(generatedData);
-            setProjectData(transformedData);
-          } catch (error) {
-            console.error("Error parsing generated data:", error);
-          }
-
-        } else {
-          // Datos de ejemplo
-          const mockData = {
-            nombreProyecto: "Sistema de Gestión de Proyectos",
-            descripcion: "Plataforma para gestión ágil de proyectos de desarrollo",
-            estatus: "Abierto",
-            fechaCreacion: "2023-10-15",
-            EP: [
-              { id: "EP01", titulo: "Gestión de Requerimientos", data: "Épica para manejar todos los requerimientos del sistema" }
-            ],
-            RF: [
-              { id: "RF01", titulo: "Registro de usuarios", data: "El sistema debe permitir el registro de nuevos usuarios con email y contraseña" }
-            ],
-            RNF: [
-              { id: "RNF01", titulo: "Seguridad de datos", data: "Todos los datos sensibles deben estar encriptados usando AES-256" }
-            ],
-            HU: [
-              { id: "HU01", titulo: "Como usuario quiero iniciar sesión", data: "Como usuario registrado, quiero iniciar sesión con mi email y contraseña para acceder al sistema" }
-            ]
-          };
-
-          setProjectData(mockData);
+        if (!location.state?.generatedText) {
+          throw new Error("No se recibieron datos del proyecto");
         }
-      } catch (error) {
-        console.error("Error loading data:", error);
+
+        let jsonData = location.state.generatedText
+          .replace(/```json|```/g, '')
+          .replace(/'/g, '"')
+          .trim();
+
+        const parsedData = JSON.parse(jsonData);
+        const transformedData = transformGeneratedData(parsedData);
+
+        setProjectData(transformedData);
+
+      } catch (err) {
+        setError(`Error al procesar los datos: ${err.message}`);
+        
+        setProjectData({
+          nombreProyecto: "Proyecto de Ejemplo",
+          descripcion: "Datos de ejemplo cargados por error en los datos originales",
+          estatus: "Abierto",
+          fechaCreacion: new Date().toISOString().split('T')[0],
+          EP: [{ id: "EP01", titulo: "Ejemplo Épica", data: "Descripción de épica de ejemplo" }],
+          RF: [{ id: "RF01", titulo: "Ejemplo RF", data: "Descripción de requerimiento funcional" }],
+          RNF: [{ id: "RNF01", titulo: "Ejemplo RNF", data: "Descripción de requerimiento no funcional" }],
+          HU: [{ id: "HU01", titulo: "Ejemplo HU", data: "Como usuario quiero..." }]
+        });
       } finally {
         setLoading(false);
       }
@@ -115,12 +110,10 @@ function RevisionIA() {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
 
-  const InteractiveStars = ({ tabId, requirementId, interactive = true }) => {
+  const InteractiveStars = ({ tabId, requirementId }) => {
     const currentRating = ratings[tabId]?.[requirementId] || 0;
     
     const handleStarClick = (selectedRating) => {
-      if (!interactive) return;
-      
       setRatings(prev => ({
         ...prev,
         [tabId]: {
@@ -131,7 +124,7 @@ function RevisionIA() {
     };
 
     return (
-      <div className={`stars-container ${interactive ? 'interactive' : ''}`}>
+      <div className="stars-container interactive">
         {[1, 2, 3, 4, 5].map((star) => (
           <span
             key={star}
@@ -166,77 +159,127 @@ function RevisionIA() {
     });
   };
 
-  const toggleDeleteMode = () => {
-    setShowDeleteIcons(!showDeleteIcons);
-  };
-
   const handleItemClick = (item) => {
     setSelectedItem(item);
     setEditData({
       title: item.titulo,
       description: item.data
     });
-    setEditing(false);
     setShowPopup(true);
-  };
-
-  const closePopup = () => {
-    setShowPopup(false);
     setEditing(false);
     setSaveStatus({ loading: false, error: null, success: false });
   };
 
-  const handleEditClick = () => {
-    setEditing(true);
-  };
-
   const handleSaveEdit = async () => {
     if (!selectedItem || !projectData) return;
-    
+
     try {
-      setSaveStatus({ loading: true, error: null, success: false });
-      
-      // Simular una llamada a API
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      setProjectData(prev => {
-        const updatedTab = [...prev[activeTab]];
-        const itemIndex = updatedTab.findIndex(item => item.id === selectedItem.id);
-        if (itemIndex !== -1) {
-          updatedTab[itemIndex] = {
-            ...updatedTab[itemIndex],
+        setSaveStatus({ loading: true, error: null, success: false });
+
+        // Simular una llamada a API
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        // Actualizar el estado de projectData
+        setProjectData((prev) => {
+            const updatedTab = [...prev[activeTab]];
+            const itemIndex = updatedTab.findIndex((item) => item.id === selectedItem.id);
+            if (itemIndex !== -1) {
+                updatedTab[itemIndex] = {
+                    ...updatedTab[itemIndex],
+                    titulo: editData.title,
+                    data: editData.description,
+                };
+            }
+
+            return {
+                ...prev,
+                [activeTab]: updatedTab,
+            };
+        });
+
+        // Actualizar el estado de selectedItem para reflejar los cambios en el popup
+        setSelectedItem((prev) => ({
+            ...prev,
             titulo: editData.title,
-            data: editData.description
-          };
-        }
+            data: editData.description,
+        }));
+
+        setSaveStatus({ loading: false, error: null, success: true });
+
         
-        return {
-          ...prev,
-          [activeTab]: updatedTab
-        };
-      });
-      
-      setSaveStatus({ loading: false, error: null, success: true });
-      setTimeout(() => setEditing(false), 1000);
+
+        // Cerrar el popup automáticamente después de guardar
+        setTimeout(() => {
+            setShowPopup(false);
+            setEditing(false);
+        }, 1000);
     } catch (error) {
-      setSaveStatus({ loading: false, error: "Error al guardar", success: false });
+        setSaveStatus({ loading: false, error: "Error al guardar", success: false });
+    }
+};
+
+  const handleConfirm = async () => {
+    try {
+      // Simular el envío de datos
+      const response = await fetch("http://localhost:5001/projectsFB/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(projectData),
+      });
+
+      if (response.ok) {
+        alert("Proyecto confirmado y guardado correctamente");
+        // Redirigir al usuario después de confirmar
+        navigate("/home");
+      } else {
+        const errorData = await response.json();
+        alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
+      }
+    } catch (error) {
+      console.error("Error al guardar el proyecto:", error);
+      alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
     }
   };
 
+  const handleSaveProjectChanges = async () => {
+    try {
+        setSaveStatus({ loading: true, error: null, success: false });
+
+        // Simular una llamada a API
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        setSaveStatus({ loading: false, error: null, success: true });
+
+        // Actualizar el estado de projectData
+        setProjectData((prev) => {
+            const updatedData = {
+                ...prev,
+                nombreProyecto: projectData.nombreProyecto,
+                descripcion: projectData.descripcion,
+            };
+
+            console.log("JSON actualizado automáticamente:", JSON.stringify(updatedData, null, 2));
+            return updatedData;
+        });
+
+        // Salir del modo edición después de guardar
+        setTimeout(() => {
+            setSaveStatus({ loading: false, error: null, success: false });
+            setEditingProject(false);
+        }, 2000);
+    } catch (error) {
+        setSaveStatus({ loading: false, error: "Error al guardar", success: false });
+    }
+};
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData(prev => ({
+    setEditData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-  };
-
-  const handleConfirm = () => {
-
-    // Aquí iría la lógica para guardar todo en la base de datos
-    console.log("Datos a guardar:", { projectData, ratings });
-    alert("Proyecto confirmado y guardado correctamente");
-    navigate("/home");
   };
 
   if (loading) {
@@ -250,11 +293,12 @@ function RevisionIA() {
     );
   }
 
-  if (!projectData) {
+  if (error) {
     return (
       <div className="page-container">
         <div className="error-message">
-          <h3>No se pudieron cargar los datos del proyecto</h3>
+          <h3>{error}</h3>
+          <p>Se cargaron datos de ejemplo para continuar.</p>
           <button onClick={() => navigate("/generate")}>
             Volver a Generar Proyecto
           </button>
@@ -266,8 +310,62 @@ function RevisionIA() {
   return (
     <div className="page-container">
       <div className="full-width-header">
-        <h2>Revisión de datos - {projectData.nombreProyecto}</h2>
-        <p className="project-description">{projectData.descripcion}</p>
+        {editingProject ? (
+          <>
+            <label htmlFor="project-name" className="label-title">Nombre del Proyecto:</label>
+            <input
+              id="project-name"
+              type="text"
+              name="nombreProyecto"
+              value={projectData.nombreProyecto}
+              onChange={(e) =>
+                setProjectData((prev) => ({
+                  ...prev,
+                  nombreProyecto: e.target.value,
+                }))
+              }
+              className="edit-input"
+            />
+            <label htmlFor="project-description" className="label-title">Descripción:</label>
+            <textarea
+              id="project-description"
+              name="descripcion"
+              value={projectData.descripcion}
+              onChange={(e) =>
+                setProjectData((prev) => ({
+                  ...prev,
+                  descripcion: e.target.value,
+                }))
+              }
+              className="edit-textarea"
+              rows="4"
+            />
+          </>
+        ) : (
+          <>
+            <h2>Revisión de datos - {projectData.nombreProyecto}</h2>
+            <p className="project-description">{projectData.descripcion}</p>
+          </>
+        )}
+        <div className="center-button-container">
+          <button
+            className="edit-project-button"
+            onClick={editingProject ? handleSaveProjectChanges : () => setEditingProject(true)}
+            disabled={saveStatus.loading}
+          >
+            {editingProject
+              ? saveStatus.loading
+                ? "Guardando..."
+                : "Guardar Cambios"
+              : "Editar Proyecto"}
+          </button>
+        </div>
+        {saveStatus.success && (
+          <div className="save-success">¡Cambios guardados!</div>
+        )}
+        {saveStatus.error && (
+          <div className="save-error">{saveStatus.error}</div>
+        )}
       </div>
 
       <div className="revision-container">
@@ -353,51 +451,47 @@ function RevisionIA() {
           </button>
           <button 
             className={`delete-button ${showDeleteIcons ? 'cancel' : ''}`}
-            onClick={toggleDeleteMode}
+            onClick={() => setShowDeleteIcons(!showDeleteIcons)}
           >
             {showDeleteIcons ? "Cancelar" : "Modo Eliminación"}
           </button>
         </div>
       </div>
 
-      {/* Popup de detalles */}
       {showPopup && selectedItem && (
-        <div className="popup-overlay" onClick={closePopup}>
+        <div className="popup-overlay" onClick={() => setShowPopup(false)}>
           <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-            <button className="popup-close" onClick={closePopup}>×</button>
+            <button className="popup-close" onClick={() => setShowPopup(false)}>×</button>
             
             <div className="popup-header">
-              {editing ? (
-                <>
-                  <label htmlFor="title-input" className="label-title">Título:</label>
-                  <input
-                    id="title-input"
-                    type="text"
-                    name="title"
-                    value={editData.title}
-                    onChange={handleInputChange}
-                    className="edit-input"
-                  />
-                </>
-              ) : (
-                <>
-                  <h3 className="popup-title">{selectedItem.titulo}</h3>
-                  <p className="popup-id"><strong>ID:</strong> {selectedItem.id}</p>
-                </>
-              )}
+              <h3 className="popup-title">{selectedItem.titulo}</h3>
+              <p className="popup-id"><strong>ID:</strong> {selectedItem.id}</p>
             </div>
             
             <div className="popup-body">
               <div className="description-section">
                 <h4>Descripción:</h4>
                 {editing ? (
-                  <textarea
-                    name="description"
-                    value={editData.description}
-                    onChange={handleInputChange}
-                    className="edit-textarea"
-                    rows="8"
-                  />
+                  <>
+                    <label htmlFor="title-input" className="label-title">Título:</label>
+                    <input
+                      id="title-input"
+                      type="text"
+                      name="title"
+                      value={editData.title}
+                      onChange={handleInputChange}
+                      className="edit-input"
+                    />
+                    <label htmlFor="description-input" className="label-title">Descripción:</label>
+                    <textarea
+                      id="description-input"
+                      name="description"
+                      value={editData.description}
+                      onChange={handleInputChange}
+                      className="edit-textarea"
+                      rows="8"
+                    />
+                  </>
                 ) : (
                   <div className="description-text">
                     {selectedItem.data}
@@ -418,10 +512,7 @@ function RevisionIA() {
                 <>
                   <button 
                     className="popup-button secondary"
-                    onClick={() => {
-                      setEditing(false);
-                      setSaveStatus({ loading: false, error: null, success: false });
-                    }}
+                    onClick={() => setEditing(false)}
                     disabled={saveStatus.loading}
                   >
                     Cancelar
@@ -437,7 +528,7 @@ function RevisionIA() {
               ) : (
                 <button 
                   className="popup-button primary"
-                  onClick={handleEditClick}
+                  onClick={() => setEditing(true)}
                 >
                   Editar
                 </button>
