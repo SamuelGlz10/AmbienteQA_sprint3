@@ -67,6 +67,7 @@ const Home = () => {
             <option>Nombre</option>
           </select>
         </div>
+      </div>
 
       {/* Projects Table */}
       <div className="table-container">
