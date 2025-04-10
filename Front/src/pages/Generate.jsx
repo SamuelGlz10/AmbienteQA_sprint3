@@ -1,17 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, TextField } from "@mui/material";
-import "../css/Generate.css"; 
+import "../css/Generate.css";
 
 function Generate() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [copiarText, setCopiarText] = useState("Copiar"); // Estado para controlar el texto copiado
   const [pegarText, setPegarText] = useState("Pegar"); // Estado para controlar el texto pegado
-  const [selectedDetail, setSelectedDetail] = useState("Bajo"); 
+  const [selectedDetail, setSelectedDetail] = useState("Bajo");
   const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
-  const [history, setHistory] = useState(["1", "2", "3", "4"]); // Estado para controlar el historial
+  const [history, setHistory] = useState(["", "", "", ""]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
 
   const promptRules = `Please create a JSON object with the following structure: 
@@ -47,11 +47,14 @@ function Generate() {
         body: JSON.stringify({ prompt, rules: promptRules }),
       });
       const { data } = await response.json();
-  
+
       // Limpia el JSON (remueve ```json y comillas simples)
-      const cleanJSON = data.replace(/```json|```/g, '').replace(/'/g, '"').trim();
+      const cleanJSON = data
+        .replace(/```json|```/g, "")
+        .replace(/'/g, '"')
+        .trim();
       console.log("JSON limpio:", cleanJSON);
-  
+
       // Valida y envía
       JSON.parse(cleanJSON); // Si falla, lanzará error
       navigate("/revisionIA", { state: { generatedText: cleanJSON } });
@@ -136,29 +139,37 @@ function Generate() {
                 sx={{
                   width: "100%",
                   backgroundColor: "#FFFFFF",
-                  '& .MuiOutlinedInput-root': {
+                  "& .MuiOutlinedInput-root": {
                     fontFamily: "'Poppins', sans-serif",
-                    '& fieldset': {
-                      borderColor: '#ddd',
+                    "& fieldset": {
+                      borderColor: "#ddd",
                     },
-                    '&:hover fieldset': {
-                      borderColor: '#9370DB',
+                    "&:hover fieldset": {
+                      borderColor: "#9370DB",
                     },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#9370DB',
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#9370DB",
                     },
                   },
-                  '& .MuiInputBase-input': {
+                  "& .MuiInputBase-input": {
                     fontFamily: "'Poppins', sans-serif",
-                  }
+                  },
                 }}
               />
 
               <div className="button-container">
-                <button className="main-button" type="submit" disabled={loading}>
+                <button
+                  className="main-button"
+                  type="submit"
+                  disabled={loading}
+                >
                   Generar
                 </button>
-                <button className="main-button" type="button" onClick={handleErase}>
+                <button
+                  className="main-button"
+                  type="button"
+                  onClick={handleErase}
+                >
                   Eliminar
                 </button>
               </div>
@@ -185,13 +196,16 @@ function Generate() {
 
               <div className="prompt-options-container">
                 <span>Límite de lista:</span>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div
+                  style={{ display: "flex", gap: "10px", alignItems: "center" }}
+                >
                   <button
                     type="button"
                     className="secondary-button"
                     onClick={() => setSelectedOption("MAX")}
                     style={{
-                      backgroundColor: selectedOption === "MAX" ? "#f0e6ff" : "white"
+                      backgroundColor:
+                        selectedOption === "MAX" ? "#f0e6ff" : "white",
                     }}
                   >
                     MAX
@@ -201,7 +215,8 @@ function Generate() {
                     className="secondary-button"
                     onClick={() => setSelectedOption("MIN")}
                     style={{
-                      backgroundColor: selectedOption === "MIN" ? "#f0e6ff" : "white"
+                      backgroundColor:
+                        selectedOption === "MIN" ? "#f0e6ff" : "white",
                     }}
                   >
                     MIN
@@ -212,11 +227,11 @@ function Generate() {
                     min="1"
                     onChange={(e) => setLimit(e.target.value)}
                     style={{
-                      width: '60px',
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      border: '1px solid #ddd',
-                      fontSize: '14px'
+                      width: "60px",
+                      padding: "6px 12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
                     }}
                   />
                 </div>
@@ -240,7 +255,7 @@ function Generate() {
                 className="secondary-button"
                 type="button"
                 onClick={() => setHistory([])}
-                style={{ width: '100%', marginBottom: '15px' }}
+                style={{ width: "100%", marginBottom: "15px" }}
               >
                 Limpiar
               </button>
