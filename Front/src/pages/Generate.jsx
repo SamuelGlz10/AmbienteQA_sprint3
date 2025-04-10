@@ -268,13 +268,6 @@ function Generate() {
             </button>
           </Box>
         </Box>
-        <button
-          className="main-button"
-          type="button"
-          onClick={() => navigate("/revisionIA")}
-        >
-          Prueba
-        </button>
       </form>
       {/* Pantalla de carga */}
       {loading && (
