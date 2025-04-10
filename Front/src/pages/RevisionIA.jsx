@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
+import DragAndDropTable from "../components/DragAndDropTable";
 
 function RevisionIA() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function RevisionIA() {
     success: false 
   });
   const [editingProject, setEditingProject] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -63,6 +65,31 @@ function RevisionIA() {
       RNF: parseSection(data.nonFunctionalRequirements || data.RNF, "RNF"),
       HU: parseSection(data.userStories || data.HU, "HU")
     };
+  };
+
+  const handleDragStart = (item) => {
+    setDraggedItem(item);
+  };
+
+  const handleDrop = (targetItem) => {
+    if (!draggedItem || !projectData) return;
+
+    setProjectData((prev) => {
+      const updatedTab = [...prev[activeTab]];
+      const draggedIndex = updatedTab.findIndex((item) => item.id === draggedItem.id);
+      const targetIndex = updatedTab.findIndex((item) => item.id === targetItem.id);
+
+      // Reorganizar los elementos
+      updatedTab.splice(draggedIndex, 1);
+      updatedTab.splice(targetIndex, 0, draggedItem);
+
+      return {
+        ...prev,
+        [activeTab]: updatedTab,
+      };
+    });
+
+    setDraggedItem(null);
   };
 
   useEffect(() => {
@@ -266,6 +293,15 @@ function RevisionIA() {
 
   const handleConfirm = async () => {
     try {
+
+      const userId = localStorage.getItem("UserID");
+
+      if (!userId) {
+        alert("No se encontró el ID de usuario en el almacenamiento local.");
+        return;
+      }
+
+      // Hacer Post al proyecto
       const response = await fetch("http://localhost:5001/projectsFB/", {
         method: "POST",
         headers: {
@@ -274,20 +310,43 @@ function RevisionIA() {
         body: JSON.stringify(projectData),
       });
 
-      if (response.ok) {
-        sessionStorage.removeItem('projectData');
-        sessionStorage.removeItem('projectRatings');
-        
-        alert("Proyecto confirmado y guardado correctamente");
-        navigate("/home");
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
+        return;
       }
+
+      const projectResponse = await response.json();
+      const projectId = projectResponse.id;
+
+      // Linkear el proyecto al usuario
+      const linkResponse = await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          projectId: projectId,
+        }),
+      });
+
+      if (!linkResponse.ok) {
+        const errorData = await linkResponse.json();
+        alert(`Error al vincular el proyecto al usuario: ${errorData.message || "Error desconocido"}`);
+        return;
+      }
+
+      alert("Proyecto guardado exitosamente.");
+      sessionStorage.removeItem('projectData');
+      sessionStorage.removeItem('projectRatings');
+      navigate("/home"); // Redirigir a la página de inicio después de guardar
+
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
       alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
     }
+    
   };
 
   const handleSaveProjectChanges = async () => {
@@ -470,7 +529,13 @@ function RevisionIA() {
             <tbody>
               {projectData[activeTab]?.length > 0 ? (
                 projectData[activeTab].map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(item)}
+                    onDragOver={(e) => e.preventDefault()} // Permitir el drop
+                    onDrop={() => handleDrop(item)}
+                  >
                     <td 
                       className="clickable-title"
                       onClick={() => handleItemClick(item)}

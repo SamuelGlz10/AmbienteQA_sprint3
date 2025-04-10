@@ -7,7 +7,8 @@ import {
   putProject,
   deleteProject,
   updateRequirements,
-  uploadProjectImage
+  uploadProjectImage,
+  linkUserToProject
 } from "../controllers/projectsFB.controllers.js";
 
 const router = Router();
@@ -20,5 +21,6 @@ router.put("/projectsFB/:id", putProject);
 router.delete("/projectsFB/:id", deleteProject);
 router.put("/projectsFB/updateRequirements", updateRequirements); // Ruta para actualizar requerimientos
 router.post("/projectsFB/uploadImage", upload.single("image"), uploadProjectImage); // Ruta para subir imagen del proyecto
+router.post("/projectsFB/linkUserToProject", linkUserToProject); // Ruta para vincular usuario a proyecto
 
 export default router;
