@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
+import DragAndDropTable from "../components/DragAndDropTable";
 
 function RevisionIA() {
   const location = useLocation();
@@ -22,6 +23,7 @@ function RevisionIA() {
     success: false 
   });
   const [editingProject, setEditingProject] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -63,6 +65,31 @@ function RevisionIA() {
       RNF: parseSection(data.nonFunctionalRequirements || data.RNF, "RNF"),
       HU: parseSection(data.userStories || data.HU, "HU")
     };
+  };
+
+  const handleDragStart = (item) => {
+    setDraggedItem(item);
+  };
+
+  const handleDrop = (targetItem) => {
+    if (!draggedItem || !projectData) return;
+
+    setProjectData((prev) => {
+      const updatedTab = [...prev[activeTab]];
+      const draggedIndex = updatedTab.findIndex((item) => item.id === draggedItem.id);
+      const targetIndex = updatedTab.findIndex((item) => item.id === targetItem.id);
+
+      // Reorganizar los elementos
+      updatedTab.splice(draggedIndex, 1);
+      updatedTab.splice(targetIndex, 0, draggedItem);
+
+      return {
+        ...prev,
+        [activeTab]: updatedTab,
+      };
+    });
+
+    setDraggedItem(null);
   };
 
   useEffect(() => {
@@ -405,7 +432,13 @@ function RevisionIA() {
             <tbody>
               {projectData[activeTab]?.length > 0 ? (
                 projectData[activeTab].map((item) => (
-                  <tr key={item.id}>
+                  <tr
+                    key={item.id}
+                    draggable
+                    onDragStart={() => handleDragStart(item)}
+                    onDragOver={(e) => e.preventDefault()} // Permitir el drop
+                    onDrop={() => handleDrop(item)}
+                  >
                     <td 
                       className="clickable-title"
                       onClick={() => handleItemClick(item)}
