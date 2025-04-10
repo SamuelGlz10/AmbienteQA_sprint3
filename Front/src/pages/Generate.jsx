@@ -8,7 +8,8 @@ function Generate() {
   const [prompt, setPrompt] = useState("");
   const [copiarText, setCopiarText] = useState("Copiar"); // Estado para controlar el texto copiado
   const [pegarText, setPegarText] = useState("Pegar"); // Estado para controlar el texto pegado
-  const [selectedOption, setSelectedOption] = useState("Bajo"); // Estado para controlar la opción seleccionada
+  const [selectedDetail, setSelectedDetail] = useState("Bajo"); 
+  const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
   const [history, setHistory] = useState(["1", "2", "3", "4"]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
@@ -85,10 +86,6 @@ function Generate() {
     setTimeout(() => {
       setPegarText("Pegar"); // Cambiar el texto del botón a "Pegar" después de 2 segundos
     }, 2000);
-  };
-
-  const handleOptionSelect = (option) => {
-    setSelectedOption(option); // Actualizar el estado de la opción seleccionada
   };
 
   const addToHistory = (prompt) => {
@@ -177,8 +174,8 @@ function Generate() {
               <div className="prompt-options-container">
                 <span>Nivel de detalle:</span>
                 <select
-                  value={selectedOption}
-                  onChange={(e) => handleOptionSelect(e.target.value)}
+                  value={selectedDetail}
+                  onChange={(e) => setSelectedDetail(e.target.value)}
                 >
                   <option value="Bajo">Bajo</option>
                   <option value="Medio">Medio</option>
