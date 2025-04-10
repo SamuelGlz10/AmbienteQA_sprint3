@@ -10,7 +10,7 @@ const Home = () => {
   const location = useLocation();
 
   const getProjects = async () => {
-    const userId = localStorage.getItem("UserID"); // Get the userId from localStorage
+    const userId = localStorage.getItem("UserID");
 
     if (!userId) {
       console.error("User ID not found in localStorage.");
@@ -50,7 +50,6 @@ const Home = () => {
         <h1>Mis Proyectos</h1>
       </div>
 
-
       <div className="controls-container">
         <div className="pagination-info">
           Mostrando 1 - {Math.min(displayCount, projects.length)} de {projects.length}
@@ -67,28 +66,6 @@ const Home = () => {
             <option>Nombre</option>
           </select>
         </div>
-
-      {/* Projects Table */}
-      <div className="table-container">
-        <table className="projects-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Estatus</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project) => (
-              <tr key={project.id}>
-                <td>{project.nombreProyecto || project.id}</td>
-                <td>{project.descripcion}</td>
-                <td>{project.estatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
       </div>
 
       <div className="projects-grid">
@@ -96,7 +73,7 @@ const Home = () => {
           <div key={project.id} className="project-card">
             <div className="project-image"></div>
             <div className="project-info">
-              <h3>{project.id}</h3>
+              <h3>{project.nombreProyecto || project.id}</h3>
               <p>{project.descripcion}</p>
             </div>
           </div>
