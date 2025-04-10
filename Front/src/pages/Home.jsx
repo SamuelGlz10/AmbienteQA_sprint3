@@ -69,29 +69,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* Projects Table */}
-      <div className="table-container">
-        <table className="projects-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Descripción</th>
-              <th>Estatus</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((project) => (
-              <tr key={project.id}>
-                <td>{project.nombreProyecto || project.id}</td>
-                <td>{project.descripcion}</td>
-                <td>{project.estatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-      </div>
-
       <div className="projects-grid">
         {sortedProjects.slice(0, displayCount).map((project) => (
           <div key={project.id} className="project-card">
