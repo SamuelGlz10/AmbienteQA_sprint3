@@ -11,7 +11,7 @@ function Generate() {
   const [selectedDetail, setSelectedDetail] = useState("Bajo");
   const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
-  const [history, setHistory] = useState(["", "", "", ""]); // Estado para controlar el historial
+  const [history, setHistory] = useState([]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
 
   const promptRules = `Please create a JSON object with the following structure: 
@@ -119,10 +119,18 @@ function Generate() {
               <div className="prompt-text">
                 <p>Prompt:</p>
                 <div id="button-container-right">
-                  <button type="button" onClick={handleCopy}>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={handleCopy}
+                  >
                     {copiarText}
                   </button>
-                  <button type="button" onClick={handlePaste}>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={handlePaste}
+                  >
                     {pegarText}
                   </button>
                 </div>
@@ -205,7 +213,10 @@ function Generate() {
                     onClick={() => setSelectedOption("MAX")}
                     style={{
                       backgroundColor:
-                        selectedOption === "MAX" ? "#f0e6ff" : "white",
+                        selectedOption === "MAX" ? "#9e72be" : "#f0e6ff",
+                      textDecoration:
+                        selectedOption === "MAX" ? "underline" : "none",
+                      color: selectedOption === "MAX" ? "#fff" : "#9e72be",
                     }}
                   >
                     MAX
@@ -216,7 +227,10 @@ function Generate() {
                     onClick={() => setSelectedOption("MIN")}
                     style={{
                       backgroundColor:
-                        selectedOption === "MIN" ? "#f0e6ff" : "white",
+                        selectedOption === "MIN" ? "#9e72be" : "#f0e6ff",
+                      textDecoration:
+                        selectedOption === "MIN" ? "underline" : "none",
+                      color: selectedOption === "MIN" ? "#fff" : "#9e72be",
                     }}
                   >
                     MIN
@@ -258,14 +272,6 @@ function Generate() {
                 style={{ width: "100%", marginBottom: "15px" }}
               >
                 Limpiar
-              </button>
-
-              <button
-                className="test-button"
-                type="button"
-                onClick={() => navigate("/revisionIA")}
-              >
-                Prueba
               </button>
             </Box>
           </div>
