@@ -189,40 +189,6 @@ function RevisionIA() {
     setExpandedTab(expandedTab === tabId ? null : tabId);
   };
 
-  const InteractiveStars = ({ tabId, requirementId }) => {
-    const currentRating = ratings[tabId]?.[requirementId] || 0;
-    
-    const handleStarClick = (selectedRating) => {
-      setRatings(prev => {
-        const newRatings = {
-          ...prev,
-          [tabId]: {
-            ...prev[tabId],
-            [requirementId]: selectedRating
-          }
-        };
-        
-        sessionStorage.setItem('projectRatings', JSON.stringify(newRatings));
-        
-        return newRatings;
-      });
-    };
-
-    return (
-      <div className="stars-container interactive">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <span
-            key={star}
-            className={`star ${star <= currentRating ? 'filled' : ''}`}
-            onClick={() => handleStarClick(star)}
-          >
-            {star <= currentRating ? '★' : '☆'}
-          </span>
-        ))}
-      </div>
-    );
-  };
-
   const handleDeleteItem = (tabId, id) => {
     if (!projectData) return;
     
@@ -297,8 +263,6 @@ function RevisionIA() {
 
         setSaveStatus({ loading: false, error: null, success: true });
 
-        
-
         setTimeout(() => {
             setShowPopup(false);
             setEditing(false);
@@ -306,11 +270,10 @@ function RevisionIA() {
     } catch (error) {
         setSaveStatus({ loading: false, error: "Error al guardar", success: false });
     }
-};
+  };
 
   const handleConfirm = async () => {
     try {
-
       const userId = localStorage.getItem("UserID");
 
       if (!userId) {
@@ -363,7 +326,6 @@ function RevisionIA() {
       console.error("Error al guardar el proyecto:", error);
       alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
     }
-    
   };
 
   const handleSaveProjectChanges = async () => {
@@ -395,7 +357,7 @@ function RevisionIA() {
     } catch (error) {
         setSaveStatus({ loading: false, error: "Error al guardar", success: false });
     }
-};
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -539,7 +501,6 @@ function RevisionIA() {
                    activeTab === "RNF" ? "Requerimientos no funcionales" :
                    activeTab === "HU" ? "Historias de usuario" : "Epicas"}
                 </th>
-                <th>Valoración</th>
                 {showDeleteIcons && <th>Acciones</th>}
               </tr>
             </thead>
@@ -559,12 +520,6 @@ function RevisionIA() {
                     >
                       {item.titulo}
                     </td>
-                    <td>
-                      <InteractiveStars 
-                        tabId={activeTab} 
-                        requirementId={item.id} 
-                      />
-                    </td>
                     {showDeleteIcons && (
                       <td className="actions-cell">
                         <button 
@@ -580,7 +535,7 @@ function RevisionIA() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={showDeleteIcons ? 3 : 2} className="no-items">
+                  <td colSpan={showDeleteIcons ? 2 : 1} className="no-items">
                     No hay elementos en esta categoría
                   </td>
                 </tr>
