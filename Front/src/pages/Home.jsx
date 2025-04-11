@@ -6,10 +6,12 @@ const Home = () => {
   const [projects, setProjects] = useState([]);
   const [displayCount, setDisplayCount] = useState(18);
   const [sortType, setSortType] = useState("Por Defecto");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const getProjects = async () => {
+    setIsLoading(true);
     const userId = localStorage.getItem("UserID");
 
     if (!userId) {
@@ -23,6 +25,7 @@ const Home = () => {
       );
       const data = await result.json();
       setProjects(data);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching projects:", error);
     }
@@ -89,6 +92,12 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Cargando proyectos...</p>
+        </div>
+      )}
     </div>
   );
 };
