@@ -1,27 +1,99 @@
+/* Estilo general para la tabla */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 16px;
+  text-align: left;
+  background-color: #ffffff; /* Fondo blanco */
+  border-radius: 8px; /* Bordes redondeados */
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+th, td {
+  padding: 12px 15px;
+  border: 1px solid #eae0f2; /* Gris claro */
+}
+
+th {
+  background-color: #f0e5fa; /* Fondo morado claro */
+  color: #5d3a7f; /* Texto morado oscuro */
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+tr:nth-child(even) {
+  background-color: #f9f9f9; /* Fondo alternado gris claro */
+}
+
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+/* Estilo base para las filas arrastrables */
 tr[draggable] {
-    background-color: #f9f9f9;
-    transition: background-color 0.2s ease;
-  }
-  
-  tr[draggable]:hover {
-    background-color: #e0e0e0;
-    cursor: grab;
-  }
-  
-  tr[draggable]:active {
-    cursor: grabbing;
-  }
-  
-  .stars-container {
-    display: flex;
-    gap: 5px;
-  }
-  
-  .star {
-    font-size: 20px;
-    cursor: pointer;
-  }
-  
-  .star.filled {
-    color: gold;
-  }
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+}
+
+tr[draggable]:hover {
+  background-color: #f0e5fa; /* Fondo morado claro al pasar el mouse */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra ligera */
+}
+
+tr[draggable]:active {
+  cursor: grabbing;
+  opacity: 0.9; /* Reduce ligeramente la opacidad al arrastrar */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+}
+
+/* Estilo para la fila de destino (donde se soltará el elemento) */
+tr.drop-target {
+  background-color: #e6d4f0; /* Fondo morado más claro */
+  border: 2px dashed #9e72be; /* Borde punteado morado */
+}
+
+/* Botones de acción */
+button {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #7a5a96; /* Morado más oscuro */
+  color: #ffffff;
+}
+
+button.delete-icon {
+  background-color: #dc3545; /* Rojo */
+  color: #ffffff;
+}
+
+button.delete-icon:hover {
+  background-color: #b72a3a; /* Rojo más oscuro */
+}
+
+/* Estilo para las estrellas */
+.stars-container {
+  display: flex;
+  gap: 5px;
+}
+
+.star {
+  font-size: 20px;
+  color: #ddd; /* Gris claro */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.star:hover {
+  transform: scale(1.2); /* Aumenta ligeramente el tamaño al pasar el mouse */
+}
+
+.star.filled {
+  color: #ffc107; /* Dorado */
+}

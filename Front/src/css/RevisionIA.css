@@ -19,6 +19,33 @@
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+
+.white-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.softedge-logo img {
+  width: 100%;
+  height: auto;
+}
+
+.softedge-logo {
+  display: flex;
+  align-items: left;
+  height: 50px;
+  width: auto;
+}
+
 .full-width-header h2 {
   color: #5d3a7f;
   margin: 0;

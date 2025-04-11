@@ -3,13 +3,14 @@ import { Box, TextField, Typography, Button } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import "../css/Login.css"; 
+import "../css/Login.css";
 
 const Login = ({ tryLogin }) => {
   const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const getTest = async () => {
     try {
@@ -34,13 +35,14 @@ const Login = ({ tryLogin }) => {
       alert("Favor de llenar todos los campos.");
       return;
     }
-
+    setIsLoading(true);
     const isLogin = await tryLogin({ email, password });
 
     if (isLogin) {
       setEmail("");
       setPassword("");
       alert("Login logrado!");
+      setIsLoading(false);
       navigate("/dungeon");
     } else {
       alert("Login fallido: Email o contraseña incorrectos.");
@@ -58,11 +60,11 @@ const Login = ({ tryLogin }) => {
         <h1 className="title">Inicia Sesión</h1>
         <h2 className="subtitle">FRIDA Product Planner</h2>
         <p className="login-text">
-
-        Si todavía no tienes una cuenta.         
-        <br /> <br />
-        <span className="register-link" onClick={goToRegister}>¡Regístrate Aquí!</span>
-
+          Si todavía no tienes una cuenta.
+          <br /> <br />
+          <span className="register-link" onClick={goToRegister}>
+            ¡Regístrate Aquí!
+          </span>
         </p>
         <img
           src="/Login.png"
@@ -93,7 +95,14 @@ const Login = ({ tryLogin }) => {
           </button>
         </form>
       </div>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Iniciando sesión...</p>
+        </div>
+      )}
     </div>
+
   );
 };
 

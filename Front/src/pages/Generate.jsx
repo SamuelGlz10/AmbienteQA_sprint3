@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, TextField } from "@mui/material";
-import "../css/Generate.css"; // Importa el archivo CSS para estilos personalizados
+import "../css/Generate.css";
 
 function Generate() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [copiarText, setCopiarText] = useState("Copiar"); // Estado para controlar el texto copiado
   const [pegarText, setPegarText] = useState("Pegar"); // Estado para controlar el texto pegado
+  const [selectedDetail, setSelectedDetail] = useState("Bajo");
   const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
-  const [history, setHistory] = useState(["1", "2", "3", "4"]); // Estado para controlar el historial
+  const [history, setHistory] = useState([]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
 
   const promptRules = `Please create a JSON object with the following structure: 
@@ -46,11 +47,14 @@ function Generate() {
         body: JSON.stringify({ prompt, rules: promptRules }),
       });
       const { data } = await response.json();
-  
+
       // Limpia el JSON (remueve ```json y comillas simples)
-      const cleanJSON = data.replace(/```json|```/g, '').replace(/'/g, '"').trim();
+      const cleanJSON = data
+        .replace(/```json|```/g, "")
+        .replace(/'/g, '"')
+        .trim();
       console.log("JSON limpio:", cleanJSON);
-  
+
       // Valida y envía
       JSON.parse(cleanJSON); // Si falla, lanzará error
       navigate("/revisionIA", { state: { generatedText: cleanJSON } });
@@ -87,10 +91,6 @@ function Generate() {
     }, 2000);
   };
 
-  const handleOptionSelect = (option) => {
-    setSelectedOption(option); // Actualizar el estado de la opción seleccionada
-  };
-
   const addToHistory = (prompt) => {
     setHistory((prevHistory) => {
       const newHistory = [prompt, ...prevHistory]; // Agregar el nuevo prompt al historial
@@ -103,179 +103,193 @@ function Generate() {
   };
 
   return (
-    <div style={{ width: 1400 }}>
-      <form style={{ width: 1400 }} onSubmit={onSubmit}>
-        <Box // Cuerpo de pagina
-          margin={"auto"}
-          width={1400}
-          flexDirection={"row"}
-          justifyContent={"space-between"}
-          display={"flex"}
-          marginTop={10}
-        >
-          <div style={{ width: "48%" }}>
+<div className="white-container">
+  <div className="logo-container">
+    <img src="/softedge_logo2.png" alt="SoftEdge Logo" className="softedge-logo" />
+  
+  </div>
+  <div className="generate-container">
+    <div className="main-title">
+      <h1>Creación con IA</h1>
+    </div>
+
+      <button className="back-button" onClick={() => navigate("/home")}>
+        ←
+      </button>
+
+      <form onSubmit={onSubmit}>
+        <div className="content-container">
+          <div className="left-container">
             <Box className="pink-box">
-              {/* Caja de prompt */}
-              <span className="prompt-text">
+              <div className="prompt-text">
                 <p>Prompt:</p>
-                <span className="button-container" id="button-container-right">
+                <div id="button-container-right">
                   <button
-                    className="secondary-button"
                     type="button"
-                    onClick={handleCopy} // Copia el texto del prompt
+                    className="secondary-button"
+                    onClick={handleCopy}
                   >
                     {copiarText}
                   </button>
                   <button
-                    className="secondary-button"
                     type="button"
-                    onClick={handlePaste} // Pega el texto del portapapeles en el prompt
+                    className="secondary-button"
+                    onClick={handlePaste}
                   >
                     {pegarText}
                   </button>
-                </span>
-              </span>
+                </div>
+              </div>
+
               <TextField
-                className={"login-input"}
-                name={"prompt"}
-                id={"prompt"}
-                variant={"outlined"}
-                margin={"normal"}
-                multiline={true}
-                rows={16}
-                autoComplete="off"
+                name="prompt"
+                id="prompt"
+                variant="outlined"
+                multiline
+                rows={12}
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)} // Actualiza el estado del prompt
-                // Se utiliza para modificar el estilo de los elementos internos del TextField de mui materials:
-                slotProps={{
-                  // inputLabel: {
-                  //   // Label del TextField
-                  //   sx: {
-                  //     color: "#000000",
-                  //   },
-                  // },
-                  htmlInput: {
-                    // Texto del TextField
-                    sx: {
-                      color: "#000000",
+                onChange={(e) => setPrompt(e.target.value)}
+                sx={{
+                  width: "100%",
+                  backgroundColor: "#FFFFFF",
+                  "& .MuiOutlinedInput-root": {
+                    fontFamily: "'Poppins', sans-serif",
+                    "& fieldset": {
+                      borderColor: "#ddd",
+                    },
+                    "&:hover fieldset": {
+                      borderColor: "#9370DB",
+                    },
+                    "&.Mui-focused fieldset": {
+                      borderColor: "#9370DB",
                     },
                   },
-                  input: {
-                    // Input del Fondo
-                    sx: {
-                      backgroundColor: "#FFFFFF",
-                    },
+                  "& .MuiInputBase-input": {
+                    fontFamily: "'Poppins', sans-serif",
                   },
                 }}
               />
+
+              <div className="button-container">
+                <button
+                  className="main-button"
+                  type="submit"
+                  disabled={loading}
+                >
+                  Generar
+                </button>
+                <button
+                  className="main-button"
+                  type="button"
+                  onClick={handleErase}
+                >
+                  Eliminar
+                </button>
+              </div>
             </Box>
-            <span className="button-container">
-              {/* Botones de generar y eliminar */}
-              <button className="main-button" type="submit" disabled={loading}>
-                {loading ? "Cargando..." : "Generar"}{" "}
-                {/* Cambia el texto del botón según el estado de carga */}
-              </button>
-              <button
-                className="main-button"
-                type="button"
-                onClick={handleErase}
-              >
-                Eliminar
-              </button>
-            </span>
           </div>
-          <Box className="pink-box">
-            <span className="prompt-options-text">
-              <p id="prompt-options">Opciones:</p>
-            </span>
 
-            <span className="prompt-options-container">
-              <p>Nivel de detalle:</p>
-              <select className="select-options">
-                <option value="1">Bajo</option>
-                <option value="2">Medio</option>
-                <option value="3">Alto</option>
-              </select>
-            </span>
+          <div className="right-container">
+            <Box className="pink-box">
+              <div className="prompt-options-text">
+                <p>Opciones:</p>
+              </div>
 
-            <span className="prompt-options-container">
-              <p>Límite de lista:</p>
-              <button
-                className="secondary-button"
-                id="prompt-options-button"
-                type="button"
-                style={{
-                  // Aplicar estilos condicionales
-                  textDecoration:
-                    selectedOption === "MAX" ? "underline" : "none",
-                }}
-                onClick={() => handleOptionSelect("MAX")} // Cambia el estado de la opción seleccionada a "MAX"
-              >
-                MAX
-              </button>
-              <button
-                className="secondary-button"
-                id="prompt-options-button"
-                type="button"
-                style={{
-                  textDecoration:
-                    selectedOption === "MIN" ? "underline" : "none",
-                }}
-                onClick={() => handleOptionSelect("MIN")} // Cambia el estado de la opción seleccionada a "MIN"
-              >
-                MIN
-              </button>
-              <input
-                className="input-options"
-                type="number"
-                min="1"
-                max="25"
-                value={limit}
-                onChange={(e) => setLimit(e.target.value)} // Actualiza el estado del límite
-                placeholder="0"
-              />
-            </span>
+              <div className="prompt-options-container">
+                <span>Nivel de detalle:</span>
+                <select
+                  value={selectedDetail}
+                  onChange={(e) => setSelectedDetail(e.target.value)}
+                >
+                  <option value="Bajo">Bajo</option>
+                  <option value="Medio">Medio</option>
+                  <option value="Alto">Alto</option>
+                </select>
+              </div>
 
-            <span className="prompt-options-text" style={{ marginTop: "10px" }}>
-              <p id="prompt-options">Historial:</p>
-            </span>
-            <div className="history-container">
-              {history.map(
-                (
-                  item,
-                  index // Mapeamos el historial
-                ) => (
-                  <div
-                    title={item} // Usamos el 'item' como título para el elemento
-                    key={index} // Usamos el 'indiex' como clave única
-                    className="history-item"
-                    onClick={() => handleHistorialClick(item)} // Manejador de clics para el historial
+              <div className="prompt-options-container">
+                <span>Límite de lista:</span>
+                <div
+                  style={{ display: "flex", gap: "10px", alignItems: "center" }}
+                >
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => setSelectedOption("MAX")}
+                    style={{
+                      backgroundColor:
+                        selectedOption === "MAX" ? "#9e72be" : "#f0e6ff",
+                      textDecoration:
+                        selectedOption === "MAX" ? "underline" : "none",
+                      color: selectedOption === "MAX" ? "#fff" : "#9e72be",
+                    }}
                   >
-                    <span>
-                      {item || ""} {/* Manejar el caso de vacío */}
-                    </span>
+                    MAX
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary-button"
+                    onClick={() => setSelectedOption("MIN")}
+                    style={{
+                      backgroundColor:
+                        selectedOption === "MIN" ? "#9e72be" : "#f0e6ff",
+                      textDecoration:
+                        selectedOption === "MIN" ? "underline" : "none",
+                      color: selectedOption === "MIN" ? "#fff" : "#9e72be",
+                    }}
+                  >
+                    MIN
+                  </button>
+                  <input
+                    type="number"
+                    value={limit}
+                    min="1"
+                    onChange={(e) => setLimit(e.target.value)}
+                    style={{
+                      width: "60px",
+                      padding: "6px 12px",
+                      borderRadius: "4px",
+                      border: "1px solid #ddd",
+                      fontSize: "14px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="prompt-options-text">
+                <p>Historial:</p>
+              </div>
+              <div className="history-container">
+                {history.map((item, index) => (
+                  <div
+                    key={index}
+                    className="history-item"
+                    onClick={() => handleHistorialClick(item)}
+                  >
+                    <span>{item || ""}</span>
                   </div>
-                )
-              )}
-            </div>
-            <button
-              className="secondary-button"
-              id="prompt-options-button"
-              type="button"
-              onClick={() => setHistory([])} // Limpiar el historial
-            >
-              Limpiar
-            </button>
-          </Box>
-        </Box>
+                ))}
+              </div>
+              <button
+                className="secondary-button"
+                type="button"
+                onClick={() => setHistory([])}
+                style={{ width: "100%", marginBottom: "15px" }}
+              >
+                Limpiar
+              </button>
+            </Box>
+          </div>
+        </div>
       </form>
-      {/* Pantalla de carga */}
+
       {loading && (
         <div className="loading-overlay">
           <div className="spinner"></div>
           <p>Generando texto, por favor espere...</p>
         </div>
       )}
+          </div>
     </div>
   );
 }

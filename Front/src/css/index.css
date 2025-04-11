@@ -70,11 +70,14 @@ button:focus-visible {
 }
 
 .secondary-button {
-  width: 17%;
+  min-width: 100px;
+  white-space: nowrap;
+  text-align: center;
   background-color: #eddff6;
   color: #9e72be;
   border: 1px solid #979797;
 }
+
 .secondary-button:hover {
   background-color: #e1d3e8;
 }
@@ -90,4 +93,31 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+
+.white-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.softedge-logo img {
+  width: 100%;
+  height: auto;
+}
+
+.softedge-logo {
+  display: flex;
+  align-items: left;
+  height: 50px;
+  width: auto;
 }

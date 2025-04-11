@@ -1,4 +1,5 @@
 import React from "react";
+import "../css/DragAndDropTable.css";
 
 const DragAndDropTable = ({ requirements, setRequirements, activeTab, updateBackend }) => {
   const handleDragStart = (e, draggedItem) => {

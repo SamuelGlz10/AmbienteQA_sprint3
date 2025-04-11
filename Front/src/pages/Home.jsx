@@ -6,11 +6,13 @@ const Home = () => {
   const [projects, setProjects] = useState([]);
   const [displayCount, setDisplayCount] = useState(18);
   const [sortType, setSortType] = useState("Por Defecto");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   const getProjects = async () => {
-    const userId = localStorage.getItem("UserID"); // Get the userId from localStorage
+    setIsLoading(true);
+    const userId = localStorage.getItem("UserID");
 
     if (!userId) {
       console.error("User ID not found in localStorage.");
@@ -23,6 +25,7 @@ const Home = () => {
       );
       const data = await result.json();
       setProjects(data);
+      setIsLoading(false);
     } catch (error) {
       console.error("Error fetching projects:", error);
     }
@@ -45,6 +48,12 @@ const Home = () => {
   const sortedProjects = sortProjects(projects);
 
   return (
+    <div className="white-container">
+  <div className="logo-container">
+    <img src="/softedge_logo2.png" alt="SoftEdge Logo" className="softedge-logo" />
+  
+  </div>
+
     <div className="home-container">
       <div className="main-title">
         <h1>Mis Proyectos</h1>
@@ -89,8 +98,14 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {isLoading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+          <p>Cargando proyectos...</p>
+        </div>
+      )}
     </div>
-  );
+    </div>  );
 };
 
 export default Home;

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
+import "../css/DragAndDropTable.css";
 import DragAndDropTable from "../components/DragAndDropTable";
 
 function RevisionIA() {
@@ -71,24 +72,40 @@ function RevisionIA() {
     setDraggedItem(item);
   };
 
+  const saveOrderToBackend = (updatedTab) => {
+    console.log("Orden actualizado localmente:", {
+      tabId: activeTab,
+      requirements: updatedTab,
+    });
+  
+    // Actualizar el estado local
+    setProjectData((prev) => ({
+      ...prev,
+      [activeTab]: updatedTab,
+    }));
+  };
+  
   const handleDrop = (targetItem) => {
     if (!draggedItem || !projectData) return;
-
+  
     setProjectData((prev) => {
       const updatedTab = [...prev[activeTab]];
       const draggedIndex = updatedTab.findIndex((item) => item.id === draggedItem.id);
       const targetIndex = updatedTab.findIndex((item) => item.id === targetItem.id);
-
+  
       // Reorganizar los elementos
       updatedTab.splice(draggedIndex, 1);
       updatedTab.splice(targetIndex, 0, draggedItem);
-
+  
+      // Guardar el nuevo orden en el backend
+      saveOrderToBackend(updatedTab);
+  
       return {
         ...prev,
         [activeTab]: updatedTab,
       };
     });
-
+  
     setDraggedItem(null);
   };
 
