@@ -48,6 +48,12 @@ const Home = () => {
   const sortedProjects = sortProjects(projects);
 
   return (
+    <div className="white-container">
+  <div className="logo-container">
+    <img src="/softedge_logo2.png" alt="SoftEdge Logo" className="softedge-logo" />
+  
+  </div>
+
     <div className="home-container">
       <div className="main-title">
         <h1>Mis Proyectos</h1>
@@ -99,7 +105,7 @@ const Home = () => {
         </div>
       )}
     </div>
-  );
+    </div>  );
 };
 
 export default Home;

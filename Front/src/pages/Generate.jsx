@@ -103,10 +103,15 @@ function Generate() {
   };
 
   return (
-    <div className="generate-container">
-      <div className="main-title">
-        <h1>Creación con IA</h1>
-      </div>
+<div className="white-container">
+  <div className="logo-container">
+    <img src="/softedge_logo2.png" alt="SoftEdge Logo" className="softedge-logo" />
+  
+  </div>
+  <div className="generate-container">
+    <div className="main-title">
+      <h1>Creación con IA</h1>
+    </div>
 
       <button className="back-button" onClick={() => navigate("/home")}>
         ←
@@ -284,6 +289,7 @@ function Generate() {
           <p>Generando texto, por favor espere...</p>
         </div>
       )}
+          </div>
     </div>
   );
 }
