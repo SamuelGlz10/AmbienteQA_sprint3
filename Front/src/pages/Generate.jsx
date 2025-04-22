@@ -29,7 +29,7 @@ function Generate() {
     if (!userID) return;
 
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
-    allHistories[userID] = history;
+    allHistories[userID] = history; 
     localStorage.setItem("history", JSON.stringify(allHistories));
   }, [history, userID]);
 
