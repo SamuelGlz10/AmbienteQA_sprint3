@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "../css/RevisionIA.css";
 import "../css/DragAndDropTable.css";
 import DragAndDropTable from "../components/DragAndDropTable";
+import TopAppBar from "../components/TopAppBar";
 
 function RevisionIA() {
   const location = useLocation();
@@ -440,7 +441,8 @@ function RevisionIA() {
   }
 
   return (
-    <div className="page-container">
+    <div className="white-container">
+      <TopAppBar />
       <div className="full-width-header">
         {/* Botón de volver a generate */}
         <button 
