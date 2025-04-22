@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Generate from "./pages/Generate";
 import Registro from "./pages/Registro";
 import RevisionIA from "./pages/RevisionIA";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const [isLogin, setIsLogin] = useState(() => {
@@ -73,6 +74,10 @@ function App() {
           <Route
             path="/revisionIA"
             element={isLogin ? <RevisionIA /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/project/:projectId" // Dynamic route for project dashboard
+            element={isLogin ? <Dashboard /> : <Navigate to="/login" />}
           />
           <Route
             path="*" // Ruta no encontrada
