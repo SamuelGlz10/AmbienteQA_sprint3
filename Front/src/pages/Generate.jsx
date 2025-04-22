@@ -129,6 +129,7 @@ function Generate() {
           <h1>Creación con IA</h1>
         </div>
 
+
         <button className="back-button" onClick={() => navigate("/home")}>
           ←
         </button>

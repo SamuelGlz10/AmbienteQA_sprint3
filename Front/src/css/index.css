@@ -95,6 +95,7 @@ button:focus-visible {
   }
 }
 
+
 .white-container {
   background-color: #ffffff;
   padding: 20px;
@@ -102,6 +103,7 @@ button:focus-visible {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
   max-height: 1000px;
+
 }
 
 .logo-container {
@@ -120,4 +122,4 @@ button:focus-visible {
   align-items: left;
   height: 50px;
   width: auto;
-}
+

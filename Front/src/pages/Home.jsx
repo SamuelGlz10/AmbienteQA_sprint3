@@ -51,10 +51,18 @@ const Home = () => {
 
   return (
     <div className="white-container">
+
       <TopAppBar />
-      <div className="home-container">
-        <div className="main-title">
-          <h1>Mis Proyectos</h1>
+
+    <div className="home-container">
+      <div className="main-title">
+        <h1>Mis Proyectos</h1>
+      </div>
+
+      <div className="controls-container">
+        <div className="pagination-info">
+          Mostrando 1 - {Math.min(displayCount, projects.length)} de{" "}
+          {projects.length}
         </div>
 
         <div className="controls-container">
@@ -107,7 +115,7 @@ const Home = () => {
         )}
       </div>
     </div>
-  );
+    </div>  );
 };
 
 export default Home;

@@ -23,6 +23,24 @@ body,
   margin-bottom: 20px;
 }
 
+.logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.softedge-logo img {
+  width: 100%;
+  height: auto;
+}
+
+.softedge-logo {
+  display: flex;
+  align-items: left;
+  height: 50px;
+  width: auto;
+}
+
 .home-container {
   padding: 0;
   background-color: white;
