@@ -51,7 +51,6 @@ const Home = () => {
 
   return (
     <div className="white-container">
-
       <TopAppBar />
 
       <div className="home-container">
@@ -59,56 +58,56 @@ const Home = () => {
           <h1>Mis Proyectos</h1>
         </div>
 
-          <div className="controls-container">
-            <div className="pagination-info">
-              Mostrando 1 - {Math.min(displayCount, projects.length)} de{" "}
-              {projects.length}
-            </div>
-
-            <div className="sort-control">
-              <span>Ordenar por:</span>
-              <select
-                className="sort-select"
-                value={sortType}
-                onChange={(e) => setSortType(e.target.value)}
-              >
-                <option>Por Defecto</option>
-                <option>Nombre</option>
-              </select>
-            </div>
+        <div className="controls-container">
+          <div className="pagination-info">
+            Mostrando 1 - {Math.min(displayCount, projects.length)} de{" "}
+            {projects.length}
           </div>
 
-          <div className="projects-grid">
-            {sortedProjects.slice(0, displayCount).map((project) => (
-              <div key={project.id} className="project-card">
-                <div className="project-image"></div>
-                <div className="project-info">
-                  <h3>{project.nombreProyecto || project.id}</h3>
-                  <p>{project.descripcion}</p>
-                </div>
-              </div>
-            ))}
-
-            <div
-              className="new-project-card"
-              onClick={() => navigate("/generate")}
+          <div className="sort-control">
+            <span>Ordenar por:</span>
+            <select
+              className="sort-select"
+              value={sortType}
+              onChange={(e) => setSortType(e.target.value)}
             >
-              <div className="plus-icon">+</div>
-              <div className="new-project-text">
-                NUEVO
-                <br />
-                PROYECTO
+              <option>Por Defecto</option>
+              <option>Nombre</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="projects-grid">
+          {sortedProjects.slice(0, displayCount).map((project) => (
+            <div key={project.id} className="project-card" onClick={() => navigate(`/project/${project.id}`)}>
+              <div className="project-image"></div>
+              <div className="project-info">
+                <h3>{project.nombreProyecto || project.id}</h3>
+                <p>{project.descripcion}</p>
               </div>
             </div>
-          </div>
-          {isLoading && (
-            <div className="loading-overlay">
-              <div className="spinner"></div>
-              <p>Cargando proyectos...</p>
+          ))}
+
+          <div
+            className="new-project-card"
+            onClick={() => navigate("/generate")}
+          >
+            <div className="plus-icon">+</div>
+            <div className="new-project-text">
+              NUEVO
+              <br />
+              PROYECTO
             </div>
-          )}
+          </div>
         </div>
+        {isLoading && (
+          <div className="loading-overlay">
+            <div className="spinner"></div>
+            <p>Cargando proyectos...</p>
+          </div>
+        )}
       </div>
+    </div>
   );
 };
 
