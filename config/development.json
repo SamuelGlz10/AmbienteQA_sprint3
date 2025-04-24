@@ -1,7 +1,7 @@
 {
-  BACK_PORT = 5001
-  DB_USER = 'admin'
-  DB_PWD = 'admining'
-  DB_NAME = 'web_prueba'
-  DB_SERVER = 'localhost'
+  "BACK_PORT": 5001,
+  "DB_USER": "admin",
+  "DB_PWD": "admining",
+  "DB_NAME": "web_prueba",
+  "DB_SERVER": "localhost"
 }
