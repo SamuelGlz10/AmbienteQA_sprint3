@@ -1,33 +1,45 @@
-import { Box, TextField, Typography, Button } from "@mui/material";
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../components/AuthContext";
+import { UserContext } from "../components/UserContext";
 
 import "../css/Login.css";
 
-const Login = ({ tryLogin }) => {
-  const navigate = useNavigate();
-  const [message, setMessage] = useState("");
+const Login = () => {
+  const { setIsLogin } = React.useContext(AuthContext); // Usamos el contexto de autenticación
+  const { setUserId, setRole } = React.useContext(UserContext); // Usamos el contexto de usuario
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const getTest = async () => {
+  const tryLogin = async (user) => {
     try {
-      const result = await fetch("http://localhost:5001");
-      const text = await result.text();
-      console.log(text);
-      if (!text.includes("<!DOCTYPE")) {
-        setMessage(text);
+      const result = await fetch("http://localhost:5001/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+      });
+
+      if (!result.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const data = await result.json();
+
+      if (data.isLogin) {
+        setIsLogin(true);
+        setUserId(data.user.UserID); // Guardar el userId en el contexto
+        setRole(data.user.role); // Guardar el rol en el contexto
+        return true;
+      } else {
+        return false;
       }
     } catch (error) {
-      console.error("Error al conectar con la API:", error);
+      console.error("Failed to fetch:", error);
+      return false;
     }
   };
-
-  useEffect(() => {
-    getTest();
-  }, []);
 
   const onsubmit = async (e) => {
     e.preventDefault();
