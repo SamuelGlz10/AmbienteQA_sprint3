@@ -4,6 +4,8 @@ import "../css/RevisionIA.css";
 import "../css/DragAndDropTable.css";
 import DragAndDropTable from "../components/DragAndDropTable";
 import TopAppBar from "../components/TopAppBar";
+import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
+import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 
 function RevisionIA() {
   const location = useLocation();
@@ -14,7 +16,8 @@ function RevisionIA() {
   const [showDeleteIcons, setShowDeleteIcons] = useState(false);
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
   const [selectedItem, setSelectedItem] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -278,7 +281,7 @@ function RevisionIA() {
       const userId = localStorage.getItem("UserID");
 
       if (!userId) {
-        alert("No se encontró el ID de usuario en el almacenamiento local.");
+        setError("No se encontró el ID de usuario en el almacenamiento local."); // Muestra el popup de error
         return;
       }
 
@@ -293,7 +296,7 @@ function RevisionIA() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        alert(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`);
+        setError(`Error al guardar el proyecto: ${errorData.message || "Error desconocido"}`); // Muestra el popup de error
         return;
       }
 
@@ -314,19 +317,26 @@ function RevisionIA() {
 
       if (!linkResponse.ok) {
         const errorData = await linkResponse.json();
-        alert(`Error al vincular el proyecto al usuario: ${errorData.message || "Error desconocido"}`);
+        setError(`Error al vincular el proyecto al usuario: ${errorData.message || "Error desconocido"}`); // Muestra el popup de error
         return;
       }
 
-      alert("Proyecto guardado exitosamente.");
+      setSuccessMessage("Proyecto guardado exitosamente."); // Muestra el popup de éxito
       sessionStorage.removeItem('projectData');
       sessionStorage.removeItem('projectRatings');
-      navigate("/home"); // Redirigir a la página de inicio después de guardar
-
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
-      alert("Error al guardar el proyecto. Por favor, inténtalo de nuevo.");
+      setError("Error al guardar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
     }
+  };
+
+  const closeErrorPopup = () => {
+    setError(null); // Cierra el popup de error
+  };
+
+  const closeSuccessPopup = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
+    navigate("/home"); // Redirige al usuario a la página de inicio
   };
 
   const handleSaveProjectChanges = async () => {
@@ -641,6 +651,12 @@ function RevisionIA() {
           </div>
         </div>
       )}
+
+      {/* Popup de error */}
+      <ErrorPopup message={error} onClose={closeErrorPopup} />
+
+      {/* Popup de éxito */}
+      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 }
