@@ -3,5 +3,5 @@
   "AZURE_SQL_DATABASE": "softedge",
   "AZURE_SQL_PORT": 1433,
   "AZURE_SQL_USER": "prueba",
-  "AZURE_SQL_PASSWORD": "Probando1"
+  "AZURE_SQL_PASSWORD": "ProdPass2025!"
 }
