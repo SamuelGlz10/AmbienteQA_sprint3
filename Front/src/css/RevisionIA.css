@@ -129,6 +129,32 @@ table {
   border-collapse: collapse;
 }
 
+.home-container {
+  padding: 0;
+  background-color: white;
+  min-height: 100vh;
+  font-family: "Arial", -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  align-items: center;
+}
+
+.main-title {
+  background-color: #f0e6ff;
+  padding: 15px 0;
+  width: 100%;
+  text-align: center;
+}
+
+.main-title h1 {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
 th {
   background-color: #f0e5fa;
   color: #5d3a7f;
