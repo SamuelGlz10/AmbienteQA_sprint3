@@ -1,7 +1,8 @@
-BACK_PORT = 5001
-
-AZURE_SQL_SERVER = softedge.database.windows.net
-AZURE_SQL_DATABASE = softedge
-AZURE_SQL_PORT = 1433
-AZURE_SQL_USER = Prueba
-AZURE_SQL_PASSWORD = Probando1
+{
+  "BACK_PORT": 5001,
+  "AZURE_SQL_SERVER": "softedge.database.windows.net",
+  "AZURE_SQL_DATABASE": "softedge",
+  "AZURE_SQL_PORT": 1433,
+  "AZURE_SQL_USER": "Prueba",
+  "AZURE_SQL_PASSWORD": "Probando1"
+}
