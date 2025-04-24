@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../components/AuthContext";
 import { UserContext } from "../components/UserContext";
+import ErrorPopup from "../components/ErrorPopup"; // Importamos el componente de popup de error
+import SuccessPopup from "../components/SuccessPopup"; // Importamos el componente de popup de éxito
 
 import "../css/Login.css";
 
@@ -11,6 +13,8 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
   const navigate = useNavigate();
 
   const tryLogin = async (user) => {
@@ -37,6 +41,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Failed to fetch:", error);
+      setError("Error al intentar iniciar sesión. Por favor, verifica tu conexión o intenta más tarde."); // Establece el mensaje de error
       return false;
     }
   };
@@ -44,7 +49,7 @@ const Login = () => {
   const onsubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
-      alert("Favor de llenar todos los campos.");
+      setError("Favor de llenar todos los campos."); // Muestra el error si faltan campos
       return;
     }
     setIsLoading(true);
@@ -53,17 +58,25 @@ const Login = () => {
     if (isLogin) {
       setEmail("");
       setPassword("");
-      alert("Login logrado!");
       setIsLoading(false);
-      navigate("/dungeon");
+      setSuccessMessage("¡Inicio de sesión exitoso!"); // Muestra el popup de éxito
     } else {
-      alert("Login fallido: Email o contraseña incorrectos.");
+      setError("Login fallido: Email o contraseña incorrectos."); // Muestra el error si el login falla
       setIsLoading(false);
     }
   };
 
   const goToRegister = () => {
     navigate("/registro");
+  };
+
+  const closeErrorPopup = () => {
+    setError(null); // Cierra el popup de error al limpiar el mensaje
+  };
+
+  const closeSuccessPopup = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
+    setTimeout(() => navigate("/home"), 200); // Redirige después de cerrar el popup
   };
 
   return (
@@ -112,6 +125,16 @@ const Login = () => {
         <div className="loading-overlay">
           <div className="spinner"></div>
           <p>Iniciando sesión...</p>
+        </div>
+      )}
+
+      {/* Popup de error */}
+      <ErrorPopup message={error} onClose={closeErrorPopup} />
+
+      {/* Popup de éxito */}
+      {Boolean(successMessage) && (
+        <div style={{ position: "absolute", top: 0, left: 0, zIndex: 2000, width: "100vw", height: "100vh" }}>
+          <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
         </div>
       )}
     </div>
