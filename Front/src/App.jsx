@@ -19,18 +19,13 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            isLogin ? <Navigate to="/home" /> : <Navigate to="/login" />
-          }
+          element={isLogin ? <Navigate to="/home" /> : <Navigate to="/login" />}
         />
         <Route
           path="/login"
           element={isLogin ? <Navigate to="/home" /> : <Login />}
         />
-        <Route
-          path="/registro"
-          element={isLogin ? <Registro /> : <Navigate to="/login" />}
-        />
+        <Route path="/registro" element={<Registro />} />
         <Route
           path="/home"
           element={isLogin ? <Home /> : <Navigate to="/login" />}

@@ -27,68 +27,54 @@ export const login = async (req, res) => {
 
 export const register = async (req, res) => {
   try {
-    const { name, password, phone, email } = req.body;
-    
+    const { name, lastname, password, phone, email } = req.body;
+
     if (!name || !password || !email) {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Username, email, and password are required" 
+      return res.status(400).json({
+        success: false,
+        message: "Username, email, and password are required",
       });
     }
-    
+
     const pool = await sqlConnect();
-    
-    const checkUser = await pool
-      .request()
-      .input("username", sql.VarChar, name)
-      .query("SELECT COUNT(*) as count FROM dbo.Users WHERE username = @username");
-    
-    if (checkUser.recordset[0].count > 0) {
-      return res.status(409).json({ 
-        success: false, 
-        message: "Username already exists" 
-      });
-    }
-    
+
     const checkEmail = await pool
       .request()
       .input("email", sql.VarChar, email)
       .query("SELECT COUNT(*) as count FROM dbo.Users WHERE email = @email");
-    
+
     if (checkEmail.recordset[0].count > 0) {
-      return res.status(409).json({ 
-        success: false, 
-        message: "Email already exists" 
+      return res.status(409).json({
+        success: false,
+        message: "Email already exists",
       });
     }
-    
+
     const result = await pool
       .request()
       .input("username", sql.VarChar, name)
+      .input("lastname", sql.VarChar, lastname || null)
       .input("password", sql.VarChar, password)
       .input("phone", sql.VarChar, phone || null)
-      .input("email", sql.VarChar, email || null)
-      .query(`
-        INSERT INTO dbo.Users (username, password, phone, email)
-        VALUES (@username, @password, @phone, @email);
+      .input("email", sql.VarChar, email || null).query(`
+        INSERT INTO dbo.Users (username, lastname, password, phone, email, role)
+        VALUES (@username, @lastname, @password, @phone, @email, 'user');
         SELECT SCOPE_IDENTITY() AS userId;
       `);
-    
+
     const userId = result.recordset[0].userId;
-    
+
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      userId: userId
+      userId: userId,
     });
-    
   } catch (err) {
     console.error("Registration Error:", err);
-    res.status(500).json({ 
-      success: false, 
-      message: "Server Error", 
-      error: err.message 
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: err.message,
     });
   }
 };
-
