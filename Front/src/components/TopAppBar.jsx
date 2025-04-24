@@ -8,6 +8,9 @@ const TopAppBar = () => {
         alt="SoftEdge Logo"
         className="softedge-logo"
       />
+      <div className="profile-container">
+        
+      </div>
     </div>
   );
 };

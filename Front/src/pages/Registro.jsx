@@ -6,6 +6,7 @@ const Registro = () => {
   const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState("");
+  const [appellido, setApellido] = useState("");
   const [correo, setCorreo] = useState("");
   const [telefono, setTelefono] = useState("");
   const [contrasena, setContrasena] = useState("");
@@ -30,6 +31,7 @@ const Registro = () => {
       },
       body: JSON.stringify({
         name: usuario,
+        lastname: appellido,
         email: correo,
         phone: telefono,
         password: contrasena,
@@ -74,6 +76,12 @@ const Registro = () => {
             type="text"
             placeholder="Nombre"
             onChange={(e) => setUsuario(e.target.value)}
+          />
+          <input
+            className="input"
+            type="text"
+            placeholder="Apellido"
+            onChange={(e) => setApellido(e.target.value)}
           />
           <input
             className="input"
