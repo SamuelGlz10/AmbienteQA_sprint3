@@ -6,7 +6,7 @@ const Dashboard = () => {
   const { projectId } = useParams();
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("EP"); // Default to EP tab
+  const [activeTab, setActiveTab] = useState("EP");
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -40,7 +40,9 @@ const Dashboard = () => {
     return (
       <ul>
         {tabContent[activeTab].map((item, index) => (
-          <li key={index}>{item}</li>
+          <li key={index}>
+            <strong>{item.id}: {item.titulo}</strong> - {item.data}
+          </li>
         ))}
       </ul>
     );
@@ -49,7 +51,9 @@ const Dashboard = () => {
   return (
     <div className="project-dashboard">
       <h1>{projectData.nombreProyecto}</h1>
+      <p>Fecha de creación: {projectData.fechaCreacion}</p>
       <p>{projectData.descripcion}</p>
+      <p>Estatus: {projectData.estatus}</p>
 
       {/* Tabs */}
       <div className="tabs">
@@ -64,10 +68,8 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Content for active tab */}
+      {/* Contenido para las tabs */}
       <div className="tab-content">{renderList()}</div>
-
-      <p>Status: {projectData.estatus}</p>
     </div>
   );
 };
