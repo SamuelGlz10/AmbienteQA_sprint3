@@ -36,7 +36,11 @@
 
 .dashboard-container {
   min-height: 100vh;
+  min-width: 100vw;
+  position: absolute;
   background-color: #f8f9fa;
+  height: 100%;
+  width: 100%;
 }
 
 .main-title {
@@ -60,6 +64,121 @@
   padding: 2rem;
   padding-top: 80px;
   position: relative;
+  display: flex;
+  gap: 2rem;
+}
+
+.main-dashboard-content {
+  flex: 1;
+}
+
+.tab-content {
+  margin-top: 1rem;
+}
+
+.team-members-container {
+  width: 300px;
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  height: 575px;
+  margin-top: 70px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.team-members-title {
+  color: #5d3a7f;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0e6ff;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
+/* Container for the scrollable content */
+.team-members-content {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding-bottom: 4.5rem; /* Space for the button */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.team-members-content::-webkit-scrollbar {
+  display: none;
+}
+
+.team-member-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.team-member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-profile {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e1d3e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5d3a7f;
+  font-weight: 600;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.member-name,
+.member-role,
+.member-email {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}
+
+.member-name {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.member-role {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.member-email {
+  color: #9e72be;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
 }
 
 .dashboard-loading {
@@ -415,6 +534,16 @@ td {
   transform: scale(1.1);
 }
 
+@media (max-width: 1024px) {
+  .dashboard-content {
+    flex-direction: column;
+  }
+
+  .team-members-container {
+    width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-content {
     padding: 1rem;
@@ -451,4 +580,436 @@ td {
   th, td {
     padding: 0.5rem;
   }
+}
+
+.people-section {
+  background-color: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.team-members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.team-member-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.team-member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.member-name {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.member-role {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.member-email {
+  color: #9e72be;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.edit-team-button {
+  position: absolute;
+  bottom: 1.45rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 2rem;
+  background-color: #9e72be;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  z-index: 2;
+  width: auto;
+  min-width: 180px;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.edit-team-button:hover {
+  background-color: #8d60b4;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Add a semi-transparent white background behind the button */
+.team-members-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
+  pointer-events: none;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Remove the gradient since we're using a standalone button */
+.team-members-container::after {
+  display: none;
+}
+
+.team-edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.team-edit-popup-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.team-edit-popup-title {
+  color: #5d3a7f;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.team-edit-popup-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.team-edit-popup-close:hover {
+  color: #333;
+}
+
+.members-sections {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.available-members-section,
+.current-team-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.available-members-section h3,
+.current-team-section h3 {
+  color: #5d3a7f;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0e6ff;
+}
+
+/* Popup styles */
+.available-members-list,
+.current-team-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 5px;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.available-members-list::-webkit-scrollbar,
+.current-team-list::-webkit-scrollbar {
+  display: none;
+}
+
+.available-member-card,
+.current-member-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.available-member-card {
+  cursor: pointer;
+}
+
+.available-member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.available-member-card.selected {
+  border-color: #9e72be;
+  background-color: #f0e6ff;
+  box-shadow: 0 2px 8px rgba(158, 114, 190, 0.2);
+}
+
+.current-member-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Add scrollbar styling for team members container */
+.team-members-container {
+  overflow-y: auto;
+  padding-bottom: 5rem; /* Space for the button */
+}
+
+.team-members-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.team-members-container::-webkit-scrollbar-track {
+  background: #f0e6ff;
+  border-radius: 3px;
+}
+
+.team-members-container::-webkit-scrollbar-thumb {
+  background-color: #9e72be;
+  border-radius: 3px;
+}
+
+.team-members-container::-webkit-scrollbar-thumb:hover {
+  background-color: #8d60b4;
+}
+
+/* Add scrollbar styling for popup lists */
+.available-members-list::-webkit-scrollbar,
+.current-team-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.available-members-list::-webkit-scrollbar-track,
+.current-team-list::-webkit-scrollbar-track {
+  background: #f0e6ff;
+  border-radius: 3px;
+}
+
+.available-members-list::-webkit-scrollbar-thumb,
+.current-team-list::-webkit-scrollbar-thumb {
+  background-color: #9e72be;
+  border-radius: 3px;
+}
+
+.available-members-list::-webkit-scrollbar-thumb:hover,
+.current-team-list::-webkit-scrollbar-thumb:hover {
+  background-color: #8d60b4;
+}
+
+.remove-member-confirmation {
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.remove-member-confirmation p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.remove-member-confirmation p:first-child {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.edit-member-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.edit-member-popup-content {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.edit-member-popup-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+}
+
+.edit-member-popup-title {
+  color: #5d3a7f;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #f0e6ff;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus {
+  border-color: #9e72be;
+  outline: none;
+}
+
+.remove-member-confirmation {
+  padding: 1.5rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.remove-member-confirmation p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.remove-member-confirmation p:first-child {
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.edit-member-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.edit-member-popup-actions button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.edit-member-popup-actions button:first-child {
+  background-color: #f0e6ff;
+  color: #5d3a7f;
+}
+
+.edit-member-popup-actions button:last-child {
+  background-color: #9e72be;
+  color: white;
+}
+
+.edit-member-popup-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.edit-member-popup-actions button:first-child:hover {
+  background-color: #e1d3e8;
+}
+
+.edit-member-popup-actions button:last-child:hover {
+  background-color: #8d60b4;
+}
+
+.edit-member-popup-actions button[type="button"]:last-child {
+  background-color: #dc3545;
+}
+
+.edit-member-popup-actions button[type="button"]:last-child:hover {
+  background-color: #c82333;
+}
+
+@media (max-width: 768px) {
+  .edit-member-popup-content {
+    width: 95%;
+    padding: 1rem;
+  }
+}
+
+/* Ensure the button stays at the bottom even when scrolling */
+.team-members-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  background: linear-gradient(to bottom, transparent, white);
+  pointer-events: none;
+  z-index: 1;
 }

@@ -15,10 +15,49 @@ const Dashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [showTeamPopup, setShowTeamPopup] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [teamMembers, setTeamMembers] = useState([
+    {
+      name: "Loretta Veiga",
+      role: "Product Owner",
+      email: "lorettav@softedge.com",
+      initials: "LV"
+    },
+    {
+      name: "Andres Quintanar",
+      role: "Scrum Master",
+      email: "andyqv@softedge.com",
+      initials: "AQ"
+    },
+    {
+      name: "Gerardo Leiva",
+      role: "Backend Developer",
+      email: "gerardo.leiva@softedge.com",
+      initials: "GL"
+    }
+  ]);
+  const [availableMembers, setAvailableMembers] = useState([
+    {
+      name: "Juan Pérez",
+      role: "Frontend Developer",
+      email: "juan.perez@softedge.com",
+      initials: "JP"
+    },
+    {
+      name: "María García",
+      role: "UX Designer",
+      email: "maria.garcia@softedge.com",
+      initials: "MG"
+    }
+  ]);
   const [editData, setEditData] = useState({
     nombreProyecto: "",
     descripcion: "",
   });
+  const [showMemberMenu, setShowMemberMenu] = useState(null);
+  const [editingMember, setEditingMember] = useState(null);
+  const [memberAction, setMemberAction] = useState(null);
 
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
@@ -30,20 +69,13 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchProject = async () => {
       try {
-        console.log("Fetching project with ID:", projectId);
         const response = await fetch(`http://localhost:5001/projectsFB/${projectId}`);
         if (!response.ok) throw new Error("Failed to fetch project");
         const data = await response.json();
-        console.log("Raw project data:", data);
-        
-        // Check if data is nested in a property
-        const projectData = data.data || data;
-        console.log("Project data to use:", projectData);
-        
-        setProject(projectData);
+        setProject(data);
         setEditData({
-          nombreProyecto: projectData.nombreProyecto,
-          descripcion: projectData.descripcion,
+          nombreProyecto: data.nombreProyecto,
+          descripcion: data.descripcion,
         });
       } catch (error) {
         console.error("Error fetching project:", error);
@@ -85,6 +117,73 @@ const Dashboard = () => {
   const handleStatCardClick = (requirementType) => {
     setActiveTab("requirements");
     setActiveRequirement(requirementType);
+  };
+
+  const handleEditTeam = () => {
+    setShowTeamPopup(true);
+  };
+
+  const handleMemberSelect = (member) => {
+    setSelectedMembers(prev => {
+      if (prev.some(m => m.email === member.email)) {
+        return prev.filter(m => m.email !== member.email);
+      } else {
+        return [...prev, member];
+      }
+    });
+  };
+
+  const handleSaveTeam = () => {
+    setTeamMembers(prev => [...prev, ...selectedMembers]);
+    setAvailableMembers(prev => 
+      prev.filter(member => !selectedMembers.some(selected => selected.email === member.email))
+    );
+    setShowTeamPopup(false);
+    setSelectedMembers([]);
+  };
+
+  const handleCancelTeam = () => {
+    setShowTeamPopup(false);
+    setSelectedMembers([]);
+  };
+
+  const handleMemberMenuClick = (e, member) => {
+    e.stopPropagation();
+    setShowMemberMenu(showMemberMenu === member.email ? null : member.email);
+  };
+
+  const handleEditMember = (member) => {
+    setEditingMember(member);
+    setMemberAction('edit');
+    setShowMemberMenu(null);
+  };
+
+  const handleRemoveMember = (member) => {
+    setEditingMember(member);
+    setMemberAction('remove');
+    setShowMemberMenu(null);
+  };
+
+  const handleUpdateMember = (e) => {
+    e.preventDefault();
+    if (editingMember) {
+      setTeamMembers(prev => 
+        prev.map(member => 
+          member.email === editingMember.email ? editingMember : member
+        )
+      );
+      setEditingMember(null);
+      setMemberAction(null);
+    }
+  };
+
+  const handleConfirmRemove = () => {
+    if (editingMember) {
+      setTeamMembers(prev => prev.filter(member => member.email !== editingMember.email));
+      setAvailableMembers(prev => [...prev, editingMember]);
+      setEditingMember(null);
+      setMemberAction(null);
+    }
   };
 
   if (loading) {
@@ -243,28 +342,211 @@ const Dashboard = () => {
         </h1>
       </div>
       <div className="dashboard-content">
-        <button className="back-button" onClick={() => navigate("/home")}>
-          ←
-        </button>
-        <div className="dashboard-tabs">
-          <button
-            className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
-            onClick={() => setActiveTab("overview")}
-          >
-            Vista General
+        <div className="main-dashboard-content">
+          <button className="back-button" onClick={() => navigate("/home")}>
+            ←
           </button>
-          <button
-            className={`tab-button ${activeTab === "requirements" ? "active" : ""}`}
-            onClick={() => setActiveTab("requirements")}
-          >
-            Elementos
-          </button>
+          <div className="dashboard-tabs">
+            <button
+              className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
+              onClick={() => setActiveTab("overview")}
+            >
+              Vista General
+            </button>
+            <button
+              className={`tab-button ${activeTab === "requirements" ? "active" : ""}`}
+              onClick={() => setActiveTab("requirements")}
+            >
+              Elementos
+            </button>
+          </div>
+
+          <div className="tab-content">
+            {activeTab === "overview" ? renderOverviewTab() : renderRequirementsTab()}
+          </div>
         </div>
 
-        <div className="tab-content">
-          {activeTab === "overview" ? renderOverviewTab() : renderRequirementsTab()}
+        <div className="team-members-container">
+          <h2 className="team-members-title">Equipo del Proyecto</h2>
+          <div className="team-members-content">
+            {teamMembers.map((member, index) => (
+              <div 
+                key={index} 
+                className="team-member-card"
+              >
+                <div className="member-profile">
+                  {member.initials}
+                </div>
+                <div className="member-info">
+                  <div className="member-name">{member.name}</div>
+                  <div className="member-role">{member.role}</div>
+                  <div className="member-email">{member.email}</div>
+                </div>
+                <div className="member-actions">
+                  <button 
+                    className="member-menu-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMemberMenuClick(e, member);
+                    }}
+                  >
+                    ⋮
+                  </button>
+                  {showMemberMenu === member.email && (
+                    <div className="member-menu">
+                      <button onClick={() => handleEditMember(member)}>Editar</button>
+                      <button onClick={() => handleRemoveMember(member)}>Eliminar</button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="edit-team-button" onClick={handleEditTeam}>
+            Agregar Miembros
+          </button>
         </div>
       </div>
+
+      {editingMember && (
+        <div className="edit-member-popup">
+          <div className="edit-member-popup-content">
+            <button className="edit-member-popup-close" onClick={() => {
+              setEditingMember(null);
+              setMemberAction(null);
+            }}>×</button>
+            
+            {memberAction === 'edit' ? (
+              <>
+                <h2 className="edit-member-popup-title">Editar Miembro</h2>
+                <form onSubmit={handleUpdateMember}>
+                  <div className="form-group">
+                    <label>Nombre:</label>
+                    <input
+                      type="text"
+                      value={editingMember.name}
+                      onChange={(e) => setEditingMember({...editingMember, name: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Rol:</label>
+                    <input
+                      type="text"
+                      value={editingMember.role}
+                      onChange={(e) => setEditingMember({...editingMember, role: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                      type="email"
+                      value={editingMember.email}
+                      onChange={(e) => setEditingMember({...editingMember, email: e.target.value})}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Iniciales:</label>
+                    <input
+                      type="text"
+                      value={editingMember.initials}
+                      onChange={(e) => setEditingMember({...editingMember, initials: e.target.value})}
+                    />
+                  </div>
+                  <div className="edit-member-popup-actions">
+                    <button type="button" onClick={() => {
+                      setEditingMember(null);
+                      setMemberAction(null);
+                    }}>Cancelar</button>
+                    <button type="submit">Guardar Cambios</button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h2 className="edit-member-popup-title">Eliminar Miembro</h2>
+                <div className="remove-member-confirmation">
+                  <p>¿Estás seguro que deseas eliminar a {editingMember.name} del proyecto?</p>
+                  <p>El miembro será movido a la lista de miembros disponibles.</p>
+                </div>
+                <div className="edit-member-popup-actions">
+                  <button type="button" onClick={() => {
+                    setEditingMember(null);
+                    setMemberAction(null);
+                  }}>Cancelar</button>
+                  <button type="button" onClick={handleConfirmRemove}>Eliminar del Proyecto</button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {showTeamPopup && (
+        <div className="team-edit-popup">
+          <div className="team-edit-popup-content">
+            <button className="team-edit-popup-close" onClick={handleCancelTeam}>×</button>
+            <h2 className="team-edit-popup-title">Gestionar Equipo</h2>
+            
+            <div className="members-sections">
+              <div className="available-members-section">
+                <h3>Miembros Disponibles</h3>
+                <div className="available-members-list">
+                  {availableMembers.map((member, index) => (
+                    <div
+                      key={index}
+                      className={`available-member-card ${selectedMembers.some(m => m.email === member.email) ? 'selected' : ''}`}
+                      onClick={() => handleMemberSelect(member)}
+                    >
+                      <div className="member-profile">
+                        {member.initials}
+                      </div>
+                      <div className="member-info">
+                        <div className="member-name">{member.name}</div>
+                        <div className="member-role">{member.role}</div>
+                        <div className="member-email">{member.email}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="current-team-section">
+                <h3>Miembros del Equipo</h3>
+                <div className="current-team-list">
+                  {teamMembers.map((member, index) => (
+                    <div
+                      key={index}
+                      className="current-member-card"
+                    >
+                      <div className="member-profile">
+                        {member.initials}
+                      </div>
+                      <div className="member-info">
+                        <div className="member-name">{member.name}</div>
+                        <div className="member-role">{member.role}</div>
+                        <div className="member-email">{member.email}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="team-edit-popup-actions">
+              <button className="team-edit-popup-button cancel" onClick={handleCancelTeam}>
+                Cancelar
+              </button>
+              <button 
+                className="team-edit-popup-button save" 
+                onClick={handleSaveTeam}
+                disabled={selectedMembers.length === 0}
+              >
+                Agregar Miembros
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
