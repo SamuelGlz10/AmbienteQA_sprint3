@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import TopAppBar from "../components/TopAppBar";
+import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
+import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
@@ -19,6 +21,8 @@ const Dashboard = () => {
     nombreProyecto: "",
     descripcion: "",
   });
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
 
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
@@ -47,6 +51,7 @@ const Dashboard = () => {
         });
       } catch (error) {
         console.error("Error fetching project:", error);
+        setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
       } finally {
         setLoading(false);
       }
@@ -72,8 +77,10 @@ const Dashboard = () => {
         ...editData
       }));
       setIsEditing(false);
+      setSuccessMessage("Proyecto actualizado exitosamente."); // Muestra el popup de éxito
     } catch (error) {
       console.error("Error updating project:", error);
+      setError("Error al actualizar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
     }
   };
 
@@ -85,6 +92,14 @@ const Dashboard = () => {
   const handleStatCardClick = (requirementType) => {
     setActiveTab("requirements");
     setActiveRequirement(requirementType);
+  };
+
+  const closeErrorPopup = () => {
+    setError(null); // Cierra el popup de error
+  };
+
+  const closeSuccessPopup = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
   };
 
   if (loading) {
@@ -265,6 +280,12 @@ const Dashboard = () => {
           {activeTab === "overview" ? renderOverviewTab() : renderRequirementsTab()}
         </div>
       </div>
+
+      {/* Popup de error */}
+      <ErrorPopup message={error} onClose={closeErrorPopup} />
+
+      {/* Popup de éxito */}
+      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 };
