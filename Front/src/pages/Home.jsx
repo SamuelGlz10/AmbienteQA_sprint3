@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../components/UserContext"; // Importar el contexto de usuario
 import TopAppBar from "../components/TopAppBar";
+import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
+import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 
 import "../css/Home.css";
 
@@ -11,6 +13,9 @@ const Home = () => {
   const [sortType, setSortType] = useState("Por Defecto");
   const [isLoading, setIsLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false); // Estado para verificar si el usuario es admin
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,7 +24,7 @@ const Home = () => {
 
   const getProjects = async () => {
     if (!userId) {
-      alert("No se encontró el ID de usuario.");
+      setError("No se encontró el ID de usuario."); // Muestra el popup de error
       console.error("User ID not found.");
       return;
     }
@@ -33,14 +38,17 @@ const Home = () => {
       const data = await result.json();
       setProjects(data);
       setIsLoading(false);
+      setSuccessMessage("Proyectos cargados exitosamente."); // Muestra el popup de éxito
     } catch (error) {
       console.error("Error fetching projects:", error);
+      setError("Error al cargar los proyectos. Por favor, inténtalo de nuevo."); // Muestra el popup de error
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
     getProjects();
-    if(role === "admin") {
+    if (role === "admin") {
       setIsAdmin(true); // Si el rol es admin, actualizar el estado
     }
   }, []);
@@ -53,6 +61,14 @@ const Home = () => {
     } else {
       return projects;
     }
+  };
+
+  const closeErrorPopup = () => {
+    setError(null); // Cierra el popup de error
+  };
+
+  const closeSuccessPopup = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
   };
 
   const sortedProjects = sortProjects(projects);
@@ -121,6 +137,12 @@ const Home = () => {
           </div>
         )}
       </div>
+
+      {/* Popup de error */}
+      <ErrorPopup message={error} onClose={closeErrorPopup} />
+
+      {/* Popup de éxito */}
+      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 };
