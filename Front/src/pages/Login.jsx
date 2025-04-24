@@ -46,6 +46,7 @@ const Login = ({ tryLogin }) => {
       navigate("/dungeon");
     } else {
       alert("Login fallido: Email o contraseña incorrectos.");
+      setIsLoading(false);
     }
   };
 
@@ -102,7 +103,6 @@ const Login = ({ tryLogin }) => {
         </div>
       )}
     </div>
-
   );
 };
 

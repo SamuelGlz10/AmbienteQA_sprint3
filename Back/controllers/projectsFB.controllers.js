@@ -1,8 +1,9 @@
 import db from "../utils/firebase.js";
 import { sqlConnect, sql } from "../utils/sql.js";
-import { getStorage } from 'firebase-admin/storage';
-import {v4 as uuidv4 } from 'uuid';
+import { getStorage } from "firebase-admin/storage";
+import { v4 as uuidv4 } from "uuid";
 
+// Funcion para obtener los proyectos de un usuario específico
 export const getProjects = async (req, res) => {
   try {
     const { userId } = req.query; // Obtener el userId de la query de la solicitud
@@ -47,13 +48,20 @@ export const getProjects = async (req, res) => {
   }
 };
 
+// Funcion para obtener un proyecto específico por ID
 export const getProject = async (req, res) => {
   try {
     const project = await db.collection("proyectos").doc(req.params.id).get();
     res.json({
       id: req.params.id,
+      nombreProyecto: project.data().nombreProyecto,
       descripcion: project.data().descripcion,
       estatus: project.data().estatus,
+      EP: project.data().EP,
+      HU: project.data().HU,
+      RF: project.data().RF,
+      RNF: project.data().RNF,
+      fechaCreacion: project.data().fechaCreacion,
     });
   } catch (err) {
     console.error("Firebase Error:", err);
@@ -61,6 +69,7 @@ export const getProject = async (req, res) => {
   }
 };
 
+// Funcion para añadir un nuevo proyecto
 export const postProject = async (req, res) => {
   try {
     const project = await db.collection("proyectos").add(req.body);
@@ -76,12 +85,15 @@ export const postProject = async (req, res) => {
   }
 };
 
+// Funcion para vincular un usuario a un proyecto
 export const linkUserToProject = async (req, res) => {
   try {
     const { userId, projectId } = req.body;
 
     if (!userId || !projectId) {
-      return res.status(400).json({ error: "UserID and ProjectID are required" });
+      return res
+        .status(400)
+        .json({ error: "UserID and ProjectID are required" });
     }
 
     const pool = await sqlConnect();
@@ -90,19 +102,21 @@ export const linkUserToProject = async (req, res) => {
     await pool
       .request()
       .input("UserID", sql.Int, userId)
-      .input("ProjectID", sql.VarChar, projectId)
-      .query(`
+      .input("ProjectID", sql.VarChar, projectId).query(`
         INSERT INTO Users_Projects (UserID, ProjectID)
         VALUES (@UserID, @ProjectID)
       `);
 
-    res.status(200).json({ success: true, message: "User linked to project successfully" });
+    res
+      .status(200)
+      .json({ success: true, message: "User linked to project successfully" });
   } catch (err) {
     console.error("Error linking user to project:", err);
     res.status(500).json({ error: "Failed to link user to project" });
   }
 };
 
+// Funcion para actualizar un proyecto
 export const putProject = async (req, res) => {
   try {
     await db.collection("proyectos").doc(req.params.id).update(req.body);
@@ -118,6 +132,7 @@ export const putProject = async (req, res) => {
   }
 };
 
+// Funcion para actualizar los requerimientos de un proyecto
 export const updateRequirements = async (req, res) => {
   try {
     const { requirements } = req.body; // Recibe un array de requerimientos desde el frontend
@@ -160,6 +175,7 @@ export const updateRatings = async (req, res) => {
   }
 };
 
+// Funcion para eliminar un proyecto
 export const deleteProject = async (req, res) => {
   try {
     await db.collection("proyectos").doc(req.params.id).delete();
@@ -170,6 +186,7 @@ export const deleteProject = async (req, res) => {
   }
 };
 
+// Funcion para subir una imagen a Firebase Storage y guardar la URL en Firestore
 export const uploadProjectImage = async (req, res) => {
   try {
     const { projectId } = req.body;
