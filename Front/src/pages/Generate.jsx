@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, TextField } from "@mui/material";
 import TopAppBar from "../components/TopAppBar";
+import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
+import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 import "../css/Generate.css";
 
 function Generate() {
@@ -14,6 +16,8 @@ function Generate() {
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
   const [history, setHistory] = useState([]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
 
   const userID = localStorage.getItem("UserID");
 
@@ -76,9 +80,10 @@ function Generate() {
 
       // Valida y envía
       JSON.parse(cleanJSON); // Si falla, lanzará error
+      setSuccessMessage("Texto generado exitosamente."); // Muestra el popup de éxito
       navigate("/revisionIA", { state: { generatedText: cleanJSON } });
     } catch (error) {
-      alert("Error: El JSON generado no es válido. Verifica la consola.");
+      setError("Error: El JSON generado no es válido. Verifica la consola."); // Muestra el popup de error
       console.error("Error al procesar JSON:", error);
     } finally {
       setLoading(false);
@@ -119,6 +124,14 @@ function Generate() {
 
   const handleHistorialClick = (item) => {
     setPrompt(item); // Actualizar el prompt con el elemento del historial seleccionado
+  };
+
+  const closeErrorPopup = () => {
+    setError(null); // Cierra el popup de error
+  };
+
+  const closeSuccessPopup = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
   };
 
   return (
@@ -311,6 +324,12 @@ function Generate() {
           </div>
         )}
       </div>
+
+      {/* Popup de error */}
+      <ErrorPopup message={error} onClose={closeErrorPopup} />
+
+      {/* Popup de éxito */}
+      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 }

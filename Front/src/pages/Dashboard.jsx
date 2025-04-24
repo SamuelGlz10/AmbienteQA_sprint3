@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import TopAppBar from "../components/TopAppBar";
+import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
+import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
@@ -58,6 +60,8 @@ const Dashboard = () => {
   const [showMemberMenu, setShowMemberMenu] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const [memberAction, setMemberAction] = useState(null);
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
 
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
@@ -79,6 +83,7 @@ const Dashboard = () => {
         });
       } catch (error) {
         console.error("Error fetching project:", error);
+        setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
       } finally {
         setLoading(false);
       }
@@ -104,8 +109,10 @@ const Dashboard = () => {
         ...editData
       }));
       setIsEditing(false);
+      setSuccessMessage("Proyecto actualizado exitosamente."); // Muestra el popup de éxito
     } catch (error) {
       console.error("Error updating project:", error);
+      setError("Error al actualizar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
     }
   };
 
@@ -184,6 +191,14 @@ const Dashboard = () => {
       setEditingMember(null);
       setMemberAction(null);
     }
+  };
+
+  const closeErrorPopup = () => {
+    setError(null); // Cierra el popup de error
+  };
+
+  const closeSuccessPopup = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
   };
 
   if (loading) {
@@ -361,192 +376,10 @@ const Dashboard = () => {
             </button>
           </div>
 
-          <div className="tab-content">
-            {activeTab === "overview" ? renderOverviewTab() : renderRequirementsTab()}
-          </div>
-        </div>
-
-        <div className="team-members-container">
-          <h2 className="team-members-title">Equipo del Proyecto</h2>
-          <div className="team-members-content">
-            {teamMembers.map((member, index) => (
-              <div 
-                key={index} 
-                className="team-member-card"
-              >
-                <div className="member-profile">
-                  {member.initials}
-                </div>
-                <div className="member-info">
-                  <div className="member-name">{member.name}</div>
-                  <div className="member-role">{member.role}</div>
-                  <div className="member-email">{member.email}</div>
-                </div>
-                <div className="member-actions">
-                  <button 
-                    className="member-menu-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMemberMenuClick(e, member);
-                    }}
-                  >
-                    ⋮
-                  </button>
-                  {showMemberMenu === member.email && (
-                    <div className="member-menu">
-                      <button onClick={() => handleEditMember(member)}>Editar</button>
-                      <button onClick={() => handleRemoveMember(member)}>Eliminar</button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          <button className="edit-team-button" onClick={handleEditTeam}>
-            Agregar Miembros
-          </button>
+        <div className="tab-content">
+          {activeTab === "overview" ? renderOverviewTab() : renderRequirementsTab()}
         </div>
       </div>
-
-      {editingMember && (
-        <div className="edit-member-popup">
-          <div className="edit-member-popup-content">
-            <button className="edit-member-popup-close" onClick={() => {
-              setEditingMember(null);
-              setMemberAction(null);
-            }}>×</button>
-            
-            {memberAction === 'edit' ? (
-              <>
-                <h2 className="edit-member-popup-title">Editar Miembro</h2>
-                <form onSubmit={handleUpdateMember}>
-                  <div className="form-group">
-                    <label>Nombre:</label>
-                    <input
-                      type="text"
-                      value={editingMember.name}
-                      onChange={(e) => setEditingMember({...editingMember, name: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Rol:</label>
-                    <input
-                      type="text"
-                      value={editingMember.role}
-                      onChange={(e) => setEditingMember({...editingMember, role: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email:</label>
-                    <input
-                      type="email"
-                      value={editingMember.email}
-                      onChange={(e) => setEditingMember({...editingMember, email: e.target.value})}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Iniciales:</label>
-                    <input
-                      type="text"
-                      value={editingMember.initials}
-                      onChange={(e) => setEditingMember({...editingMember, initials: e.target.value})}
-                    />
-                  </div>
-                  <div className="edit-member-popup-actions">
-                    <button type="button" onClick={() => {
-                      setEditingMember(null);
-                      setMemberAction(null);
-                    }}>Cancelar</button>
-                    <button type="submit">Guardar Cambios</button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <>
-                <h2 className="edit-member-popup-title">Eliminar Miembro</h2>
-                <div className="remove-member-confirmation">
-                  <p>¿Estás seguro que deseas eliminar a {editingMember.name} del proyecto?</p>
-                  <p>El miembro será movido a la lista de miembros disponibles.</p>
-                </div>
-                <div className="edit-member-popup-actions">
-                  <button type="button" onClick={() => {
-                    setEditingMember(null);
-                    setMemberAction(null);
-                  }}>Cancelar</button>
-                  <button type="button" onClick={handleConfirmRemove}>Eliminar del Proyecto</button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {showTeamPopup && (
-        <div className="team-edit-popup">
-          <div className="team-edit-popup-content">
-            <button className="team-edit-popup-close" onClick={handleCancelTeam}>×</button>
-            <h2 className="team-edit-popup-title">Gestionar Equipo</h2>
-            
-            <div className="members-sections">
-              <div className="available-members-section">
-                <h3>Miembros Disponibles</h3>
-                <div className="available-members-list">
-                  {availableMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className={`available-member-card ${selectedMembers.some(m => m.email === member.email) ? 'selected' : ''}`}
-                      onClick={() => handleMemberSelect(member)}
-                    >
-                      <div className="member-profile">
-                        {member.initials}
-                      </div>
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-role">{member.role}</div>
-                        <div className="member-email">{member.email}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="current-team-section">
-                <h3>Miembros del Equipo</h3>
-                <div className="current-team-list">
-                  {teamMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className="current-member-card"
-                    >
-                      <div className="member-profile">
-                        {member.initials}
-                      </div>
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-role">{member.role}</div>
-                        <div className="member-email">{member.email}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="team-edit-popup-actions">
-              <button className="team-edit-popup-button cancel" onClick={handleCancelTeam}>
-                Cancelar
-              </button>
-              <button 
-                className="team-edit-popup-button save" 
-                onClick={handleSaveTeam}
-                disabled={selectedMembers.length === 0}
-              >
-                Agregar Miembros
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
