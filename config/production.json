@@ -1,1 +1,8 @@
-
+{
+  "BACK_PORT": https://softedge-back.vercel.app/,
+  "AZURE_SQL_SERVER": "softedge.database.windows.net",
+  "AZURE_SQL_DATABASE": "softedge",
+  "AZURE_SQL_PORT": 1433,
+  "AZURE_SQL_USER": "prueba",
+  "AZURE_SQL_PASSWORD": "Probando1"
+}
