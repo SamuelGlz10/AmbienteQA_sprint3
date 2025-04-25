@@ -247,6 +247,13 @@ const Dashboard = () => {
     e.currentTarget.classList.add('dragging');
   };
 
+  const handleDragEnd = (e) => {
+    // Eliminar la clase dragging de todos los elementos
+    document.querySelectorAll('.dragging').forEach(element => {
+      element.classList.remove('dragging');
+    });
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -265,6 +272,11 @@ const Dashboard = () => {
   const handleDrop = (e, targetIndex, elementId) => {
     e.preventDefault();
     e.currentTarget.classList.remove('drag-over');
+    
+    // Eliminar la clase dragging de todos los elementos
+    document.querySelectorAll('.dragging').forEach(element => {
+      element.classList.remove('dragging');
+    });
     
     const draggedTaskId = e.dataTransfer.getData('taskId');
     const sourceIndex = parseInt(e.dataTransfer.getData('index'));
@@ -288,8 +300,6 @@ const Dashboard = () => {
     // Actualizar el estado con las tareas reordenadas
     tasksCopy[elementId] = currentTasks;
     setTasks(tasksCopy);
-    
-
   };
 
   if (loading) {
@@ -491,6 +501,7 @@ const Dashboard = () => {
                               onDragEnter={handleDragEnter}
                               onDragLeave={handleDragLeave}
                               onDrop={(e) => handleDrop(e, index, selectedItem.id)}
+                              onDragEnd={handleDragEnd} // Añadir este manejador
                               className="draggable-task-row"
                             >
                               <td className="drag-handle">
@@ -876,7 +887,7 @@ const Dashboard = () => {
                       setMemberAction(null);
                     }}
                   >
-                    Cancelar
+                      Cancelar
                   </button>
                   <button type="button" onClick={handleConfirmRemove}>
                     Eliminar del Proyecto
