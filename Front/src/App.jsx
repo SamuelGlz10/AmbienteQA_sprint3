@@ -12,7 +12,7 @@ import RevisionIA from "./pages/RevisionIA";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  const { isLogin } = useContext(AuthContext); // Access isLogin from AuthContext
+  const { isLogin } = useContext(AuthContext);
 
   return (
     <BrowserRouter>
@@ -21,10 +21,7 @@ function App() {
           path="/"
           element={isLogin ? <Navigate to="/home" /> : <Navigate to="/login" />}
         />
-        <Route
-          path="/login"
-          element={isLogin ? <Navigate to="/home" /> : <Login />}
-        />
+        <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
         <Route
           path="/home"

@@ -123,3 +123,54 @@ button:focus-visible {
   height: 50px;
   width: auto;
 }
+
+.profile-container {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  border-radius: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: black;
+}
+
+.profile-container:hover {
+  cursor: pointer;
+  background-color: #9e72be;
+}
+
+.profile-popup {
+  position: absolute;
+  top: 70px;
+  right: 2%;
+  width: 150px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.profile-popup-tab {
+  height: 30px;
+  border-radius: 4px;
+  background-color: #eddff6;
+  color: #9e72be;
+  display: flex;
+  text-align: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.profile-popup-tab:hover {
+  background-color: #e1d3e8;
+}
+
+.profile-popup-tab p {
+  margin: 0 auto;
+}
