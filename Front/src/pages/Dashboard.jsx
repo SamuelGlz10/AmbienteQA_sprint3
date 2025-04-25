@@ -74,7 +74,14 @@ const Dashboard = () => {
     const fetchProject = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5001/projectsFB/${projectId}`
+          `http://localhost:5001/projectsFB/${projectId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         if (!response.ok) throw new Error("Failed to fetch project");
         const data = await response.json();

@@ -17,24 +17,41 @@ const Home = () => {
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
 
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const { userId } = useContext(UserContext); // Obtener el userID del contexto
-  const { role } = useContext(UserContext); // Obtener el rol del contexto
+  const { userId, role, userLoading } = useContext(UserContext); // Obtener variables del contexto de usuario
 
   const getProjects = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login"); // Redirige al login si no hay token
+      return;
+    }
+
+    setIsLoading(true);
+
     if (!userId) {
       setError("No se encontró el ID de usuario."); // Muestra el popup de error
       console.error("User ID not found.");
       return;
     }
 
-    setIsLoading(true);
-
     try {
       const result = await fetch(
-        `http://localhost:5001/projectsFB/?userId=${userId}`
+        `http://localhost:5001/projectsFB/?userId=${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
+      if (result.status === 401) {
+        setError("Token inválido. Por favor, inicia sesión nuevamente."); // Muestra el popup de error
+        localStorage.removeItem("token"); // Elimina el token inválido
+        navigate("/login"); // Redirige al login si el token es inválido
+        return;
+      }
+
       const data = await result.json();
       setProjects(data);
       setIsLoading(false);
@@ -47,11 +64,13 @@ const Home = () => {
   };
 
   useEffect(() => {
-    getProjects();
-    if (role === "admin") {
-      setIsAdmin(true); // Si el rol es admin, actualizar el estado
+    if (!userLoading) {
+      getProjects();
+      if (role === "admin") {
+        setIsAdmin(true); // Si el rol es admin, actualizar el estado
+      }
     }
-  }, []);
+  }, [userLoading, role]);
 
   const sortProjects = (projects) => {
     if (sortType === "Nombre") {

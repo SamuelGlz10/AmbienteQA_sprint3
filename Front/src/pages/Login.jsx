@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../components/AuthContext";
 import { UserContext } from "../components/UserContext";
@@ -8,7 +8,7 @@ import SuccessPopup from "../components/SuccessPopup"; // Importamos el componen
 import "../css/Login.css";
 
 const Login = () => {
-  const { setIsLogin } = React.useContext(AuthContext); // Usamos el contexto de autenticación
+  const { setIsLogin } = useContext(AuthContext); // Usamos el contexto de autenticación
   const { setUserId, setRole } = React.useContext(UserContext); // Usamos el contexto de usuario
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -25,23 +25,25 @@ const Login = () => {
         body: JSON.stringify(user),
       });
 
-      if (!result.ok) {
-        throw new Error("Network response was not ok");
-      }
-
       const data = await result.json();
 
-      if (data.isLogin) {
+      if (result.ok && data.success) {
+        localStorage.setItem("token", data.token); // Guardar el token en el almacenamiento local
+        localStorage.setItem("userId", data.user.id); // Guardar el userId en el almacenamiento local
+        localStorage.setItem("role", data.user.role); // Guardar el rol en el almacenamiento local
         setIsLogin(true);
-        setUserId(data.user.UserID); // Guardar el userId en el contexto
+        setUserId(data.user.id); // Guardar el userId en el contexto
         setRole(data.user.role); // Guardar el rol en el contexto
         return true;
       } else {
+        setError(data.message || "Error al iniciar sesión"); // Establece el mensaje de error
         return false;
       }
     } catch (error) {
-      console.error("Failed to fetch:", error);
-      setError("Error al intentar iniciar sesión. Por favor, verifica tu conexión o intenta más tarde."); // Establece el mensaje de error
+      console.error("Login error:", error);
+      setError(
+        "Error al intentar iniciar sesión. Por favor, verifica tu conexión o intenta más tarde."
+      ); // Establece el mensaje de error
       return false;
     }
   };
@@ -56,27 +58,18 @@ const Login = () => {
     const isLogin = await tryLogin({ email, password });
 
     if (isLogin) {
-      setEmail("");
-      setPassword("");
-      setIsLoading(false);
       setSuccessMessage("¡Inicio de sesión exitoso!"); // Muestra el popup de éxito
-    } else {
-      setError("Login fallido: Email o contraseña incorrectos."); // Muestra el error si el login falla
-      setIsLoading(false);
     }
+    setIsLoading(false);
+  };
+
+  const handleSuccessClose = () => {
+    setSuccessMessage(null); // Cierra el popup de éxito
+    navigate("/home"); // Redirige a la página principal después de cerrar el popup
   };
 
   const goToRegister = () => {
     navigate("/registro");
-  };
-
-  const closeErrorPopup = () => {
-    setError(null); // Cierra el popup de error al limpiar el mensaje
-  };
-
-  const closeSuccessPopup = () => {
-    setSuccessMessage(null); // Cierra el popup de éxito
-    setTimeout(() => navigate("/home"), 200); // Redirige después de cerrar el popup
   };
 
   return (
@@ -98,7 +91,6 @@ const Login = () => {
           className="illustration"
         />
       </div>
-
       <div className="login-right">
         <form className="form" onSubmit={onsubmit}>
           <h2 className="form-title">Inicio de Sesión</h2>
@@ -127,15 +119,12 @@ const Login = () => {
           <p>Iniciando sesión...</p>
         </div>
       )}
-
       {/* Popup de error */}
-      <ErrorPopup message={error} onClose={closeErrorPopup} />
-
+      {/* Cierra el popup de error al limpiar el mensaje */}
+      <ErrorPopup message={error} onClose={() => setError(null)} />
       {/* Popup de éxito */}
-      {Boolean(successMessage) && (
-        <div style={{ position: "absolute", top: 0, left: 0, zIndex: 2000, width: "100vw", height: "100vh" }}>
-          <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
-        </div>
+      {successMessage && (
+        <SuccessPopup message={successMessage} onClose={handleSuccessClose} />
       )}
     </div>
   );
