@@ -319,7 +319,7 @@ function RevisionIA() {
 
   const handleConfirm = async () => {
     try {
-      const userId = localStorage.getItem("UserID");
+      const userId = localStorage.getItem("userId");
 
       if (!userId) {
         setError("No se encontró el ID de usuario en el almacenamiento local."); // Muestra el popup de error
