@@ -66,10 +66,18 @@ const Dashboard = () => {
   const [taskFormData, setTaskFormData] = useState({
     title: "",
     description: "",
-    priority: "media", // Default priority
+    priority: "", 
     assignee: "",
   });
   const [tasks, setTasks] = useState({});
+
+  // Agregar estos nuevos estados para el manejo de la eliminación de tareas
+  const [taskToDelete, setTaskToDelete] = useState(null);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
+  // Agregar estos estados para manejar el modo de eliminación
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [taskToSelect, setTaskToSelect] = useState(null);
 
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
@@ -238,6 +246,7 @@ const Dashboard = () => {
       priority: "",
       assignee: "",
     });
+    setDeleteMode(false); // Turn off delete mode when closing the popup
   };
 
   // Agregar un manejador de eventos para el drag and drop
@@ -300,6 +309,24 @@ const Dashboard = () => {
     // Actualizar el estado con las tareas reordenadas
     tasksCopy[elementId] = currentTasks;
     setTasks(tasksCopy);
+  };
+
+  // Modificar la función handleDeleteTask para desactivar el modo eliminación
+  const handleDeleteTask = (taskId, elementId) => {
+    // Actualizar el estado eliminando la tarea del arreglo
+    setTasks(prevTasks => {
+      const updatedTasks = {...prevTasks};
+      updatedTasks[elementId] = updatedTasks[elementId].filter(task => task.id !== taskId);
+      return updatedTasks;
+    });
+    
+    // Mostrar mensaje de éxito
+    setSuccessMessage("Tarea eliminada exitosamente.");
+    
+    // Cerrar el diálogo de confirmación y desactivar modo eliminación
+    setShowDeleteConfirmation(false);
+    setTaskToDelete(null);
+    setDeleteMode(false); // Desactivar modo eliminación al terminar
   };
 
   if (loading) {
@@ -495,17 +522,70 @@ const Dashboard = () => {
                           return (
                             <tr 
                               key={task.id}
-                              draggable={true}
-                              onDragStart={(e) => handleDragStart(e, task.id, index)}
-                              onDragOver={handleDragOver}
-                              onDragEnter={handleDragEnter}
-                              onDragLeave={handleDragLeave}
-                              onDrop={(e) => handleDrop(e, index, selectedItem.id)}
-                              onDragEnd={handleDragEnd} // Añadir este manejador
-                              className="draggable-task-row"
+                              draggable={!deleteMode}
+                              onDragStart={!deleteMode ? (e) => handleDragStart(e, task.id, index) : null}
+                              onDragOver={!deleteMode ? handleDragOver : null}
+                              onDragEnter={!deleteMode ? handleDragEnter : null}
+                              onDragLeave={!deleteMode ? handleDragLeave : null}
+                              onDrop={!deleteMode ? (e) => handleDrop(e, index, selectedItem.id) : null}
+                              onDragEnd={!deleteMode ? handleDragEnd : null}
+                              className={`draggable-task-row ${deleteMode ? 'delete-mode' : ''}`}
                             >
-                              <td className="drag-handle">
-                                <span className="drag-icon">≡</span>
+                              <td 
+                                className="drag-handle" 
+                                style={{ 
+                                  width: '40px', 
+                                  minWidth: '40px', 
+                                  maxWidth: '40px',
+                                  height: '40px',
+                                  textAlign: 'center',
+                                  cursor: deleteMode ? 'pointer' : 'grab',
+                                  position: 'relative',
+                                  overflow: 'visible'
+                                }}
+                                onClick={deleteMode ? () => {
+                                  setTaskToDelete({
+                                    id: task.id,
+                                    title: task.title,
+                                    elementId: selectedItem.id
+                                  });
+                                  setShowDeleteConfirmation(true);
+                                } : undefined}
+                                onMouseEnter={deleteMode ? (e) => {
+                                  const deleteIcon = e.currentTarget.querySelector('.delete-mode-icon');
+                                  if (deleteIcon) {
+                                    deleteIcon.style.transform = 'scale(1.3)';
+                                  }
+                                } : undefined}
+                                onMouseLeave={deleteMode ? (e) => {
+                                  const deleteIcon = e.currentTarget.querySelector('.delete-mode-icon');
+                                  if (deleteIcon) {
+                                    deleteIcon.style.transform = 'scale(1)';
+                                  }
+                                } : undefined}
+                              >
+                                {!deleteMode ? (
+                                  <span className="drag-icon">≡</span>
+                                ) : (
+                                  <div style={{ 
+                                    position: 'absolute', 
+                                    width: '100%', 
+                                    height: '100%', 
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    top: 0,
+                                    left: 0
+                                  }}>
+                                    <span 
+                                      className="delete-mode-icon" 
+                                      style={{
+                                        fontSize: '20px',
+                                        transition: 'transform 0.15s ease',
+                                      }}
+                                    >×</span>
+                                  </div>
+                                )}
                               </td>
                               <td>{task.title}</td>
                               <td>{task.description}</td>
@@ -527,26 +607,52 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Botón fuera del footer para que aparezca encima del formulario */}
+            {/* Simplificar la sección del popup-footer eliminando el mensaje de instrucciones */}
             {!showTaskForm ? (
               <div className="popup-footer">
-                <button 
-                  className="edit-team-button" 
-                  style={{ 
-                    position: 'static', 
-                    transform: 'none',
-                    marginTop: '5px',
-                    left: 'auto',
-                    width: '100%', // Ancho completo
-                    maxWidth: '200px' // Limitar para que no sea demasiado ancho
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowTaskForm(true);
-                  }}
-                >
-                  Nueva Tarea
-                </button>
+                <div className="popup-footer-buttons">
+                  {/* Mostrar botón de Nueva Tarea solo cuando NO estamos en modo eliminación */}
+                  {!deleteMode && (
+                    <button 
+                      className="edit-team-button" 
+                      style={{ 
+                        position: 'static', 
+                        transform: 'none',
+                        margin: '5px 0',
+                        left: 'auto',
+                        maxWidth: '200px'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowTaskForm(true);
+                      }}
+                    >
+                      Nueva Tarea
+                    </button>
+                  )}
+                  
+                  {/* Mostrar botón de eliminar solo si hay tareas */}
+                  {tasks[selectedItem.id] && tasks[selectedItem.id].length > 0 && (
+                    <button 
+                      className="delete-team-button" 
+                      style={{ 
+                        position: 'static', 
+                        transform: 'none',
+                        margin: '5px 0',
+                        left: 'auto',
+                        width: '180px',
+                        backgroundColor: deleteMode ? '#e0e0e0' : '#ff6b6b',
+                        color: deleteMode ? '#333' : 'white'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteMode(!deleteMode);
+                      }}
+                    >
+                      {deleteMode ? 'Cancelar' : 'Eliminar Tarea'}
+                    </button>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="task-form-container">
@@ -975,6 +1081,33 @@ const Dashboard = () => {
 
       {/* Popup de éxito */}
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
+
+      {/* Confirmación de eliminación de tarea */}
+      {showDeleteConfirmation && taskToDelete && (
+        <div className="popup-overlay" onClick={() => setShowDeleteConfirmation(false)}>
+          <div className="popup-content confirmation-popup" onClick={(e) => e.stopPropagation()} 
+               style={{ maxWidth: '400px', textAlign: 'center' }}>
+            <button className="popup-close" onClick={() => setShowDeleteConfirmation(false)}>×</button>
+            <h3>Confirmar eliminación</h3>
+            <p>¿Estás seguro que deseas eliminar la tarea "{taskToDelete.title}"?</p>
+            <p>Esta acción no se puede deshacer.</p>
+            <div className="confirmation-actions">
+              <button 
+                className="cancel-button" 
+                onClick={() => setShowDeleteConfirmation(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="delete-button" 
+                onClick={() => handleDeleteTask(taskToDelete.id, taskToDelete.elementId)}
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
