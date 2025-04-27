@@ -26,6 +26,9 @@ export const AuthProvider = ({ children }) => {
           setError(
             "El token ha expirado. Por favor, inicia sesión nuevamente."
           );
+          localStorage.removeItem("token"); // Eliminar el token del almacenamiento local
+          localStorage.removeItem("userId"); // Eliminar el ID de usuario del almacenamiento local
+          localStorage.removeItem("role"); // Eliminar el rol del almacenamiento local
           setIsLogin(false);
         }, timeout);
 
