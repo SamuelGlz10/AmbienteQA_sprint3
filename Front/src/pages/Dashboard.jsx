@@ -6,9 +6,11 @@ import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de
 import TopAppBar from "../components/TopAppBar";
 import EditMemberPopup from "../components/EditMemeberPopup";
 import RenderRequirementsTab from "../components/RenderRequirementsTab";
+import TeamEditPopup from "../components/TeamEditPopup";
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
+  const role = localStorage.getItem("role");
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { userId } = useContext(UserContext);
@@ -396,9 +398,14 @@ const Dashboard = () => {
           <>
             <h1>{project.nombreProyecto}</h1>
             <p>{project.descripcion}</p>
-            <button className="edit-button" onClick={() => setIsEditing(true)}>
-              Editar Proyecto
-            </button>
+            {(role === "admin" || role === "editor") && (
+              <button
+                className="edit-button"
+                onClick={() => setIsEditing(true)}
+              >
+                Editar Proyecto
+              </button>
+            )}
           </>
         )}
       </div>
@@ -500,6 +507,7 @@ const Dashboard = () => {
                 setTaskFormData={setTaskFormData}
                 setSuccessMessage={setSuccessMessage}
                 setShowDeleteConfirmation={setShowDeleteConfirmation}
+                role={role}
               />
             )}
           </div>
@@ -516,33 +524,39 @@ const Dashboard = () => {
                   <div className="member-role">{member.role}</div>
                   <div className="member-email">{member.email}</div>
                 </div>
-                <div className="member-actions">
-                  <button
-                    className="member-menu-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMemberMenuClick(e, member);
-                    }}
-                  >
-                    ⋮
-                  </button>
-                  {showMemberMenu === member.email && (
-                    <div className="member-menu">
-                      <button onClick={() => handleEditMember(member)}>
-                        Editar
-                      </button>
-                      <button onClick={() => handleRemoveMember(member)}>
-                        Eliminar
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {(role === "editor" || role === "admin") && (
+                  <div className="member-actions">
+                    <button
+                      className="member-menu-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMemberMenuClick(e, member);
+                      }}
+                    >
+                      ⋮
+                    </button>
+                    {showMemberMenu === member.email && (
+                      <div className="member-menu">
+                        {role === "admin" && (
+                          <button onClick={() => handleEditMember(member)}>
+                            Editar
+                          </button>
+                        )}
+                        <button onClick={() => handleRemoveMember(member)}>
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <button className="edit-team-button" onClick={handleEditTeam}>
-            Agregar Miembros
-          </button>
+          {(role === "admin" || role === "editor") && (
+            <button className="edit-team-button" onClick={handleEditTeam}>
+              Agregar Miembros
+            </button>
+          )}
         </div>
       </div>
 
@@ -558,75 +572,16 @@ const Dashboard = () => {
       )}
 
       {showTeamPopup && (
-        <div className="team-edit-popup">
-          <div className="team-edit-popup-content">
-            <button
-              className="team-edit-popup-close"
-              onClick={handleCancelTeam}
-            >
-              ×
-            </button>
-            <h2 className="team-edit-popup-title">Gestionar Equipo</h2>
-
-            <div className="members-sections">
-              <div className="available-members-section">
-                <h3>Miembros Disponibles</h3>
-                <div className="available-members-list">
-                  {availableMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className={`available-member-card ${
-                        selectedMembers.some((m) => m.email === member.email)
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() => handleMemberSelect(member)}
-                    >
-                      <div className="member-profile">{member.initials}</div>
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-role">{member.role}</div>
-                        <div className="member-email">{member.email}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="current-team-section">
-                <h3>Miembros del Equipo</h3>
-                <div className="current-team-list">
-                  {teamMembers.map((member, index) => (
-                    <div key={index} className="current-member-card">
-                      <div className="member-profile">{member.initials}</div>
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-role">{member.role}</div>
-                        <div className="member-email">{member.email}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="team-edit-popup-actions">
-              <button
-                className="team-edit-popup-button cancel"
-                onClick={handleCancelTeam}
-              >
-                Cancelar
-              </button>
-              <button
-                className="team-edit-popup-button save"
-                onClick={handleSaveTeam}
-                disabled={selectedMembers.length === 0}
-              >
-                Agregar Miembros
-              </button>
-            </div>
-          </div>
-        </div>
+        <TeamEditPopup
+          availableMembers={availableMembers}
+          teamMembers={teamMembers}
+          selectedMembers={selectedMembers}
+          setSelectedMembers={setSelectedMembers}
+          handleMemberSelect={handleMemberSelect}
+          handleSaveTeam={handleSaveTeam}
+          handleCancelTeam={handleCancelTeam}
+          setShowTeamPopup={setShowTeamPopup}
+        />
       )}
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />

@@ -28,6 +28,7 @@ const RenderRequirementsTab = ({
   setTaskFormData,
   setSuccessMessage,
   setShowDeleteConfirmation,
+  role,
 }) => {
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
@@ -254,7 +255,7 @@ const RenderRequirementsTab = ({
               <div className="popup-footer">
                 <div className="popup-footer-buttons">
                   {/* Mostrar botón de Nueva Tarea solo cuando NO estamos en modo eliminación */}
-                  {!deleteMode && (
+                  {!deleteMode && (role === "admin" || role === "editor") && (
                     <button
                       className="edit-team-button"
                       style={{
