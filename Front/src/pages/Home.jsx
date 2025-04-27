@@ -150,19 +150,20 @@ const Home = () => {
             </div>
           ))}
 
-          {isAdmin && (
-            <div
-              className="new-project-card"
-              onClick={() => navigate("/generate")}
-            >
-              <div className="plus-icon">+</div>
-              <div className="new-project-text">
-                NUEVO
-                <br />
-                PROYECTO
+          {isAdmin ||
+            (isEditor && (
+              <div
+                className="new-project-card"
+                onClick={() => navigate("/generate")}
+              >
+                <div className="plus-icon">+</div>
+                <div className="new-project-text">
+                  NUEVO
+                  <br />
+                  PROYECTO
+                </div>
               </div>
-            </div>
-          )}
+            ))}
         </div>
         {isLoading && (
           <div className="loading-overlay">
