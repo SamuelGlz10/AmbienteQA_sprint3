@@ -136,6 +136,19 @@ const Home = () => {
         </div>
 
         <div className="projects-grid">
+          {(isAdmin || isEditor) && (
+            <div
+              className="new-project-card"
+              onClick={() => navigate("/generate")}
+            >
+              <div className="plus-icon">+</div>
+              <div className="new-project-text">
+                NUEVO
+                <br />
+                PROYECTO
+              </div>
+            </div>
+          )}
           {sortedProjects.slice(0, displayCount).map((project) => (
             <div
               key={project.id}
@@ -149,21 +162,6 @@ const Home = () => {
               </div>
             </div>
           ))}
-
-          {isAdmin ||
-            (isEditor && (
-              <div
-                className="new-project-card"
-                onClick={() => navigate("/generate")}
-              >
-                <div className="plus-icon">+</div>
-                <div className="new-project-text">
-                  NUEVO
-                  <br />
-                  PROYECTO
-                </div>
-              </div>
-            ))}
         </div>
         {isLoading && (
           <div className="loading-overlay">
