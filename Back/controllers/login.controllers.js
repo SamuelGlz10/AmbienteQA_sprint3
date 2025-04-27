@@ -18,7 +18,7 @@ export const login = async (req, res) => {
         const token = jwt.sign(
           { userId: user.UserID, role: user.role }, // Contenido de token, user.X tiene que ser el mismo que el de la base de datos
           process.env.JWT_SECRET, // Clave secreta
-          { expiresIn: "3s" } // Opciones del token
+          { expiresIn: "1h" } // Opciones del token
         );
 
         res.status(200).json({
