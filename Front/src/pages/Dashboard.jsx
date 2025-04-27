@@ -25,40 +25,8 @@ const Dashboard = () => {
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([
-    {
-      name: "Loretta Veiga",
-      role: "Product Owner",
-      email: "lorettav@softedge.com",
-      initials: "LV",
-    },
-    {
-      name: "Andres Quintanar",
-      role: "Scrum Master",
-      email: "andyqv@softedge.com",
-      initials: "AQ",
-    },
-    {
-      name: "Gerardo Leiva",
-      role: "Backend Developer",
-      email: "gerardo.leiva@softedge.com",
-      initials: "GL",
-    },
-  ]);
-  const [availableMembers, setAvailableMembers] = useState([
-    {
-      name: "Juan Pérez",
-      role: "Frontend Developer",
-      email: "juan.perez@softedge.com",
-      initials: "JP",
-    },
-    {
-      name: "María García",
-      role: "UX Designer",
-      email: "maria.garcia@softedge.com",
-      initials: "MG",
-    },
-  ]);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [availableMembers, setAvailableMembers] = useState([]);
   const [editData, setEditData] = useState({
     nombreProyecto: "",
     descripcion: "",
@@ -83,36 +51,127 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
+  // UseEffect para cargar el proyecto y los miembros del equipo
   useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:5001/projectsFB/${projectId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch project");
-        const data = await response.json();
-        setProject(data);
-        setEditData({
-          nombreProyecto: data.nombreProyecto,
-          descripcion: data.descripcion,
-        });
-      } catch (error) {
-        setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
-        console.error("Error fetching project:", error);
-      } finally {
-        setLoading(false);
-      }
+    const fetchData = async () => {
+      setLoading(true);
+      await fetchProject();
+      const projectMembers = await fetchTeamMembers(); // Llamar primero para filtrar usuarios
+      await fetchAvailableUsers(projectMembers);
+      setLoading(false);
     };
 
-    fetchProject();
+    fetchData();
   }, [projectId]);
+
+  const fetchProject = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to fetch project");
+      const data = await response.json();
+      setProject(data);
+      setEditData({
+        nombreProyecto: data.nombreProyecto,
+        descripcion: data.descripcion,
+      });
+    } catch (error) {
+      setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo.");
+      console.error("Error fetching project:", error);
+    }
+  };
+
+  const fetchAvailableUsers = async (projectMembers) => {
+    try {
+      const response = await fetch("http://localhost:5001/users", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const mappedUsers = data.users.map((user) => ({
+          id: user.UserID,
+          name: user.username,
+          lastname: user.lastname,
+          role: user.role,
+          email: user.email,
+          initials: `${user.username[0] || ""}${
+            user.lastname?.[0] || ""
+          }`.toUpperCase(),
+        }));
+
+        // Filtrar los usuarios que ya son miembros del equipo
+        const filteredUsers = mappedUsers.filter(
+          (user) => !projectMembers.some((member) => member.id === user.id)
+        );
+
+        setAvailableMembers(filteredUsers);
+      } else {
+        console.error("Error fetching users:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching available users:", error);
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/team`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch team members");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const mappedTeamMembers = data.teamMembers.map((member) => ({
+          id: member.UserID,
+          name: member.username,
+          lastname: member.lastname,
+          role: member.role,
+          email: member.email,
+          initials: `${member.username[0] || ""}${
+            member.lastname?.[0] || ""
+          }`.toUpperCase(),
+        }));
+
+        setTeamMembers(mappedTeamMembers);
+        return mappedTeamMembers; // Devolver los miembros del equipo para filtrar usuarios
+      } else {
+        console.error("Error fetching team members:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      setError("Error al cargar los miembros del equipo.");
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -176,16 +235,39 @@ const Dashboard = () => {
     });
   };
 
-  const handleSaveTeam = () => {
-    setTeamMembers((prev) => [...prev, ...selectedMembers]);
-    setAvailableMembers((prev) =>
-      prev.filter(
-        (member) =>
-          !selectedMembers.some((selected) => selected.email === member.email)
-      )
-    );
-    setShowTeamPopup(false);
-    setSelectedMembers([]);
+  const handleSaveTeam = async () => {
+    try {
+      // Hacer la llamada a la API para vincular los usuarios seleccionados al proyecto
+      for (const member of selectedMembers) {
+        console.log("Linking user to project:", member);
+        await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            userId: member.id,
+            projectId,
+          }),
+        });
+      }
+
+      // Actualizar el estado de los miembros del equipo y los miembros disponibles
+      setTeamMembers((prev) => [...prev, ...selectedMembers]);
+      setAvailableMembers((prev) =>
+        prev.filter(
+          (member) =>
+            !selectedMembers.some((selected) => selected.email === member.email)
+        )
+      );
+      setShowTeamPopup(false);
+      setSelectedMembers([]);
+      setSuccessMessage("Miembros agregados exitosamente.");
+    } catch (error) {
+      console.error("Error linking users to project:", error);
+      setError("Error al agregar miembros al proyecto.");
+    }
   };
 
   const handleCancelTeam = () => {
@@ -204,10 +286,33 @@ const Dashboard = () => {
     setShowMemberMenu(null);
   };
 
-  const handleRemoveMember = (member) => {
-    setEditingMember(member);
-    setMemberAction("remove");
-    setShowMemberMenu(null);
+  const handleRemoveMember = async (member) => {
+    try {
+      // Hacer la llamada a la API para desvincular el usuario del proyecto
+      await fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          userId: member.id,
+          projectId,
+        }),
+      });
+
+      // Actualizar el estado de los miembros del equipo y los miembros disponibles
+      setTeamMembers((prev) =>
+        prev.filter((teamMember) => teamMember.email !== member.email)
+      );
+      setAvailableMembers((prev) => [...prev, member]);
+      setEditingMember(null);
+      setMemberAction(null);
+      setSuccessMessage("Miembro eliminado exitosamente.");
+    } catch (error) {
+      console.error("Error removing user from project:", error);
+      setError("Error al eliminar miembro del proyecto.");
+    }
   };
 
   const handleUpdateMember = (e) => {
@@ -243,7 +348,7 @@ const Dashboard = () => {
       priority: "",
       assignee: "",
     });
-    setDeleteMode(false); // Turn off delete mode when closing the popup
+    setDeleteMode(false);
   };
 
   // Agregar un manejador de eventos para el drag and drop

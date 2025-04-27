@@ -2,12 +2,12 @@ import React from "react";
 import "../css/Dashboard.css";
 
 const TeamEditPopup = ({
-    availableMembers,
-    teamMembers,
-    selectedMembers,
-    handleMemberSelect,
-    handleSaveTeam,
-    handleCancelTeam,
+  availableMembers,
+  teamMembers,
+  selectedMembers,
+  handleMemberSelect,
+  handleSaveTeam,
+  handleCancelTeam,
 }) => {
   return (
     <div className="team-edit-popup">
@@ -33,7 +33,9 @@ const TeamEditPopup = ({
                 >
                   <div className="member-profile">{member.initials}</div>
                   <div className="member-info">
-                    <div className="member-name">{member.name}</div>
+                    <div className="member-name">
+                      {member.name + " " + (member.lastname || "")}
+                    </div>
                     <div className="member-role">{member.role}</div>
                     <div className="member-email">{member.email}</div>
                   </div>
