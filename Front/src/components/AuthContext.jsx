@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from "react";
+import ErrorPopup from "./ErrorPopup";
 
 export const AuthContext = createContext();
 
@@ -11,6 +12,8 @@ export const AuthProvider = ({ children }) => {
     return Date.now() < exp * 1000; // Checar si el token no ha expirado
   });
 
+  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
+
   // Guardar el estado de isLogin en el almacenamiento local, y manejar el tiempo de expiración del token
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -20,24 +23,24 @@ export const AuthProvider = ({ children }) => {
 
       if (timeout > 0) {
         const timer = setTimeout(() => {
+          setError(
+            "El token ha expirado. Por favor, inicia sesión nuevamente."
+          );
           setIsLogin(false);
-          localStorage.removeItem("token");
-          localStorage.removeItem("userId");
-          localStorage.removeItem("role");
         }, timeout);
 
         return () => clearTimeout(timer);
       } else {
+        setError("El token ha expirado. Por favor, inicia sesión nuevamente.");
         setIsLogin(false);
-        localStorage.removeItem("token");
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
       }
     }
   }, [isLogin]);
 
   return (
     <AuthContext.Provider value={{ isLogin, setIsLogin }}>
+      {error && <ErrorPopup message={error} onClose={() => setError(null)} />}{" "}
+      {/* Mostrar el popup de error */}
       {children}
     </AuthContext.Provider>
   );
