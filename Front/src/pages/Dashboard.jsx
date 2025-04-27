@@ -4,7 +4,7 @@ import { UserContext } from "../components/UserContext";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 import TopAppBar from "../components/TopAppBar";
-import TeamContainer from "../components/TeamContainer";
+import EditMemberPopup from "../components/EditMemeberPopup";
 import RenderRequirementsTab from "../components/RenderRequirementsTab";
 import "../css/Dashboard.css";
 
@@ -547,118 +547,14 @@ const Dashboard = () => {
       </div>
 
       {editingMember && (
-        <div className="edit-member-popup">
-          <div className="edit-member-popup-content">
-            <button
-              className="edit-member-popup-close"
-              onClick={() => {
-                setEditingMember(null);
-                setMemberAction(null);
-              }}
-            >
-              ×
-            </button>
-
-            {memberAction === "edit" ? (
-              <>
-                <h2 className="edit-member-popup-title">Editar Miembro</h2>
-                <form onSubmit={handleUpdateMember}>
-                  <div className="form-group">
-                    <label>Nombre:</label>
-                    <input
-                      type="text"
-                      value={editingMember.name}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Rol:</label>
-                    <input
-                      type="text"
-                      value={editingMember.role}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          role: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email:</label>
-                    <input
-                      type="email"
-                      value={editingMember.email}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Iniciales:</label>
-                    <input
-                      type="text"
-                      value={editingMember.initials}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          initials: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="edit-member-popup-actions">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingMember(null);
-                        setMemberAction(null);
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                    <button type="submit">Guardar Cambios</button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <>
-                <h2 className="edit-member-popup-title">Eliminar Miembro</h2>
-                <div className="remove-member-confirmation">
-                  <p>
-                    ¿Estás seguro que deseas eliminar a {editingMember.name} del
-                    proyecto?
-                  </p>
-                  <p>
-                    El miembro será movido a la lista de miembros disponibles.
-                  </p>
-                </div>
-                <div className="edit-member-popup-actions">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingMember(null);
-                      setMemberAction(null);
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button type="button" onClick={handleConfirmRemove}>
-                    Eliminar del Proyecto
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <EditMemberPopup
+          editingMember={editingMember}
+          setEditingMember={setEditingMember}
+          memberAction={memberAction}
+          setMemberAction={setMemberAction}
+          setTeamMembers={setTeamMembers}
+          setAvailableMembers={setAvailableMembers}
+        />
       )}
 
       {showTeamPopup && (
