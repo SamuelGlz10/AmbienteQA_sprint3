@@ -493,37 +493,53 @@ const Dashboard = () => {
     e.currentTarget.classList.remove("drag-over");
   };
 
-  const handleDrop = (e, targetIndex, elementId) => {
+  const handleDrop = async (e, targetIndex, elementId) => {
     e.preventDefault();
     e.currentTarget.classList.remove("drag-over");
+    document.querySelectorAll(".dragging").forEach((el) =>
+      el.classList.remove("dragging")
+    );
 
-    // Eliminar la clase dragging de todos los elementos
-    document.querySelectorAll(".dragging").forEach((element) => {
-      element.classList.remove("dragging");
-    });
-
-    const draggedTaskId = e.dataTransfer.getData("taskId");
     const sourceIndex = parseInt(e.dataTransfer.getData("index"));
-
-    // Si se suelta en el mismo lugar, no hacemos nada
     if (sourceIndex === targetIndex) return;
 
-    // Crear una copia del array de tareas actual para el elemento seleccionado
     const tasksCopy = { ...tasks };
     const currentTasks = [...(tasksCopy[elementId] || [])];
-
-    // Obtener la tarea arrastrada
     const draggedTask = currentTasks[sourceIndex];
-
-    // Eliminar la tarea de su posición original
     currentTasks.splice(sourceIndex, 1);
-
-    // Insertar la tarea en la nueva posición
     currentTasks.splice(targetIndex, 0, draggedTask);
-
-    // Actualizar el estado con las tareas reordenadas
     tasksCopy[elementId] = currentTasks;
     setTasks(tasksCopy);
+
+    // Persistir el nuevo orden en la base de datos
+    try {
+      const payload = {
+        requirementType: activeRequirement,
+        elementId,
+        tasks: tasksCopy[elementId].map((task) => ({
+          id: task.id.toString(),
+          titulo: task.title,
+          descripcion: task.description,
+          prioridad: task.priority,
+          asignados:
+            teamMembers.find((m) => m.email === task.assignee)?.id || null,
+        })),
+      };
+      await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/tasks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+    } catch (err) {
+      console.error("Error al actualizar el orden de tareas:", err);
+      setError("Error al actualizar el orden de las tareas en el servidor.");
+    }
   };
 
   // Modificar la función handleDeleteTask para desactivar el modo eliminación
