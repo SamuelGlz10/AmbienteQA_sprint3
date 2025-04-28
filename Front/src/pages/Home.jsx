@@ -174,8 +174,6 @@ const Home = () => {
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />
 
-      {/* Popup de éxito */}
-      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 };
