@@ -290,7 +290,7 @@ Content-Type: application/json
 }
 ```
 
-### Creación de Usuario
+### Creación de Proyecto
 
 **Request:**
 
