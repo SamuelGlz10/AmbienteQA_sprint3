@@ -1,49 +1,55 @@
 import React, { useState } from "react";
+import ErrorPopup from "../components/ErrorPopup";
 
 import "../css/Dashboard.css";
 
-const RenderRequirementsTab = ({
-  project,
-  activeRequirement,
-  setActiveRequirement,
-  handleItemClick,
-  showPopup,
-  selectedItem,
-  handleClosePopup,
-  tasks,
-  setTasks,
-  teamMembers,
-  deleteMode,
-  setDeleteMode,
-  setTaskToDelete,
-  handleDragStart,
-  handleDragOver,
-  handleDragEnter,
-  handleDragLeave,
-  handleDrop,
-  handleDragEnd,
-  showTaskForm,
-  setShowTaskForm,
-  taskFormData,
-  setTaskFormData,
-  setSuccessMessage,
-  setShowDeleteConfirmation,
-  role,
-  editing,
-  setEditing,
-  saveStatus,
-  setSaveStatus,
-  editData,
-  setEditData,
-  handleInputChange,
-  handleSaveEdit,
-}) => {
+const RenderRequirementsTab = ({ ...props }) => {
+  const {
+    project,
+    activeRequirement,
+    setActiveRequirement,
+    handleItemClick,
+    showPopup,
+    selectedItem,
+    handleClosePopup,
+    tasks,
+    setTasks,
+    teamMembers,
+    deleteMode,
+    setDeleteMode,
+    setTaskToDelete,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+    handleDragEnd,
+    showTaskForm,
+    setShowTaskForm,
+    taskFormData,
+    setTaskFormData,
+    setSuccessMessage,
+    setShowDeleteConfirmation,
+    role,
+    editing,
+    setEditing,
+    saveStatus,
+    setSaveStatus,
+    editData,
+    setEditData,
+    handleInputChange,
+    handleSaveEdit,
+  } = props;
+
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
     { id: "RNF", title: "RNF", fullText: "Requerimientos no funcionales" },
     { id: "HU", title: "HU", fullText: "Historias de usuario" },
   ];
+
+  // Add error state for task‐form validation
+  const [error, setError] = useState("");
 
   return (
     <div className="requirements-section">
@@ -383,16 +389,9 @@ const RenderRequirementsTab = ({
               </div>
             ) : (
               <div className="task-form-container">
-                <div
-                  className="task-form"
-                  style={{
-                    width: "100%",
-                    marginLeft: "-15px",
-                    marginRight: "-15px",
-                    padding: "20px",
-                  }}
-                >
+                <div className="task-form" style={{ width: "100%", marginLeft: "-15px", marginRight: "-15px", padding: "20px", }}>
                   <h4>Crear Nueva Tarea</h4>
+
                   <div className="form-group">
                     <label>Título:</label>
                     <input
@@ -462,12 +461,8 @@ const RenderRequirementsTab = ({
                       className="cancel-button"
                       onClick={() => {
                         setShowTaskForm(false);
-                        setTaskFormData({
-                          title: "",
-                          description: "",
-                          priority: "",
-                          assignee: "",
-                        });
+                        setTaskFormData({ title: "", description: "", priority: "", assignee: "" });
+                        setError("");
                       }}
                     >
                       Cancelar
@@ -499,11 +494,11 @@ const RenderRequirementsTab = ({
                               `Debe completar el campo de ${missingFields[0]}.`
                             );
                           } else {
-                            const lastField = missingFields.pop();
+                            const last = missingFields.pop();
                             setError(
                               `Debe completar los campos de ${missingFields.join(
                                 ", "
-                              )} y ${lastField}.`
+                              )} y ${last}.`
                             );
                           }
                           return;
@@ -555,13 +550,9 @@ const RenderRequirementsTab = ({
                         ).catch(console.error);
 
                         setSuccessMessage("Tarea creada exitosamente.");
+                        setError("");
                         setShowTaskForm(false);
-                        setTaskFormData({
-                          title: "",
-                          description: "",
-                          priority: "",
-                          assignee: "",
-                        });
+                        setTaskFormData({ title: "", description: "", priority: "", assignee: "" });
                       }}
                     >
                       Crear Tarea
@@ -572,6 +563,14 @@ const RenderRequirementsTab = ({
             )}
           </div>
         </div>
+      )}
+
+      {/* show validation errors in popup */}
+      {error && (
+        <ErrorPopup
+          message={error}
+          onClose={() => setError("")}
+        />
       )}
     </div>
   );
