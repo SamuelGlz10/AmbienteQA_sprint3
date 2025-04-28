@@ -31,13 +31,15 @@ const Dashboard = () => {
     error: null,
     success: false,
   });
+
   const [teamMembers, setTeamMembers] = useState([]);
   const [availableMembers, setAvailableMembers] = useState([]);
+
   const [editData, setEditData] = useState({
     title: "",
     description: "",
     nombreProyecto: "",
-    descripcion: "",
+    descripcion: ""
   });
 
   const [showMemberMenu, setShowMemberMenu] = useState(null);
@@ -60,6 +62,7 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
+
   // UseEffect para cargar el proyecto y los miembros del equipo
   useEffect(() => {
     const fetchData = async () => {
@@ -71,6 +74,7 @@ const Dashboard = () => {
     };
 
     fetchData();
+
   }, [projectId]);
 
   const fetchProject = async () => {
@@ -291,6 +295,7 @@ const Dashboard = () => {
   };
 
   const handleItemClick = async (item) => {
+
     setSelectedItem(item);
     setEditData({
       title: item.titulo,
@@ -686,6 +691,7 @@ const Dashboard = () => {
       </div>
     </div>
   );
+
 
   return (
     <div className="dashboard-container">
