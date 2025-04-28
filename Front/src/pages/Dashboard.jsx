@@ -717,8 +717,8 @@ const Dashboard = () => {
       <div className="main-title">
         <h1>
           {project && project.nombreProyecto
-            ? `${project.nombreProyecto} - Dashboard`
-            : "Dashboard"}
+            ? project.nombreProyecto
+            : "Cargando proyecto..."}
         </h1>
       </div>
       <div className="dashboard-content">
@@ -728,20 +728,22 @@ const Dashboard = () => {
           </button>
           <div className="dashboard-tabs">
             <button
-              className={`tab-button ${
-                activeTab === "overview" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
               onClick={() => setActiveTab("overview")}
             >
               Vista General
             </button>
             <button
-              className={`tab-button ${
-                activeTab === "requirements" ? "active" : ""
-              }`}
-              onClick={() => setActiveTab("requirements")}
+              className={`tab-button ${activeTab === "elements" ? "active" : ""}`}
+              onClick={() => setActiveTab("elements")}
             >
               Elementos
+            </button>
+            <button
+              className="tab-button"
+              onClick={() => navigate(`/project/${projectId}/sprint-backlog`)}
+            >
+              Sprint Backlog
             </button>
           </div>
 
