@@ -1,3 +1,7 @@
+body {
+  background-color: #f8f9fa; 
+}
+
 .project-dashboard {
   padding: 20px;
   font-family: "Poppins", sans-serif;
@@ -36,11 +40,7 @@
 
 .dashboard-container {
   min-height: 100vh;
-  min-width: 100vw;
-  position: absolute;
   background-color: #f8f9fa;
-  height: 100%;
-  width: 100%;
 }
 
 .main-title {
@@ -103,16 +103,14 @@
   z-index: 1;
 }
 
-/* Container for the scrollable content */
 .team-members-content {
   flex: 1;
   overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
-  padding-bottom: 4.5rem; /* Space for the button */
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+  padding-bottom: 4.5rem; 
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .team-members-content::-webkit-scrollbar {
   display: none;
 }
@@ -564,7 +562,7 @@ td {
 
 .delete-mode {
   background-color: #fff8f8;
-  cursor: default !important; /* Cambiar el cursor para toda la fila */
+  cursor: default !important; 
 }
 
 .delete-mode:hover {
@@ -1420,4 +1418,11 @@ td {
 
 .confirmation-actions .delete-button:hover {
   background-color: #ff5252;
+}
+
+.modification-history-section {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
 }
