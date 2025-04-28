@@ -294,14 +294,42 @@ const Dashboard = () => {
     setSuccessMessage(null); // Cierra el popup de éxito
   };
 
+  const handleItemClick = async (item) => {
 
-  const handleItemClick = (item) => {
     setSelectedItem(item);
     setEditData({
       title: item.titulo,
       description: item.data,
-    })
+    });
     setShowPopup(true);
+
+    // Fetch tasks for this element
+    try {
+      const resp = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/tasks?requirementType=${activeRequirement}&elementId=${item.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!resp.ok) throw new Error("Failed to fetch tasks");
+      const { tasks: dbTasks } = await resp.json();
+      // Mapear al formato de front
+      const mapped = dbTasks.map((t) => ({
+        id: Number(t.id),
+        title: t.titulo,
+        description: t.descripcion,
+        priority: t.prioridad,
+        assignee:
+          teamMembers.find((m) => m.id === t.asignados)?.email || "",
+      }));
+      setTasks((prev) => ({ ...prev, [item.id]: mapped }));
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+    }
   };
 
   const handleStatCardClick = (requirementType) => {
@@ -504,23 +532,49 @@ const Dashboard = () => {
   };
 
   // Modificar la función handleDeleteTask para desactivar el modo eliminación
-  const handleDeleteTask = (taskId, elementId) => {
-    // Actualizar el estado eliminando la tarea del arreglo
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-      updatedTasks[elementId] = updatedTasks[elementId].filter(
-        (task) => task.id !== taskId
-      );
-      return updatedTasks;
-    });
-
-    // Mostrar mensaje de éxito
+  const handleDeleteTask = async (taskId, elementId) => {
+    // 1. Actualizar estado local
+    const updatedTasksArr = (tasks[elementId] || []).filter(
+      (task) => task.id !== taskId
+    );
+    setTasks((prev) => ({
+      ...prev,
+      [elementId]: updatedTasksArr,
+    }));
     setSuccessMessage("Tarea eliminada exitosamente.");
-
-    // Cerrar el diálogo de confirmación y desactivar modo eliminación
     setShowDeleteConfirmation(false);
     setTaskToDelete(null);
-    setDeleteMode(false); // Desactivar modo eliminación al terminar
+    setDeleteMode(false);
+
+    // 2. Persistir eliminación en la base de datos
+    try {
+      const payload = {
+        requirementType: activeRequirement,
+        elementId,
+        tasks: updatedTasksArr.map((task) => ({
+          id: task.id.toString(),
+          titulo: task.title,
+          descripcion: task.description,
+          prioridad: task.priority,
+          asignados:
+            teamMembers.find((m) => m.email === task.assignee)?.id || null,
+        })),
+      };
+      await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/tasks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+    } catch (err) {
+      console.error("Error al eliminar tarea en servidor:", err);
+      setError("Error al eliminar la tarea en el servidor.");
+    }
   };
 
   if (loading) {
