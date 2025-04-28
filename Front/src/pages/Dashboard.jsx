@@ -4,9 +4,13 @@ import { UserContext } from "../components/UserContext";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
 import TopAppBar from "../components/TopAppBar";
+import EditMemberPopup from "../components/EditMemeberPopup";
+import RenderRequirementsTab from "../components/RenderRequirementsTab";
+import TeamEditPopup from "../components/TeamEditPopup";
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
+  const role = localStorage.getItem("role");
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { userId } = useContext(UserContext);
@@ -27,47 +31,17 @@ const Dashboard = () => {
     error: null,
     success: false,
   });
-  const [teamMembers, setTeamMembers] = useState([
-    {
-      name: "Loretta Veiga",
-      role: "Product Owner",
-      email: "lorettav@softedge.com",
-      initials: "LV",
-    },
-    {
-      name: "Andres Quintanar",
-      role: "Scrum Master",
-      email: "andyqv@softedge.com",
-      initials: "AQ",
-    },
-    {
-      name: "Gerardo Leiva",
-      role: "Backend Developer",
-      email: "gerardo.leiva@softedge.com",
-      initials: "GL",
-    },
-  ]);
-  const [availableMembers, setAvailableMembers] = useState([
-    {
-      name: "Juan Pérez",
-      role: "Frontend Developer",
-      email: "juan.perez@softedge.com",
-      initials: "JP",
-    },
-    {
-      name: "María García",
-      role: "UX Designer",
-      email: "maria.garcia@softedge.com",
-      initials: "MG",
-    },
-  ]);
+
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [availableMembers, setAvailableMembers] = useState([]);
+
   const [editData, setEditData] = useState({
     title: "",
     description: "",
     nombreProyecto: "",
     descripcion: ""
   });
-  
+
   const [showMemberMenu, setShowMemberMenu] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const [memberAction, setMemberAction] = useState(null);
@@ -75,7 +49,7 @@ const Dashboard = () => {
   const [taskFormData, setTaskFormData] = useState({
     title: "",
     description: "",
-    priority: "", 
+    priority: "",
     assignee: "",
   });
   const [tasks, setTasks] = useState({});
@@ -88,126 +62,129 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
-  const requirementTabs = [
-    { id: "EP", title: "EP", fullText: "Épicas" },
-    { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
-    { id: "RNF", title: "RNF", fullText: "Requerimientos no funcionales" },
-    { id: "HU", title: "HU", fullText: "Historias de usuario" },
-  ];
 
-  const handleItemClick = (item) => {
-    setSelectedItem(item);
-    setEditData({
-      title: item.titulo || item.title,
-      description: item.data || item.description,
-      nombreProyecto: project?.nombreProyecto || "",
-      descripcion: project?.descripcion || ""
-    });
-    setShowPopup(true);
-    setEditing(false);
-    setSaveStatus({ loading: false, error: null, success: false });
-  };
-  
-  const handleSaveEdit = async () => {
-    if (!selectedItem || !project) return;
-  
+  // UseEffect para cargar el proyecto y los miembros del equipo
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      await fetchProject();
+      const projectMembers = await fetchTeamMembers(); // Llamar primero para filtrar usuarios
+      await fetchAvailableUsers(projectMembers);
+      setLoading(false);
+    };
+
+    fetchData();
+
+  }, [projectId]);
+
+  const fetchProject = async () => {
     try {
-      setSaveStatus({ loading: true, error: null, success: false });
-      
-      // 1. Actualizar el estado local primero
-      const updatedProject = {
-        ...project,
-        [activeRequirement]: project[activeRequirement].map(item => 
-          item.id === selectedItem.id 
-            ? { ...item, titulo: editData.title, data: editData.description }
-            : item
-        )
-      };
-      setProject(updatedProject);
-  
-      // 2. Enviar los cambios al backend
       const response = await fetch(
         `http://localhost:5001/projectsFB/${projectId}`,
         {
-          method: "PUT",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({
-            ...updatedProject,
-            // Asegúrate de incluir todos los campos necesarios
-            nombreProyecto: updatedProject.nombreProyecto,
-            descripcion: updatedProject.descripcion,
-            // Incluye los requisitos actualizados
-            [activeRequirement]: updatedProject[activeRequirement]
-          }),
         }
       );
-  
-      if (!response.ok) throw new Error("Error al guardar en el servidor");
-  
+      if (!response.ok) throw new Error("Failed to fetch project");
       const data = await response.json();
-      
-      setSaveStatus({ loading: false, error: null, success: true });
-      setSuccessMessage("Cambios guardados exitosamente");
-      
-      setTimeout(() => {
-        setShowPopup(false);
-        setEditing(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Error al guardar:", error);
-      setSaveStatus({
-        loading: false,
-        error: "Error al guardar los cambios",
-        success: false,
+      setProject(data);
+      setEditData({
+        nombreProyecto: data.nombreProyecto,
+        descripcion: data.descripcion,
       });
-      setError("No se pudieron guardar los cambios. Por favor, inténtalo de nuevo.");
+    } catch (error) {
+      setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo.");
+      console.error("Error fetching project:", error);
     }
   };
-  
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+
+  const fetchAvailableUsers = async (projectMembers) => {
+    try {
+      const response = await fetch("http://localhost:5001/users", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        const mappedUsers = data.users.map((user) => ({
+          id: user.UserID,
+          name: user.username,
+          lastname: user.lastname,
+          role: user.role,
+          email: user.email,
+          initials: `${user.username[0] || ""}${
+            user.lastname?.[0] || ""
+          }`.toUpperCase(),
+        }));
+
+        // Filtrar los usuarios que ya son miembros del equipo
+        const filteredUsers = mappedUsers.filter(
+          (user) => !projectMembers.some((member) => member.id === user.id)
+        );
+
+        setAvailableMembers(filteredUsers);
+      } else {
+        console.error("Error fetching users:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching available users:", error);
+    }
   };
 
-  useEffect(() => {
-    const fetchProject = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:5001/projectsFB/${projectId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch project");
-        const data = await response.json();
-        setProject(data);
-        // Actualiza ambos tipos de datos de edición
-        setEditData({
-          nombreProyecto: data.nombreProyecto,
-          descripcion: data.descripcion,
-          title: "",
-          description: ""
-        });
-      } catch (error) {
-        setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo.");
-        console.error("Error fetching project:", error);
-      } finally {
-        setLoading(false);
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/team`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch team members");
       }
-    };
-  
-    fetchProject();
-  }, [projectId]);
+
+      const data = await response.json();
+
+      if (data.success) {
+        const mappedTeamMembers = data.teamMembers.map((member) => ({
+          id: member.UserID,
+          name: member.username,
+          lastname: member.lastname,
+          role: member.role,
+          email: member.email,
+          initials: `${member.username[0] || ""}${
+            member.lastname?.[0] || ""
+          }`.toUpperCase(),
+        }));
+
+        setTeamMembers(mappedTeamMembers);
+        return mappedTeamMembers; // Devolver los miembros del equipo para filtrar usuarios
+      } else {
+        console.error("Error fetching team members:", data.message);
+      }
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      setError("Error al cargar los miembros del equipo.");
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -239,6 +216,76 @@ const Dashboard = () => {
     }
   };
 
+  const handleSaveEdit = async () => {
+    if (!selectedItem || !project) return;
+
+    try {
+      setSaveStatus({ loading: true, error: null, success: false });
+
+      // 1. Actualizar el estado local primero
+      const updatedProject = {
+        ...project,
+        [activeRequirement]: project[activeRequirement].map((item) =>
+          item.id === selectedItem.id
+            ? { ...item, titulo: editData.title, data: editData.description }
+            : item
+        ),
+      };
+      setProject(updatedProject);
+
+      // 2. Enviar los cambios al backend
+      const response = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            ...updatedProject,
+            // Asegúrate de incluir todos los campos necesarios
+            nombreProyecto: updatedProject.nombreProyecto,
+            descripcion: updatedProject.descripcion,
+            // Incluye los requisitos actualizados
+            [activeRequirement]: updatedProject[activeRequirement],
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Error al guardar en el servidor");
+
+      const data = await response.json();
+
+      setSaveStatus({ loading: false, error: null, success: true });
+      setSuccessMessage("Cambios guardados exitosamente");
+
+      setEditing(false);
+
+      setTimeout(() => {
+        setSaveStatus({ loading: false, error: null, success: false });
+      }, 3000);
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      setSaveStatus({
+        loading: false,
+        error: "Error al guardar los cambios",
+        success: false,
+      });
+      setError(
+        "No se pudieron guardar los cambios. Por favor, inténtalo de nuevo."
+      );
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const closeErrorPopup = () => {
     setError(null); // Cierra el popup de error
   };
@@ -247,6 +294,15 @@ const Dashboard = () => {
     setSuccessMessage(null); // Cierra el popup de éxito
   };
 
+
+  const handleItemClick = (item) => {
+    setSelectedItem(item);
+    setEditData({
+      title: item.titulo,
+      description: item.data,
+    })
+    setShowPopup(true);
+  };
 
   const handleStatCardClick = (requirementType) => {
     setActiveTab("requirements");
@@ -267,16 +323,39 @@ const Dashboard = () => {
     });
   };
 
-  const handleSaveTeam = () => {
-    setTeamMembers((prev) => [...prev, ...selectedMembers]);
-    setAvailableMembers((prev) =>
-      prev.filter(
-        (member) =>
-          !selectedMembers.some((selected) => selected.email === member.email)
-      )
-    );
-    setShowTeamPopup(false);
-    setSelectedMembers([]);
+  const handleSaveTeam = async () => {
+    try {
+      // Hacer la llamada a la API para vincular los usuarios seleccionados al proyecto
+      for (const member of selectedMembers) {
+        console.log("Linking user to project:", member);
+        await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            userId: member.id,
+            projectId,
+          }),
+        });
+      }
+
+      // Actualizar el estado de los miembros del equipo y los miembros disponibles
+      setTeamMembers((prev) => [...prev, ...selectedMembers]);
+      setAvailableMembers((prev) =>
+        prev.filter(
+          (member) =>
+            !selectedMembers.some((selected) => selected.email === member.email)
+        )
+      );
+      setShowTeamPopup(false);
+      setSelectedMembers([]);
+      setSuccessMessage("Miembros agregados exitosamente.");
+    } catch (error) {
+      console.error("Error linking users to project:", error);
+      setError("Error al agregar miembros al proyecto.");
+    }
   };
 
   const handleCancelTeam = () => {
@@ -295,10 +374,33 @@ const Dashboard = () => {
     setShowMemberMenu(null);
   };
 
-  const handleRemoveMember = (member) => {
-    setEditingMember(member);
-    setMemberAction("remove");
-    setShowMemberMenu(null);
+  const handleRemoveMember = async (member) => {
+    try {
+      // Hacer la llamada a la API para desvincular el usuario del proyecto
+      await fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          userId: member.id,
+          projectId,
+        }),
+      });
+
+      // Actualizar el estado de los miembros del equipo y los miembros disponibles
+      setTeamMembers((prev) =>
+        prev.filter((teamMember) => teamMember.email !== member.email)
+      );
+      setAvailableMembers((prev) => [...prev, member]);
+      setEditingMember(null);
+      setMemberAction(null);
+      setSuccessMessage("Miembro eliminado exitosamente.");
+    } catch (error) {
+      console.error("Error removing user from project:", error);
+      setError("Error al eliminar miembro del proyecto.");
+    }
   };
 
   const handleUpdateMember = (e) => {
@@ -328,26 +430,28 @@ const Dashboard = () => {
   const handleClosePopup = () => {
     setShowPopup(false);
     setShowTaskForm(false);
+    setSelectedItem(null);
     setTaskFormData({
       title: "",
       description: "",
       priority: "",
       assignee: "",
     });
-    setDeleteMode(false); // Turn off delete mode when closing the popup
+    setEditing(false);
+    setDeleteMode(false);
   };
 
   // Agregar un manejador de eventos para el drag and drop
   const handleDragStart = (e, taskId, index) => {
-    e.dataTransfer.setData('taskId', taskId);
-    e.dataTransfer.setData('index', index);
-    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.setData("taskId", taskId);
+    e.dataTransfer.setData("index", index);
+    e.currentTarget.classList.add("dragging");
   };
 
   const handleDragEnd = (e) => {
     // Eliminar la clase dragging de todos los elementos
-    document.querySelectorAll('.dragging').forEach(element => {
-      element.classList.remove('dragging');
+    document.querySelectorAll(".dragging").forEach((element) => {
+      element.classList.remove("dragging");
     });
   };
 
@@ -359,41 +463,41 @@ const Dashboard = () => {
 
   const handleDragEnter = (e) => {
     e.preventDefault();
-    e.currentTarget.classList.add('drag-over');
+    e.currentTarget.classList.add("drag-over");
   };
 
   const handleDragLeave = (e) => {
-    e.currentTarget.classList.remove('drag-over');
+    e.currentTarget.classList.remove("drag-over");
   };
 
   const handleDrop = (e, targetIndex, elementId) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('drag-over');
-    
+    e.currentTarget.classList.remove("drag-over");
+
     // Eliminar la clase dragging de todos los elementos
-    document.querySelectorAll('.dragging').forEach(element => {
-      element.classList.remove('dragging');
+    document.querySelectorAll(".dragging").forEach((element) => {
+      element.classList.remove("dragging");
     });
-    
-    const draggedTaskId = e.dataTransfer.getData('taskId');
-    const sourceIndex = parseInt(e.dataTransfer.getData('index'));
-    
+
+    const draggedTaskId = e.dataTransfer.getData("taskId");
+    const sourceIndex = parseInt(e.dataTransfer.getData("index"));
+
     // Si se suelta en el mismo lugar, no hacemos nada
     if (sourceIndex === targetIndex) return;
-    
+
     // Crear una copia del array de tareas actual para el elemento seleccionado
-    const tasksCopy = {...tasks};
+    const tasksCopy = { ...tasks };
     const currentTasks = [...(tasksCopy[elementId] || [])];
-    
+
     // Obtener la tarea arrastrada
     const draggedTask = currentTasks[sourceIndex];
-    
+
     // Eliminar la tarea de su posición original
     currentTasks.splice(sourceIndex, 1);
-    
+
     // Insertar la tarea en la nueva posición
     currentTasks.splice(targetIndex, 0, draggedTask);
-    
+
     // Actualizar el estado con las tareas reordenadas
     tasksCopy[elementId] = currentTasks;
     setTasks(tasksCopy);
@@ -402,15 +506,17 @@ const Dashboard = () => {
   // Modificar la función handleDeleteTask para desactivar el modo eliminación
   const handleDeleteTask = (taskId, elementId) => {
     // Actualizar el estado eliminando la tarea del arreglo
-    setTasks(prevTasks => {
-      const updatedTasks = {...prevTasks};
-      updatedTasks[elementId] = updatedTasks[elementId].filter(task => task.id !== taskId);
+    setTasks((prevTasks) => {
+      const updatedTasks = { ...prevTasks };
+      updatedTasks[elementId] = updatedTasks[elementId].filter(
+        (task) => task.id !== taskId
+      );
       return updatedTasks;
     });
-    
+
     // Mostrar mensaje de éxito
     setSuccessMessage("Tarea eliminada exitosamente.");
-    
+
     // Cerrar el diálogo de confirmación y desactivar modo eliminación
     setShowDeleteConfirmation(false);
     setTaskToDelete(null);
@@ -487,9 +593,14 @@ const Dashboard = () => {
           <>
             <h1>{project.nombreProyecto}</h1>
             <p>{project.descripcion}</p>
-            <button className="edit-button" onClick={() => setIsEditing(true)}>
-              Editar Proyecto
-            </button>
+            {(role === "admin" || role === "editor") && (
+              <button
+                className="edit-button"
+                onClick={() => setIsEditing(true)}
+              >
+                Editar Proyecto
+              </button>
+            )}
           </>
         )}
       </div>
@@ -527,366 +638,7 @@ const Dashboard = () => {
     </div>
   );
 
-  const renderRequirementsTab = () => (
-    <div className="requirements-section">
-      <div className="requirements-tabs">
-        {requirementTabs.map((tab) => (
-          <button
-            key={tab.id}
-            className={`requirement-tab ${
-              activeRequirement === tab.id ? "active" : ""
-            }`}
-            onClick={() => setActiveRequirement(tab.id)}
-          >
-            <span className="tab-title">{tab.title}</span>
-            <span className="tab-full-text"> - {tab.fullText}</span>
-          </button>
-        ))}
-      </div>
-  
-      <div className="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Título</th>
-              <th>Descripción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {project[activeRequirement]?.map((item) => (
-              <tr
-                key={item.id}
-                onClick={() => handleItemClick(item)}
-                className="clickable-row"
-              >
-                <td>{item.id}</td>
-                <td>{item.titulo}</td>
-                <td>{item.data}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-  
-          {showPopup && selectedItem && (
-      <div className="popup-overlay" onClick={handleClosePopup}>
-        <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-          <button className="popup-close" onClick={handleClosePopup}>
-            ×
-          </button>
-          
-          <div className="popup-header">
-            <button 
-              className="edit-button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditing(true);
-              }}
-              style={{
-                position: 'absolute',
-                left: '20px',
-                top: '20px',
-                backgroundColor: '#f0e6ff',
-                color: '#5d3a7f',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '8px 12px',
-                cursor: 'pointer'
-              }}
-            >
-              Editar
-            </button>
-            
-            <h3 className="popup-title">{selectedItem.titulo}</h3>
-            <p className="popup-id">
-              <strong>ID:</strong> {selectedItem.id}
-            </p>
-          </div>
 
-          <div className="popup-body">
-            <div className="description-section">
-              <h4>Descripción:</h4>
-              {editing ? (
-                <>
-                  <label htmlFor="title-input" className="label-title">
-                    Título:
-                  </label>
-                  <input
-                    id="title-input"
-                    type="text"
-                    name="title"
-                    value={editData.title}
-                    onChange={handleInputChange}
-                    className="edit-input"
-                  />
-                  <label htmlFor="description-input" className="label-title">
-                    Descripción:
-                  </label>
-                  <textarea
-                    id="description-input"
-                    name="description"
-                    value={editData.description}
-                    onChange={handleInputChange}
-                    className="edit-textarea"
-                    rows="8"
-                  />
-                </>
-              ) : (
-                <div className="description-text">{selectedItem.data}</div>
-              )}
-            </div>
-            
-            <div className="tasks-section">
-              <h4>Tareas relacionadas:</h4>
-              {tasks[selectedItem.id] && tasks[selectedItem.id].length > 0 ? (
-                <div className="tasks-table-container">
-                  <table className="tasks-table">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        <th>Título</th>
-                        <th>Descripción</th>
-                        <th>Prioridad</th>
-                        <th>Asignado a</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tasks[selectedItem.id].map((task, index) => {
-                        const assignedMember = teamMembers.find(member => member.email === task.assignee);
-                        
-                        return (
-                          <tr 
-                            key={task.id}
-                            draggable={!deleteMode}
-                            onDragStart={!deleteMode ? (e) => handleDragStart(e, task.id, index) : null}
-                            onDragOver={!deleteMode ? handleDragOver : null}
-                            onDragEnter={!deleteMode ? handleDragEnter : null}
-                            onDragLeave={!deleteMode ? handleDragLeave : null}
-                            onDrop={!deleteMode ? (e) => handleDrop(e, index, selectedItem.id) : null}
-                            onDragEnd={!deleteMode ? handleDragEnd : null}
-                            className={`draggable-task-row ${deleteMode ? 'delete-mode' : ''}`}
-                          >
-                            <td 
-                              className="drag-handle" 
-                              onClick={deleteMode ? () => {
-                                setTaskToDelete({
-                                  id: task.id,
-                                  title: task.title,
-                                  elementId: selectedItem.id
-                                });
-                                setShowDeleteConfirmation(true);
-                              } : undefined}
-                            >
-                              {!deleteMode ? (
-                                <span className="drag-icon">≡</span>
-                              ) : (
-                                <span className="delete-mode-icon">×</span>
-                              )}
-                            </td>
-                            <td>{task.title}</td>
-                            <td>{task.description}</td>
-                            <td>
-                              <span className={`priority-badge ${task.priority}`}>
-                                {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                              </span>
-                            </td>
-                            <td>{assignedMember ? assignedMember.name : "No asignado"}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <p className="no-tasks-message">No hay tareas registradas para este elemento.</p>
-              )}
-            </div>
-          </div>
-          
-          <div className="popup-footer">
-            {saveStatus.success && (
-              <div className="save-success">¡Cambios guardados!</div>
-            )}
-            {saveStatus.error && (
-              <div className="save-error">{saveStatus.error}</div>
-            )}
-
-            {editing ? (
-              <>
-                <button
-                  className="popup-button secondary"
-                  onClick={() => setEditing(false)}
-                  disabled={saveStatus.loading}
-                >
-                  Cancelar
-                </button>
-                <button
-                  className="popup-button primary"
-                  onClick={handleSaveEdit}
-                  disabled={saveStatus.loading}
-                >
-                  {saveStatus.loading ? "Guardando..." : "Guardar Cambios"}
-                </button>
-              </>
-            ) : (
-              <div className="popup-footer-buttons">
-                {!deleteMode && (
-                  <button 
-                    className="new-task-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowTaskForm(true);
-                    }}
-                  >
-                    Nueva Tarea
-                  </button>
-                )}
-                
-                {tasks[selectedItem.id] && tasks[selectedItem.id].length > 0 && (
-                  <button 
-                    className={`delete-mode-button ${deleteMode ? 'cancel' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteMode(!deleteMode);
-                    }}
-                  >
-                    {deleteMode ? 'Cancelar' : 'Eliminar Tarea'}
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-
-          {showTaskForm && (
-            <div className="task-form-container">
-              <div className="task-form">
-                <h4>Crear Nueva Tarea</h4>
-                <div className="form-group">
-                  <label>Título:</label>
-                  <input
-                    type="text"
-                    value={taskFormData.title}
-                    onChange={(e) =>
-                      setTaskFormData({
-                        ...taskFormData,
-                        title: e.target.value,
-                      })
-                    }
-                    placeholder="Título de la tarea"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Descripción:</label>
-                  <textarea
-                    value={taskFormData.description}
-                    onChange={(e) =>
-                      setTaskFormData({
-                        ...taskFormData,
-                        description: e.target.value,
-                      })
-                    }
-                    placeholder="Descripción de la tarea"
-                    rows="3"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Prioridad:</label>
-                  <select
-                    value={taskFormData.priority}
-                    onChange={(e) =>
-                      setTaskFormData({
-                        ...taskFormData,
-                        priority: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Seleccionar prioridad</option>
-                    <option value="alta">Alta</option>
-                    <option value="media">Media</option>
-                    <option value="baja">Baja</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Asignar a:</label>
-                  <select
-                    value={taskFormData.assignee}
-                    onChange={(e) =>
-                      setTaskFormData({
-                        ...taskFormData,
-                        assignee: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Seleccionar miembro</option>
-                    {teamMembers.map((member) => (
-                      <option key={member.email} value={member.email}>
-                        {member.name} ({member.role})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="task-form-actions">
-                  <button
-                    className="cancel-button"
-                    onClick={() => {
-                      setShowTaskForm(false);
-                      setTaskFormData({
-                        title: "",
-                        description: "",
-                        priority: "",
-                        assignee: "",
-                      });
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    className="save-button"
-                    onClick={() => {
-                      // Validación de campos
-                      if (!taskFormData.title.trim() || 
-                          !taskFormData.description.trim() || 
-                          !taskFormData.priority || 
-                          !taskFormData.assignee) {
-                        setError("Por favor complete todos los campos");
-                        return;
-                      }
-                      
-                      const newTask = {
-                        id: Date.now(),
-                        title: taskFormData.title,
-                        description: taskFormData.description,
-                        priority: taskFormData.priority,
-                        assignee: taskFormData.assignee,
-                      };
-                      
-                      setTasks(prevTasks => ({
-                        ...prevTasks,
-                        [selectedItem.id]: [...(prevTasks[selectedItem.id] || []), newTask]
-                      }));
-                      
-                      setShowTaskForm(false);
-                      setTaskFormData({
-                        title: "",
-                        description: "",
-                        priority: "",
-                        assignee: "",
-                      });
-                      setSuccessMessage("Tarea creada exitosamente");
-                    }}
-                  >
-                    Crear Tarea
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    )}
-    </div>
-  );
   return (
     <div className="dashboard-container">
       <TopAppBar />
@@ -922,9 +674,46 @@ const Dashboard = () => {
           </div>
 
           <div className="tab-content">
-            {activeTab === "overview"
-              ? renderOverviewTab()
-              : renderRequirementsTab()}
+            {activeTab === "overview" ? (
+              renderOverviewTab()
+            ) : (
+              <RenderRequirementsTab
+                project={project}
+                activeRequirement={activeRequirement}
+                setActiveRequirement={setActiveRequirement}
+                handleItemClick={handleItemClick}
+                showPopup={showPopup}
+                selectedItem={selectedItem}
+                handleClosePopup={handleClosePopup}
+                tasks={tasks}
+                setTasks={setTasks}
+                teamMembers={teamMembers}
+                setTaskToDelete={setTaskToDelete}
+                deleteMode={deleteMode}
+                setDeleteMode={setDeleteMode}
+                handleDragStart={handleDragStart}
+                handleDragOver={handleDragOver}
+                handleDragEnter={handleDragEnter}
+                handleDragLeave={handleDragLeave}
+                handleDrop={handleDrop}
+                handleDragEnd={handleDragEnd}
+                showTaskForm={showTaskForm}
+                setShowTaskForm={setShowTaskForm}
+                taskFormData={taskFormData}
+                setTaskFormData={setTaskFormData}
+                setSuccessMessage={setSuccessMessage}
+                setShowDeleteConfirmation={setShowDeleteConfirmation}
+                role={role}
+                editing={editing}
+                setEditing={setEditing}
+                saveStatus={saveStatus}
+                setSaveStatus={setSaveStatus}
+                editData={editData}
+                setEditData={setEditData}
+                handleSaveEdit={handleSaveEdit}
+                handleInputChange={handleInputChange}
+              />
+            )}
           </div>
         </div>
 
@@ -939,221 +728,64 @@ const Dashboard = () => {
                   <div className="member-role">{member.role}</div>
                   <div className="member-email">{member.email}</div>
                 </div>
-                <div className="member-actions">
-                  <button
-                    className="member-menu-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleMemberMenuClick(e, member);
-                    }}
-                  >
-                    ⋮
-                  </button>
-                  {showMemberMenu === member.email && (
-                    <div className="member-menu">
-                      <button onClick={() => handleEditMember(member)}>
-                        Editar
-                      </button>
-                      <button onClick={() => handleRemoveMember(member)}>
-                        Eliminar
-                      </button>
-                    </div>
-                  )}
-                </div>
+                {(role === "editor" || role === "admin") && (
+                  <div className="member-actions">
+                    <button
+                      className="member-menu-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMemberMenuClick(e, member);
+                      }}
+                    >
+                      ⋮
+                    </button>
+                    {showMemberMenu === member.email && (
+                      <div className="member-menu">
+                        {role === "admin" && (
+                          <button onClick={() => handleEditMember(member)}>
+                            Editar
+                          </button>
+                        )}
+                        <button onClick={() => handleRemoveMember(member)}>
+                          Eliminar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-          <button className="edit-team-button" onClick={handleEditTeam}>
-            Agregar Miembros
-          </button>
+          {(role === "admin" || role === "editor") && (
+            <button className="edit-team-button" onClick={handleEditTeam}>
+              Agregar Miembros
+            </button>
+          )}
         </div>
       </div>
 
       {editingMember && (
-        <div className="edit-member-popup">
-          <div className="edit-member-popup-content">
-            <button
-              className="edit-member-popup-close"
-              onClick={() => {
-                setEditingMember(null);
-                setMemberAction(null);
-              }}
-            >
-              ×
-            </button>
-
-            {memberAction === "edit" ? (
-              <>
-                <h2 className="edit-member-popup-title">Editar Miembro</h2>
-                <form onSubmit={handleUpdateMember}>
-                  <div className="form-group">
-                    <label>Nombre:</label>
-                    <input
-                      type="text"
-                      value={editingMember.name}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          name: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Rol:</label>
-                    <input
-                      type="text"
-                      value={editingMember.role}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          role: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Email:</label>
-                    <input
-                      type="email"
-                      value={editingMember.email}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          email: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label>Iniciales:</label>
-                    <input
-                      type="text"
-                      value={editingMember.initials}
-                      onChange={(e) =>
-                        setEditingMember({
-                          ...editingMember,
-                          initials: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="edit-member-popup-actions">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingMember(null);
-                        setMemberAction(null);
-                      }}
-                    >
-                      Cancelar
-                    </button>
-                    <button type="submit">Guardar Cambios</button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <>
-                <h2 className="edit-member-popup-title">Eliminar Miembro</h2>
-                <div className="remove-member-confirmation">
-                  <p>
-                    ¿Estás seguro que deseas eliminar a {editingMember.name} del
-                    proyecto?
-                  </p>
-                  <p>
-                    El miembro será movido a la lista de miembros disponibles.
-                  </p>
-                </div>
-                <div className="edit-member-popup-actions">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingMember(null);
-                      setMemberAction(null);
-                    }}
-                  >
-                      Cancelar
-                  </button>
-                  <button type="button" onClick={handleConfirmRemove}>
-                    Eliminar del Proyecto
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <EditMemberPopup
+          editingMember={editingMember}
+          setEditingMember={setEditingMember}
+          memberAction={memberAction}
+          setMemberAction={setMemberAction}
+          setTeamMembers={setTeamMembers}
+          setAvailableMembers={setAvailableMembers}
+        />
       )}
 
       {showTeamPopup && (
-        <div className="team-edit-popup">
-          <div className="team-edit-popup-content">
-            <button
-              className="team-edit-popup-close"
-              onClick={handleCancelTeam}
-            >
-              ×
-            </button>
-            <h2 className="team-edit-popup-title">Gestionar Equipo</h2>
-
-            <div className="members-sections">
-              <div className="available-members-section">
-                <h3>Miembros Disponibles</h3>
-                <div className="available-members-list">
-                  {availableMembers.map((member, index) => (
-                    <div
-                      key={index}
-                      className={`available-member-card ${
-                        selectedMembers.some((m) => m.email === member.email)
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() => handleMemberSelect(member)}
-                    >
-                      <div className="member-profile">{member.initials}</div>
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-role">{member.role}</div>
-                        <div className="member-email">{member.email}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="current-team-section">
-                <h3>Miembros del Equipo</h3>
-                <div className="current-team-list">
-                  {teamMembers.map((member, index) => (
-                    <div key={index} className="current-member-card">
-                      <div className="member-profile">{member.initials}</div>
-                      <div className="member-info">
-                        <div className="member-name">{member.name}</div>
-                        <div className="member-role">{member.role}</div>
-                        <div className="member-email">{member.email}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="team-edit-popup-actions">
-              <button
-                className="team-edit-popup-button cancel"
-                onClick={handleCancelTeam}
-              >
-                Cancelar
-              </button>
-              <button
-                className="team-edit-popup-button save"
-                onClick={handleSaveTeam}
-                disabled={selectedMembers.length === 0}
-              >
-                Agregar Miembros
-              </button>
-            </div>
-          </div>
-        </div>
+        <TeamEditPopup
+          availableMembers={availableMembers}
+          teamMembers={teamMembers}
+          selectedMembers={selectedMembers}
+          setSelectedMembers={setSelectedMembers}
+          handleMemberSelect={handleMemberSelect}
+          handleSaveTeam={handleSaveTeam}
+          handleCancelTeam={handleCancelTeam}
+          setShowTeamPopup={setShowTeamPopup}
+        />
       )}
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />
@@ -1163,23 +795,38 @@ const Dashboard = () => {
 
       {/* Confirmación de eliminación de tarea */}
       {showDeleteConfirmation && taskToDelete && (
-        <div className="popup-overlay" onClick={() => setShowDeleteConfirmation(false)}>
-          <div className="popup-content confirmation-popup" onClick={(e) => e.stopPropagation()} 
-               style={{ maxWidth: '400px', textAlign: 'center' }}>
-            <button className="popup-close" onClick={() => setShowDeleteConfirmation(false)}>×</button>
+        <div
+          className="popup-overlay"
+          onClick={() => setShowDeleteConfirmation(false)}
+        >
+          <div
+            className="popup-content confirmation-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "400px", textAlign: "center" }}
+          >
+            <button
+              className="popup-close"
+              onClick={() => setShowDeleteConfirmation(false)}
+            >
+              ×
+            </button>
             <h3>Confirmar eliminación</h3>
-            <p>¿Estás seguro que deseas eliminar la tarea "{taskToDelete.title}"?</p>
+            <p>
+              ¿Estás seguro que deseas eliminar la tarea "{taskToDelete.title}"?
+            </p>
             <p>Esta acción no se puede deshacer.</p>
             <div className="confirmation-actions">
-              <button 
-                className="cancel-button" 
+              <button
+                className="cancel-button"
                 onClick={() => setShowDeleteConfirmation(false)}
               >
                 Cancelar
               </button>
-              <button 
-                className="delete-button" 
-                onClick={() => handleDeleteTask(taskToDelete.id, taskToDelete.elementId)}
+              <button
+                className="delete-button"
+                onClick={() =>
+                  handleDeleteTask(taskToDelete.id, taskToDelete.elementId)
+                }
               >
                 Eliminar
               </button>

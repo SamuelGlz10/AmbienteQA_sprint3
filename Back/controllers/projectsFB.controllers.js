@@ -109,10 +109,72 @@ export const linkUserToProject = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: true, message: "User linked to project successfully" });
+      .json({ success: true, message: "¡Usuario vinculado al proyecto exitosamente!" });
   } catch (err) {
     console.error("Error linking user to project:", err);
     res.status(500).json({ error: "Failed to link user to project" });
+  }
+};
+
+export const unlinkUserFromProject = async (req, res) => {
+  try {
+    const { userId, projectId } = req.body;
+
+    if (!userId || !projectId) {
+      return res
+        .status(400)
+        .json({ error: "UserID and ProjectID are required" });
+    }
+
+    const pool = await sqlConnect();
+
+    // Eliminar el usuario y el proyecto de la tabla Users_Projects
+    await pool
+      .request()
+      .input("UserID", sql.Int, userId)
+      .input("ProjectID", sql.VarChar, projectId).query(`
+        DELETE FROM Users_Projects
+        WHERE UserID = @UserID AND ProjectID = @ProjectID
+      `);
+
+    res.status(200).json({
+      success: true,
+      message: "¡Usuario desvinculado del proyecto exitosamente!",
+    });
+  } catch (err) {
+    console.error("Failed to unlink user from proyect", err);
+    res.status(500).json({ error: "Error al desvincular el usuario del proyecto." });
+  }
+}
+
+export const getProjectTeamMembers = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      return res.status(400).json({ error: "ProjectID is required" });
+    }
+
+    const pool = await sqlConnect();
+
+    // Query to fetch users linked to the project
+    const result = await pool
+      .request()
+      .input("ProjectID", sql.VarChar, projectId)
+      .query(`
+        SELECT u.UserID, u.username, u.lastname, u.email, u.role
+        FROM Users_Projects up
+        INNER JOIN dbo.Users u ON up.UserID = u.UserID
+        WHERE up.ProjectID = @ProjectID
+      `);
+
+    res.status(200).json({
+      success: true,
+      teamMembers: result.recordset,
+    });
+  } catch (err) {
+    console.error("Error fetching team members:", err);
+    res.status(500).json({ error: "Failed to fetch team members" });
   }
 };
 
