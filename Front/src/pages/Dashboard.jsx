@@ -25,12 +25,21 @@ const Dashboard = () => {
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [editing, setEditing] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({
+    loading: false,
+    error: null,
+    success: false,
+  });
   const [teamMembers, setTeamMembers] = useState([]);
   const [availableMembers, setAvailableMembers] = useState([]);
   const [editData, setEditData] = useState({
+    title: "",
+    description: "",
     nombreProyecto: "",
     descripcion: "",
   });
+
   const [showMemberMenu, setShowMemberMenu] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
   const [memberAction, setMemberAction] = useState(null);
@@ -203,6 +212,76 @@ const Dashboard = () => {
     }
   };
 
+  const handleSaveEdit = async () => {
+    if (!selectedItem || !project) return;
+
+    try {
+      setSaveStatus({ loading: true, error: null, success: false });
+
+      // 1. Actualizar el estado local primero
+      const updatedProject = {
+        ...project,
+        [activeRequirement]: project[activeRequirement].map((item) =>
+          item.id === selectedItem.id
+            ? { ...item, titulo: editData.title, data: editData.description }
+            : item
+        ),
+      };
+      setProject(updatedProject);
+
+      // 2. Enviar los cambios al backend
+      const response = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            ...updatedProject,
+            // Asegúrate de incluir todos los campos necesarios
+            nombreProyecto: updatedProject.nombreProyecto,
+            descripcion: updatedProject.descripcion,
+            // Incluye los requisitos actualizados
+            [activeRequirement]: updatedProject[activeRequirement],
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Error al guardar en el servidor");
+
+      const data = await response.json();
+
+      setSaveStatus({ loading: false, error: null, success: true });
+      setSuccessMessage("Cambios guardados exitosamente");
+
+      setEditing(false);
+
+      setTimeout(() => {
+        setSaveStatus({ loading: false, error: null, success: false });
+      }, 3000);
+    } catch (error) {
+      console.error("Error al guardar:", error);
+      setSaveStatus({
+        loading: false,
+        error: "Error al guardar los cambios",
+        success: false,
+      });
+      setError(
+        "No se pudieron guardar los cambios. Por favor, inténtalo de nuevo."
+      );
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const closeErrorPopup = () => {
     setError(null); // Cierra el popup de error
   };
@@ -213,6 +292,10 @@ const Dashboard = () => {
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
+    setEditData({
+      title: item.titulo,
+      description: item.data,
+    })
     setShowPopup(true);
   };
 
@@ -342,12 +425,14 @@ const Dashboard = () => {
   const handleClosePopup = () => {
     setShowPopup(false);
     setShowTaskForm(false);
+    setSelectedItem(null);
     setTaskFormData({
       title: "",
       description: "",
       priority: "",
       assignee: "",
     });
+    setEditing(false);
     setDeleteMode(false);
   };
 
@@ -613,6 +698,14 @@ const Dashboard = () => {
                 setSuccessMessage={setSuccessMessage}
                 setShowDeleteConfirmation={setShowDeleteConfirmation}
                 role={role}
+                editing={editing}
+                setEditing={setEditing}
+                saveStatus={saveStatus}
+                setSaveStatus={setSaveStatus}
+                editData={editData}
+                setEditData={setEditData}
+                handleSaveEdit={handleSaveEdit}
+                handleInputChange={handleInputChange}
               />
             )}
           </div>

@@ -29,6 +29,14 @@ const RenderRequirementsTab = ({
   setSuccessMessage,
   setShowDeleteConfirmation,
   role,
+  editing,
+  setEditing,
+  saveStatus,
+  setSaveStatus,
+  editData,
+  setEditData,
+  handleInputChange,
+  handleSaveEdit,
 }) => {
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
@@ -85,7 +93,29 @@ const RenderRequirementsTab = ({
             <button className="popup-close" onClick={handleClosePopup}>
               ×
             </button>
+
             <div className="popup-header">
+              <button
+                className="edit-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setEditing(true);
+                }}
+                style={{
+                  position: "absolute",
+                  left: "20px",
+                  top: "20px",
+                  backgroundColor: "#f0e6ff",
+                  color: "#5d3a7f",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "8px 12px",
+                  cursor: "pointer",
+                }}
+              >
+                Editar
+              </button>
+
               <h3 className="popup-title">{selectedItem.titulo}</h3>
               <p className="popup-id">
                 <strong>ID:</strong> {selectedItem.id}
@@ -93,8 +123,35 @@ const RenderRequirementsTab = ({
             </div>
             <div className="popup-body">
               <div className="description-section">
-                <h4>Descripción:</h4>
-                <div className="description-text">{selectedItem.data}</div>
+                <h4>{!editing ? ("Descripción:"):("")}</h4>
+                {editing ? (
+                  <>
+                    <label htmlFor="title-input" className="label-title">
+                      Título:
+                    </label>
+                    <input
+                      id="title-input"
+                      type="text"
+                      name="title"
+                      value={editData.title}
+                      onChange={handleInputChange}
+                      className="edit-input"
+                    />
+                    <label htmlFor="description-input" className="label-title">
+                      Descripción:
+                    </label>
+                    <textarea
+                      id="description-input"
+                      name="description"
+                      value={editData.description}
+                      onChange={handleInputChange}
+                      className="edit-textarea"
+                      rows="8"
+                    />
+                  </>
+                ) : (
+                  <div className="description-text">{selectedItem.data}</div>
+                )}
               </div>
 
               {/* Tabla de tareas */}
@@ -253,50 +310,76 @@ const RenderRequirementsTab = ({
             {/* Simplificar la sección del popup-footer eliminando el mensaje de instrucciones */}
             {!showTaskForm ? (
               <div className="popup-footer">
-                <div className="popup-footer-buttons">
-                  {/* Mostrar botón de Nueva Tarea solo cuando NO estamos en modo eliminación */}
-                  {!deleteMode && (role === "admin" || role === "editor") && (
-                    <button
-                      className="edit-team-button"
-                      style={{
-                        position: "static",
-                        transform: "none",
-                        margin: "5px 0",
-                        left: "auto",
-                        maxWidth: "200px",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowTaskForm(true);
-                      }}
-                    >
-                      Nueva Tarea
-                    </button>
-                  )}
+                {saveStatus.success && (
+                  <div className="save-success">¡Cambios guardados!</div>
+                )}
+                {saveStatus.error && (
+                  <div className="save-error">{saveStatus.error}</div>
+                )}
 
-                  {/* Mostrar botón de eliminar solo si hay tareas */}
-                  {tasks[selectedItem.id] &&
-                    tasks[selectedItem.id].length > 0 && (
+                {editing ? (
+                  <>
+                    <button
+                      className="popup-button secondary"
+                      onClick={() => setEditing(false)}
+                      disabled={saveStatus.loading}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      className="popup-button primary"
+                      onClick={handleSaveEdit}
+                      disabled={saveStatus.loading}
+                    >
+                      {saveStatus.loading ? "Guardando..." : "Guardar Cambios"}
+                    </button>
+                  </>
+                ) : (
+                  <div className="popup-footer-buttons">
+                    {/* Mostrar botón de Nueva Tarea solo cuando NO estamos en modo eliminación */}
+                    {!deleteMode && (role === "admin" || role === "editor") && (
                       <button
-                        className="delete-team-button"
+                        className="edit-team-button"
                         style={{
                           position: "static",
                           transform: "none",
                           margin: "5px 0",
                           left: "auto",
-                          width: "180px",
-                          backgroundColor: deleteMode ? "#e0e0e0" : "#ff6b6b",
-                          color: deleteMode ? "#333" : "white",
+                          maxWidth: "200px",
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setDeleteMode(!deleteMode);
+                          setShowTaskForm(true);
                         }}
                       >
-                        {deleteMode ? "Cancelar" : "Eliminar Tarea"}
+                        Nueva Tarea
                       </button>
                     )}
-                </div>
+
+                    {/* Mostrar botón de eliminar solo si hay tareas */}
+                    {tasks[selectedItem.id] &&
+                      tasks[selectedItem.id].length > 0 && (
+                        <button
+                          className="delete-team-button"
+                          style={{
+                            position: "static",
+                            transform: "none",
+                            margin: "5px 0",
+                            left: "auto",
+                            width: "180px",
+                            backgroundColor: deleteMode ? "#e0e0e0" : "#ff6b6b",
+                            color: deleteMode ? "#333" : "white",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteMode(!deleteMode);
+                          }}
+                        >
+                          {deleteMode ? "Cancelar" : "Eliminar Tarea"}
+                        </button>
+                      )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="task-form-container">
