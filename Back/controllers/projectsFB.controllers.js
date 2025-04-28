@@ -62,6 +62,7 @@ export const getProject = async (req, res) => {
       RF: project.data().RF,
       RNF: project.data().RNF,
       fechaCreacion: project.data().fechaCreacion,
+      modificationHistory: project.data().modificationHistory || [],
     });
   } catch (err) {
     console.error("Firebase Error:", err);
@@ -181,12 +182,99 @@ export const getProjectTeamMembers = async (req, res) => {
 // Funcion para actualizar un proyecto
 export const putProject = async (req, res) => {
   try {
-    await db.collection("proyectos").doc(req.params.id).update(req.body);
+    const projectId = req.params.id;
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+    
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const currentProject = projectDoc.data();
+    const updates = req.body;
+
+    // Obtener nombre y apellido del usuario
+    let userName = '';
+    let userLastname = '';
+    try {
+      const pool = await sqlConnect();
+      const userResult = await pool
+        .request()
+        .input("userId", sql.Int, req.user.userId)
+        .query("SELECT username, lastname FROM dbo.Users WHERE UserID = @userId");
+      if (userResult.recordset.length > 0) {
+        userName = userResult.recordset[0].username || '';
+        userLastname = userResult.recordset[0].lastname || '';
+      }
+    } catch (e) {
+      console.error("Error fetching user for modification history", e);
+    }
+    
+    // Crear el registro de modificación
+    const modification = {
+      timestamp: new Date().toISOString(),
+      userId: req.user.userId,
+      userName,
+      userLastname,
+      changes: {}
+    };
+
+    // Comparar y registrar cambios
+    Object.keys(updates).forEach(key => {
+      if (key !== 'modificationHistory' && JSON.stringify(currentProject[key]) !== JSON.stringify(updates[key])) {
+        // Si es un arreglo de elementos (EP, RF, RNF, HU), comparar internamente
+        if (["EP", "RF", "RNF", "HU"].includes(key) && Array.isArray(updates[key]) && Array.isArray(currentProject[key])) {
+          const oldArr = currentProject[key];
+          const newArr = updates[key];
+          const elementChanges = [];
+          newArr.forEach(newItem => {
+            const oldItem = oldArr.find(item => item.id === newItem.id);
+            if (oldItem) {
+              const changes = {};
+              Object.keys(newItem).forEach(field => {
+                if (JSON.stringify(newItem[field]) !== JSON.stringify(oldItem[field])) {
+                  changes[field] = { oldValue: oldItem[field], newValue: newItem[field] };
+                }
+              });
+              if (Object.keys(changes).length > 0) {
+                elementChanges.push({ id: newItem.id, changes });
+              }
+            } else {
+              // Elemento nuevo
+              elementChanges.push({ id: newItem.id, changes: { nuevo: newItem } });
+            }
+          });
+          // Detectar eliminaciones
+          oldArr.forEach(oldItem => {
+            if (!newArr.find(item => item.id === oldItem.id)) {
+              elementChanges.push({ id: oldItem.id, changes: { eliminado: oldItem } });
+            }
+          });
+          if (elementChanges.length > 0) {
+            modification.changes[key] = elementChanges;
+          }
+        } else {
+          // Cambio simple
+          modification.changes[key] = {
+            oldValue: currentProject[key],
+            newValue: updates[key]
+          };
+        }
+      }
+    });
+
+    // Si hay cambios, agregar al historial
+    if (Object.keys(modification.changes).length > 0) {
+      const modificationHistory = currentProject.modificationHistory || [];
+      updates.modificationHistory = [...modificationHistory, modification];
+    }
+
+    await projectRef.update(updates);
+    
     res.status(200).json({
       project_updated: true,
-      id: req.params.id,
-      descripcion: req.body.descripcion,
-      estatus: req.body.estatus,
+      id: projectId,
+      modification: modification
     });
   } catch (err) {
     console.error("Firebase Error:", err);

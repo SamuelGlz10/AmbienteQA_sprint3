@@ -7,6 +7,7 @@ import TopAppBar from "../components/TopAppBar";
 import EditMemberPopup from "../components/EditMemeberPopup";
 import RenderRequirementsTab from "../components/RenderRequirementsTab";
 import TeamEditPopup from "../components/TeamEditPopup";
+import ModificationHistory from "../components/ModificationHistory";
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
@@ -190,6 +191,7 @@ const Dashboard = () => {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify(editData),
         }
@@ -218,7 +220,6 @@ const Dashboard = () => {
     try {
       setSaveStatus({ loading: true, error: null, success: false });
 
-      // 1. Actualizar el estado local primero
       const updatedProject = {
         ...project,
         [activeRequirement]: project[activeRequirement].map((item) =>
@@ -229,7 +230,6 @@ const Dashboard = () => {
       };
       setProject(updatedProject);
 
-      // 2. Enviar los cambios al backend
       const response = await fetch(
         `http://localhost:5001/projectsFB/${projectId}`,
         {
@@ -240,10 +240,8 @@ const Dashboard = () => {
           },
           body: JSON.stringify({
             ...updatedProject,
-            // Asegúrate de incluir todos los campos necesarios
             nombreProyecto: updatedProject.nombreProyecto,
             descripcion: updatedProject.descripcion,
-            // Incluye los requisitos actualizados
             [activeRequirement]: updatedProject[activeRequirement],
           }),
         }
@@ -629,6 +627,10 @@ const Dashboard = () => {
           <h3>Historias de Usuario</h3>
           <p className="stat-number">{project.HU?.length || 0}</p>
         </div>
+      </div>
+
+      <div className="modification-history-section">
+        <ModificationHistory projectId={projectId} />
       </div>
     </div>
   );
