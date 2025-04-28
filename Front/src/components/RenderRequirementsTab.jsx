@@ -518,19 +518,43 @@ const RenderRequirementsTab = ({
                           assignee: taskFormData.assignee,
                         };
 
-                        // Guardar la tarea en el estado
-                        setTasks((prevTasks) => ({
-                          ...prevTasks,
-                          [selectedItem.id]: [
-                            ...(prevTasks[selectedItem.id] || []),
-                            newTask,
-                          ],
+                        // update local state
+                        const currentTasks = tasks[selectedItem.id] || [];
+                        const updatedTasks = [...currentTasks, newTask];
+                        setTasks(prev => ({
+                          ...prev,
+                          [selectedItem.id]: updatedTasks,
                         }));
 
-                        // Mostrar mensaje de éxito
-                        setSuccessMessage("Tarea creada exitosamente.");
+                        // build payload for Firestore
+                        const payload = {
+                          requirementType: activeRequirement,
+                          elementId: selectedItem.id,
+                          tasks: updatedTasks.map(task => ({
+                            id: task.id.toString(),
+                            titulo: task.title,
+                            descripcion: task.description,
+                            prioridad: task.priority,
+                            asignados:
+                              teamMembers.find(m => m.email === task.assignee)?.id || null,
+                            estado: "En progreso",
+                          })),
+                        };
 
-                        // Reset form
+                        // persist to Firebase via new endpoint
+                        fetch(
+                          `http://localhost:5001/projectsFB/${project.id}/tasks`,
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${localStorage.getItem("token")}`,
+                            },
+                            body: JSON.stringify(payload),
+                          }
+                        ).catch(console.error);
+
+                        setSuccessMessage("Tarea creada exitosamente.");
                         setShowTaskForm(false);
                         setTaskFormData({
                           title: "",

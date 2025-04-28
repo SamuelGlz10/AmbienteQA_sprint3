@@ -285,3 +285,53 @@ export const uploadProjectImage = async (req, res) => {
     res.status(500).json({ error: "Failed to upload image" });
   }
 };
+
+export const updateTasks = async (req, res) => {
+  try {
+    const { requirementType, elementId, tasks } = req.body;
+    const projectId = req.params.id;
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const data = projectDoc.data();
+    const section = data[requirementType];
+    if (!Array.isArray(section)) {
+      return res.status(400).json({ error: "Invalid requirementType" });
+    }
+    const updatedSection = section.map(item =>
+      item.id === elementId
+        ? { ...item, tasks }
+        : item
+    );
+    await projectRef.update({ [requirementType]: updatedSection });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Error updating tasks:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+export const getTasks = async (req, res) => {
+  try {
+    const { requirementType, elementId } = req.query;
+    const projectId = req.params.id;
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const data = projectDoc.data();
+    const section = data[requirementType];
+    if (!Array.isArray(section)) {
+      return res.status(400).json({ error: "Invalid requirementType" });
+    }
+    const item = section.find((i) => i.id === elementId);
+    const tasks = item?.tasks || [];
+    res.status(200).json({ tasks });
+  } catch (err) {
+    console.error("Error fetching tasks:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};

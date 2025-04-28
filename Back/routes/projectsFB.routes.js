@@ -13,6 +13,8 @@ import {
   linkUserToProject,
   unlinkUserFromProject,
   getProjectTeamMembers,
+  updateTasks,
+  getTasks
 } from "../controllers/projectsFB.controllers.js";
 
 const router = Router();
@@ -37,5 +39,6 @@ router.post(
   unlinkUserFromProject
 ); // Ruta para desvincular usuario de proyecto
 router.get("/projectsFB/:projectId/team", verifyToken, getProjectTeamMembers); // Ruta para obtener miembros del equipo de un proyecto
-
+router.get("/projectsFB/:id/tasks", verifyToken, getTasks);
+router.post("/projectsFB/:id/tasks", verifyToken, updateTasks);
 export default router;
