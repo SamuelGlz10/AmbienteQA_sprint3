@@ -349,40 +349,59 @@ const Dashboard = () => {
     });
   };
 
-  const handleSaveTeam = async () => {
-    try {
-      // Hacer la llamada a la API para vincular los usuarios seleccionados al proyecto
-      for (const member of selectedMembers) {
-        console.log("Linking user to project:", member);
-        await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+  const handleSaveTeam = async (addedMembers, removedMembers) => {
+  try {
+    // 1) Vincular los nuevos
+    await Promise.all(
+      addedMembers.map((m) =>
+        fetch("http://localhost:5001/projectsFB/linkUserToProject", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({
-            userId: member.id,
-            projectId,
-          }),
-        });
-      }
+          body: JSON.stringify({ userId: m.id, projectId }),
+        })
+      )
+    );
 
-      // Actualizar el estado de los miembros del equipo y los miembros disponibles
-      setTeamMembers((prev) => [...prev, ...selectedMembers]);
-      setAvailableMembers((prev) =>
-        prev.filter(
-          (member) =>
-            !selectedMembers.some((selected) => selected.email === member.email)
-        )
-      );
-      setShowTeamPopup(false);
-      setSelectedMembers([]);
-      setSuccessMessage("Miembros agregados exitosamente.");
-    } catch (error) {
-      console.error("Error linking users to project:", error);
-      setError("Error al agregar miembros al proyecto.");
-    }
-  };
+    // 2) Desvincular los eliminados
+    await Promise.all(
+      removedMembers.map((m) =>
+        fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ userId: m.id, projectId }),
+        })
+      )
+    );
+
+    // 3) Actualizar estado local
+    setTeamMembers((prev) => [
+      // quitamos los eliminados
+      ...prev.filter((tm) => !removedMembers.find((rm) => rm.email === tm.email)),
+      // añadimos los nuevos
+      ...addedMembers,
+    ]);
+
+    setAvailableMembers((prev) => [
+      // recuperamos a los eliminados
+      ...removedMembers,
+      // quitamos a los recién añadidos
+      ...prev.filter((am) => !addedMembers.find((m) => m.email === am.email)),
+    ]);
+
+    setShowTeamPopup(false);
+    setSuccessMessage("Equipo actualizado correctamente.");
+  } catch (err) {
+    console.error(err);
+    setError("No se pudieron guardar los cambios de equipo.");
+  }
+};
+
 
   const handleCancelTeam = () => {
     setShowTeamPopup(false);
@@ -853,12 +872,8 @@ const Dashboard = () => {
         <TeamEditPopup
           availableMembers={availableMembers}
           teamMembers={teamMembers}
-          selectedMembers={selectedMembers}
-          setSelectedMembers={setSelectedMembers}
-          handleMemberSelect={handleMemberSelect}
-          handleSaveTeam={handleSaveTeam}
-          handleCancelTeam={handleCancelTeam}
-          setShowTeamPopup={setShowTeamPopup}
+          handleSaveTeam={handleSaveTeam}           // recibe (addedMembers, removedMembers)
+          handleCancelTeam={() => setShowTeamPopup(false)}
         />
       )}
       {/* Popup de error */}
