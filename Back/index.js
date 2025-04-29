@@ -11,7 +11,7 @@ const app = express();
 
 const allowedOrigins = [
   `http://localhost:5173`,
-  "https://soft-edge-two.vercel.app/login",
+  "https://soft-edge-two.vercel.app",
 ];
 
 // Middleware
