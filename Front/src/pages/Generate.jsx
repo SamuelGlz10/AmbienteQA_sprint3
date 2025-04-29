@@ -14,7 +14,7 @@ function Generate() {
   const [selectedDetail, setSelectedDetail] = useState("Bajo");
   const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
-  const [history, setHistory] = useState([]); // Estado para controlar el historial
+  const [history, setHistory] = useState([1, 2, 3, 4]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito

@@ -823,7 +823,7 @@ const Dashboard = () => {
                 </div>
                 {(role === "editor" || role === "admin") && (
                   <div className="member-actions">
-                    <button
+                    {/* <button
                       className="member-menu-button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -831,7 +831,7 @@ const Dashboard = () => {
                       }}
                     >
                       ⋮
-                    </button>
+                    </button> */}
                     {showMemberMenu === member.email && (
                       <div className="member-menu">
                         {role === "admin" && (
