@@ -209,7 +209,7 @@ function Generate() {
                     Generar
                   </button>
                   <button
-                    className="main-button"
+                    className="delete-button"
                     type="button"
                     onClick={handleErase}
                   >
