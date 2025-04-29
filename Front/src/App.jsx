@@ -10,7 +10,8 @@ import Generate from "./pages/Generate";
 import Registro from "./pages/Registro";
 import RevisionIA from "./pages/RevisionIA";
 import Dashboard from "./pages/Dashboard";
-import SprintBacklog from "./pages/SprintBacklog";
+import SprintsMenu from "./pages/SprintsMenu";
+import SprintBacklog from "./pages/SprintBacklog.jsx";
 
 function App() {
   const { isLogin } = useContext(AuthContext);
@@ -40,10 +41,20 @@ function App() {
           path="/project/:projectId"
           element={isLogin ? <Dashboard /> : <Navigate to="/login" />}
         />
+
+        {/* Ruta para listar los sprints */}
         <Route
           path="/project/:projectId/sprint-backlog"
+          element={isLogin ? <SprintsMenu /> : <Navigate to="/login" />}
+        />
+
+        {/* Ruta para ver el backlog de un sprint concreto */}
+        <Route
+          path="/project/:projectId/sprint-backlog/:sprintNumber"
           element={isLogin ? <SprintBacklog /> : <Navigate to="/login" />}
         />
+
+        
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
