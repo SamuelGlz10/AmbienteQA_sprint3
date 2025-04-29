@@ -163,7 +163,7 @@ export const getProjectTeamMembers = async (req, res) => {
       .request()
       .input("ProjectID", sql.VarChar, projectId)
       .query(`
-        SELECT u.UserID, u.username, u.lastname, u.email, u.role
+        SELECT u.UserID, u.username, u.lastname, u.email, up.title
         FROM Users_Projects up
         INNER JOIN dbo.Users u ON up.UserID = u.UserID
         WHERE up.ProjectID = @ProjectID

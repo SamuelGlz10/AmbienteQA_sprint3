@@ -129,7 +129,7 @@ const RenderRequirementsTab = ({ ...props }) => {
             </div>
             <div className="popup-body">
               <div className="description-section">
-                <h4>{!editing ? ("Descripción:"):("")}</h4>
+                <h4>{!editing ? "Descripción:" : ""}</h4>
                 {editing ? (
                   <>
                     <label htmlFor="title-input" className="label-title">
@@ -169,10 +169,11 @@ const RenderRequirementsTab = ({ ...props }) => {
                       <thead>
                         <tr>
                           <th></th> {/* Columna para el ícono de arrastre */}
+                          <th>ID</th>
                           <th>Título</th>
                           <th>Descripción</th>
                           <th>Prioridad</th>
-                          <th>Asignado a</th>
+                          <th>Asignado</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -284,6 +285,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                                   </div>
                                 )}
                               </td>
+                              <td>{task.id}</td>
                               <td>{task.title}</td>
                               <td>{task.description}</td>
                               <td>
@@ -381,7 +383,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                             setDeleteMode(!deleteMode);
                           }}
                         >
-                          {deleteMode ? "Cancelar" : "Eliminar Tarea"}
+                          {deleteMode ? "Cancelar" : "Eliminar Tareas"}
                         </button>
                       )}
                   </div>
@@ -389,7 +391,15 @@ const RenderRequirementsTab = ({ ...props }) => {
               </div>
             ) : (
               <div className="task-form-container">
-                <div className="task-form" style={{ width: "100%", marginLeft: "-15px", marginRight: "-15px", padding: "20px", }}>
+                <div
+                  className="task-form"
+                  style={{
+                    width: "100%",
+                    marginLeft: "-15px",
+                    marginRight: "-15px",
+                    padding: "20px",
+                  }}
+                >
                   <h4>Crear Nueva Tarea</h4>
 
                   <div className="form-group">
@@ -458,10 +468,15 @@ const RenderRequirementsTab = ({ ...props }) => {
                   </div>
                   <div className="task-form-actions">
                     <button
-                      className="cancel-button"
+                      class="popup-button secondary"
                       onClick={() => {
                         setShowTaskForm(false);
-                        setTaskFormData({ title: "", description: "", priority: "", assignee: "" });
+                        setTaskFormData({
+                          title: "",
+                          description: "",
+                          priority: "",
+                          assignee: "",
+                        });
                         setError("");
                       }}
                     >
@@ -516,7 +531,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                         // update local state
                         const currentTasks = tasks[selectedItem.id] || [];
                         const updatedTasks = [...currentTasks, newTask];
-                        setTasks(prev => ({
+                        setTasks((prev) => ({
                           ...prev,
                           [selectedItem.id]: updatedTasks,
                         }));
@@ -525,13 +540,14 @@ const RenderRequirementsTab = ({ ...props }) => {
                         const payload = {
                           requirementType: activeRequirement,
                           elementId: selectedItem.id,
-                          tasks: updatedTasks.map(task => ({
+                          tasks: updatedTasks.map((task) => ({
                             id: task.id.toString(),
                             titulo: task.title,
                             descripcion: task.description,
                             prioridad: task.priority,
                             asignados:
-                              teamMembers.find(m => m.email === task.assignee)?.id || null,
+                              teamMembers.find((m) => m.email === task.assignee)
+                                ?.id || null,
                             estado: "En progreso",
                           })),
                         };
@@ -543,7 +559,9 @@ const RenderRequirementsTab = ({ ...props }) => {
                             method: "POST",
                             headers: {
                               "Content-Type": "application/json",
-                              Authorization: `Bearer ${localStorage.getItem("token")}`,
+                              Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                              )}`,
                             },
                             body: JSON.stringify(payload),
                           }
@@ -552,7 +570,12 @@ const RenderRequirementsTab = ({ ...props }) => {
                         setSuccessMessage("Tarea creada exitosamente.");
                         setError("");
                         setShowTaskForm(false);
-                        setTaskFormData({ title: "", description: "", priority: "", assignee: "" });
+                        setTaskFormData({
+                          title: "",
+                          description: "",
+                          priority: "",
+                          assignee: "",
+                        });
                       }}
                     >
                       Crear Tarea
@@ -566,12 +589,7 @@ const RenderRequirementsTab = ({ ...props }) => {
       )}
 
       {/* show validation errors in popup */}
-      {error && (
-        <ErrorPopup
-          message={error}
-          onClose={() => setError("")}
-        />
-      )}
+      {error && <ErrorPopup message={error} onClose={() => setError("")} />}
     </div>
   );
 };

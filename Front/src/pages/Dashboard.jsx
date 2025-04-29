@@ -40,7 +40,7 @@ const Dashboard = () => {
     title: "",
     description: "",
     nombreProyecto: "",
-    descripcion: ""
+    descripcion: "",
   });
 
   const [showMemberMenu, setShowMemberMenu] = useState(null);
@@ -63,7 +63,6 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
-
   // UseEffect para cargar el proyecto y los miembros del equipo
   useEffect(() => {
     const fetchData = async () => {
@@ -75,7 +74,6 @@ const Dashboard = () => {
     };
 
     fetchData();
-
   }, [projectId]);
 
   const fetchProject = async () => {
@@ -169,7 +167,7 @@ const Dashboard = () => {
           id: member.UserID,
           name: member.username,
           lastname: member.lastname,
-          role: member.role,
+          title: member.title,
           email: member.email,
           initials: `${member.username[0] || ""}${
             member.lastname?.[0] || ""
@@ -293,7 +291,6 @@ const Dashboard = () => {
   };
 
   const handleItemClick = async (item) => {
-
     setSelectedItem(item);
     setEditData({
       title: item.titulo,
@@ -321,8 +318,7 @@ const Dashboard = () => {
         title: t.titulo,
         description: t.descripcion,
         priority: t.prioridad,
-        assignee:
-          teamMembers.find((m) => m.id === t.asignados)?.email || "",
+        assignee: teamMembers.find((m) => m.id === t.asignados)?.email || "",
       }));
       setTasks((prev) => ({ ...prev, [item.id]: mapped }));
     } catch (err) {
@@ -350,58 +346,59 @@ const Dashboard = () => {
   };
 
   const handleSaveTeam = async (addedMembers, removedMembers) => {
-  try {
-    // 1) Vincular los nuevos
-    await Promise.all(
-      addedMembers.map((m) =>
-        fetch("http://localhost:5001/projectsFB/linkUserToProject", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ userId: m.id, projectId }),
-        })
-      )
-    );
+    try {
+      // 1) Vincular los nuevos
+      await Promise.all(
+        addedMembers.map((m) =>
+          fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ userId: m.id, projectId }),
+          })
+        )
+      );
 
-    // 2) Desvincular los eliminados
-    await Promise.all(
-      removedMembers.map((m) =>
-        fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ userId: m.id, projectId }),
-        })
-      )
-    );
+      // 2) Desvincular los eliminados
+      await Promise.all(
+        removedMembers.map((m) =>
+          fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ userId: m.id, projectId }),
+          })
+        )
+      );
 
-    // 3) Actualizar estado local
-    setTeamMembers((prev) => [
-      // quitamos los eliminados
-      ...prev.filter((tm) => !removedMembers.find((rm) => rm.email === tm.email)),
-      // añadimos los nuevos
-      ...addedMembers,
-    ]);
+      // 3) Actualizar estado local
+      setTeamMembers((prev) => [
+        // quitamos los eliminados
+        ...prev.filter(
+          (tm) => !removedMembers.find((rm) => rm.email === tm.email)
+        ),
+        // añadimos los nuevos
+        ...addedMembers,
+      ]);
 
-    setAvailableMembers((prev) => [
-      // recuperamos a los eliminados
-      ...removedMembers,
-      // quitamos a los recién añadidos
-      ...prev.filter((am) => !addedMembers.find((m) => m.email === am.email)),
-    ]);
+      setAvailableMembers((prev) => [
+        // recuperamos a los eliminados
+        ...removedMembers,
+        // quitamos a los recién añadidos
+        ...prev.filter((am) => !addedMembers.find((m) => m.email === am.email)),
+      ]);
 
-    setShowTeamPopup(false);
-    setSuccessMessage("Equipo actualizado correctamente.");
-  } catch (err) {
-    console.error(err);
-    setError("No se pudieron guardar los cambios de equipo.");
-  }
-};
-
+      setShowTeamPopup(false);
+      setSuccessMessage("Equipo actualizado correctamente.");
+    } catch (err) {
+      console.error(err);
+      setError("No se pudieron guardar los cambios de equipo.");
+    }
+  };
 
   const handleCancelTeam = () => {
     setShowTeamPopup(false);
@@ -518,9 +515,9 @@ const Dashboard = () => {
   const handleDrop = async (e, targetIndex, elementId) => {
     e.preventDefault();
     e.currentTarget.classList.remove("drag-over");
-    document.querySelectorAll(".dragging").forEach((el) =>
-      el.classList.remove("dragging")
-    );
+    document
+      .querySelectorAll(".dragging")
+      .forEach((el) => el.classList.remove("dragging"));
 
     const sourceIndex = parseInt(e.dataTransfer.getData("index"));
     if (sourceIndex === targetIndex) return;
@@ -547,17 +544,14 @@ const Dashboard = () => {
             teamMembers.find((m) => m.email === task.assignee)?.id || null,
         })),
       };
-      await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/tasks`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      await fetch(`http://localhost:5001/projectsFB/${projectId}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
     } catch (err) {
       console.error("Error al actualizar el orden de tareas:", err);
       setError("Error al actualizar el orden de las tareas en el servidor.");
@@ -593,17 +587,14 @@ const Dashboard = () => {
             teamMembers.find((m) => m.email === task.assignee)?.id || null,
         })),
       };
-      await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/tasks`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      await fetch(`http://localhost:5001/projectsFB/${projectId}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
     } catch (err) {
       console.error("Error al eliminar tarea en servidor:", err);
       setError("Error al eliminar la tarea en el servidor.");
@@ -729,7 +720,6 @@ const Dashboard = () => {
     </div>
   );
 
-
   return (
     <div className="dashboard-container">
       <TopAppBar />
@@ -747,13 +737,17 @@ const Dashboard = () => {
           </button>
           <div className="dashboard-tabs">
             <button
-              className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
+              className={`tab-button ${
+                activeTab === "overview" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("overview")}
             >
               Vista General
             </button>
             <button
-              className={`tab-button ${activeTab === "elements" ? "active" : ""}`}
+              className={`tab-button ${
+                activeTab === "elements" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("elements")}
             >
               Elementos
@@ -818,7 +812,7 @@ const Dashboard = () => {
                 <div className="member-profile">{member.initials}</div>
                 <div className="member-info">
                   <div className="member-name">{member.name}</div>
-                  <div className="member-role">{member.role}</div>
+                  <div className="member-role">{member.title}</div>
                   <div className="member-email">{member.email}</div>
                 </div>
                 {(role === "editor" || role === "admin") && (
@@ -872,7 +866,7 @@ const Dashboard = () => {
         <TeamEditPopup
           availableMembers={availableMembers}
           teamMembers={teamMembers}
-          handleSaveTeam={handleSaveTeam}           // recibe (addedMembers, removedMembers)
+          handleSaveTeam={handleSaveTeam} // recibe (addedMembers, removedMembers)
           handleCancelTeam={() => setShowTeamPopup(false)}
         />
       )}

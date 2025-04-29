@@ -33,16 +33,25 @@ const ModificationHistory = ({ projectId }) => {
     }
   }, [projectId]);
 
-  const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+const formatDate = (timestamp) => {
+  const date = new Date(timestamp);
+  const formattedDate = date.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+  const formattedTime = date.toLocaleTimeString("es-ES", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return (
+    <span>
+      {formattedDate}, <strong>{formattedTime}</strong>
+      {/* Time */}
+    </span>
+  );
+};
 
   const getRequirementTypeSingular = (type) => {
     const types = {
