@@ -338,7 +338,7 @@ const Dashboard = () => {
       const { tasks: dbTasks } = await resp.json();
       // Mapear al formato de front
       const mapped = dbTasks.map((t) => ({
-        id: Number(t.id),
+        id: t.id,
         title: t.titulo,
         description: t.descripcion,
         priority: t.prioridad,

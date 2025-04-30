@@ -49,6 +49,44 @@ const RenderRequirementsTab = ({ ...props }) => {
   // Add error state for task‐form validation
   const [error, setError] = useState("");
 
+  // handle assignment change
+  const handleAssignee = async (taskId, assigneeEmail) => {
+    const member = teamMembers.find((m) => m.email === assigneeEmail);
+    const updated = (tasks[selectedItem.id] || []).map((t) =>
+      t.id === taskId ? { ...t, assignee: assigneeEmail } : t
+    );
+    setTasks((prev) => ({ ...prev, [selectedItem.id]: updated }));
+
+    // build and send payload
+    const payload = {
+      requirementType: activeRequirement,
+      elementId: selectedItem.id,
+      tasks: updated.map((t) => ({
+        id: t.id.toString(),
+        titulo: t.title,
+        descripcion: t.description,
+        prioridad: t.priority,
+        asignados: teamMembers.find((m) => m.email === t.assignee)?.id || null,
+      })),
+    };
+    try {
+      await fetch(
+        `http://localhost:5001/projectsFB/${project.id}/tasks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Error al asignar la tarea.");
+    }
+  };
+
   return (
     <div className="requirements-section">
       <div className="requirements-tabs">
@@ -295,9 +333,22 @@ const RenderRequirementsTab = ({ ...props }) => {
                                 </span>
                               </td>
                               <td>
-                                {assignedMember
-                                  ? assignedMember.name
-                                  : "No asignado"}
+                                {assignedMember ? (
+                                  assignedMember.name
+                                ) : (
+                                  <select
+                                    className="assignee-dropdown-button"
+                                    value={task.assignee}
+                                    onChange={(e) => handleAssignee(task.id, e.target.value)}
+                                  >
+                                    <option value="">Asignar</option>
+                                    {teamMembers.map((member) => (
+                                      <option key={member.email} value={member.email}>
+                                        {member.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
                               </td>
                             </tr>
                           );
