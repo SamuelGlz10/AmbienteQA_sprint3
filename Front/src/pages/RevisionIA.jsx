@@ -38,39 +38,23 @@ function RevisionIA() {
   ];
 
   const transformGeneratedData = (data) => {
-    const parseSection = (section, prefix) => {
+    const parseSection = (section) => {
       if (!section) return [];
-
-      if (Array.isArray(section)) {
-        return section.map((item, i) => ({
-          id: item.id || `${prefix}${(i + 1).toString().padStart(2, "0")}`,
-          titulo: item.title || item.titulo || `${prefix} ${i + 1}`,
-          data: item.data || item.descripcion || "Sin descripción",
-        }));
-      }
-
-      if (typeof section === "object") {
-        return Object.entries(section).map(([titulo, data], i) => ({
-          id: `${prefix}${(i + 1).toString().padStart(2, "0")}`,
-          titulo,
-          data: data || "Sin descripción",
-        }));
-      }
-
-      return [];
+      return Array.isArray(section)
+        ? section.map((item) => ({
+            id: item.id,
+            titulo: item.titulo,
+            data: item.data,
+            tasks: Array.isArray(item.tasks) ? item.tasks : [],  // <-- preservar o inicializar
+          }))
+        : [];
     };
 
     return {
-      nombreProyecto:
-        data.projectName || data.nombreProyecto || "Proyecto sin nombre",
-      descripcion: data.description || data.descripcion || "Sin descripción",
-      estatus: data.estatus || "Abierto",
-      fechaCreacion:
-        data.fechaCreacion || new Date().toISOString().split("T")[0],
-      EP: parseSection(data.epics || data.EP, "EP"),
-      RF: parseSection(data.functionalRequirements || data.RF, "RF"),
-      RNF: parseSection(data.nonFunctionalRequirements || data.RNF, "RNF"),
-      HU: parseSection(data.userStories || data.HU, "HU"),
+      EP: parseSection(data.EP || data.epics),
+      RF: parseSection(data.RF || data.functionalRequirements),
+      RNF: parseSection(data.RNF || data.nonFunctionalRequirements),
+      HU: parseSection(data.HU || data.userStories),
     };
   };
 
