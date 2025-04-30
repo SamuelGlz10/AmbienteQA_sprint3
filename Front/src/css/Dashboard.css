@@ -1,5 +1,5 @@
 body {
-  background-color: #f8f9fa; 
+  background-color: #f8f9fa;
 }
 
 .project-dashboard {
@@ -105,7 +105,7 @@ body {
 .team-members-content {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 4.5rem; 
+  padding-bottom: 4.5rem;
 }
 
 .team-members-content::-webkit-scrollbar {
@@ -137,6 +137,7 @@ body {
   gap: 1rem;
   width: 100%;
   box-sizing: border-box;
+  font-size: 16px;
 }
 
 .team-member-card:hover {
@@ -171,6 +172,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  font-size: 16px;
 }
 
 .member-name {
@@ -182,12 +184,14 @@ body {
 .member-role {
   color: #666;
   font-size: 0.9rem;
+  font-size: 16px;
 }
 
 .member-email {
   color: #9e72be;
   font-size: 0.85rem;
   margin-top: 0.25rem;
+  font-size: 16px;
 }
 
 .dashboard-loading {
@@ -293,7 +297,9 @@ body {
   margin-top: 1rem;
 }
 
-.save-button, .cancel-button, .edit-button {
+.save-button,
+.cancel-button,
+.edit-button {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 8px;
@@ -413,10 +419,6 @@ body {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-}
-
-.requirement-tab:hover {
-  background-color: #e1d3e8;
 }
 
 .requirement-tab.active {
@@ -583,7 +585,7 @@ td {
 
 .delete-mode {
   background-color: #fff8f8;
-  cursor: default !important; 
+  cursor: default !important;
 }
 
 .delete-mode:hover {
@@ -657,7 +659,8 @@ td {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.75rem;
   }
 
@@ -680,7 +683,8 @@ td {
     width: 100%;
   }
 
-  th, td {
+  th,
+  td {
     padding: 0.5rem;
   }
 }
@@ -757,13 +761,17 @@ td {
 
 /* Add a semi-transparent white background behind the button */
 .team-members-container::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
   height: 4rem;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.9));
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.9)
+  );
   pointer-events: none;
   border-radius: 0 0 12px 12px;
 }
@@ -1106,7 +1114,7 @@ td {
 
 /* Ensure the button stays at the bottom even when scrolling */
 .team-members-container::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -1448,7 +1456,6 @@ td {
   border-radius: 8px;
 }
 
-
 /* Estilos para el DragAndDrop en TeamEditPopup */
 .drag-drop-container {
   display: flex;
@@ -1521,12 +1528,12 @@ td {
   cursor: grab;
 }
 
-.drag-item:active{
-  cursor:grabbing;
+.drag-item:active {
+  cursor: grabbing;
 }
 
 .drag-item.dragging {
-  cursor:grabbing;
+  cursor: grabbing;
   opacity: 0.6;
 }
 
@@ -1556,7 +1563,7 @@ td {
 
 .member-card.new-member {
   background-color: rgba(76, 175, 80, 0.1);
-  border-left: 3px solid #4CAF50;
+  border-left: 3px solid #4caf50;
 }
 
 .member-profile {
@@ -1582,12 +1589,13 @@ td {
   margin-bottom: 2px;
 }
 
-.member-role, .member-email {
+.member-role,
+.member-email {
   font-size: 12px;
   color: #666;
 }
 
 .member-card.removed-member {
   background-color: rgba(255, 87, 34, 0.1);
-  border-left: 3px solid #FF5722;
+  border-left: 3px solid #ff5722;
 }

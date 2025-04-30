@@ -34,9 +34,7 @@ const RenderRequirementsTab = ({ ...props }) => {
     editing,
     setEditing,
     saveStatus,
-    setSaveStatus,
-    editData,
-    setEditData,
+    requirementEditData,
     handleInputChange,
     handleSaveEdit,
   } = props;
@@ -139,7 +137,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                       id="title-input"
                       type="text"
                       name="title"
-                      value={editData.title}
+                      value={requirementEditData.title}
                       onChange={handleInputChange}
                       className="edit-input"
                     />
@@ -149,7 +147,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                     <textarea
                       id="description-input"
                       name="description"
-                      value={editData.description}
+                      value={requirementEditData.description}
                       onChange={handleInputChange}
                       className="edit-textarea"
                       rows="8"

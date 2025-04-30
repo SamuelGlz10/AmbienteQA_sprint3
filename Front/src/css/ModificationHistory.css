@@ -24,6 +24,24 @@
   padding-right: 8px;
 }
 
+.history-list::-webkit-scrollbar {
+  width: 6px; 
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: #f0e6ff;
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background-color: #9e72be;
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background-color: #8d60b4; 
+}
+
 .history-item {
   background-color: #f8f9fa;
   border-radius: 8px;
