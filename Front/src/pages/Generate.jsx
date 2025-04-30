@@ -33,39 +33,32 @@ function Generate() {
     if (!userID) return;
 
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
-    allHistories[userID] = history;
+    allHistories[userID] = history; 
     localStorage.setItem("history", JSON.stringify(allHistories));
   }, [history, userID]);
 
-  const promptRules = `Please create a JSON object with the following structure:
-{
-  "nombreProyecto": "The name of the project",
-  "descripcion": "Brief description",
-  "estatus": "Abierto" or "Cerrado",
-  "EP": [
-    {
-      "id": "EP01",
-      "titulo": "Título de la épica",
-      "data": "Descripción de la épica",
-      "tasks": [
-        {
-          "id": "T01",
-          "titulo": "Título de tarea",
-          "descripcion": "Descripción de la tarea",
-          "prioridad": "alta/ media/ baja",
-          "asignados": "userIdAsignado",
-          "estado": "En progreso"
-        }
-        // ...más tareas...
-      ]
-    }
-    // ...más épicas...
-  ],
-  "RF": [ { ...igual que EP... } ],
-  "RNF": [ { ...igual que EP... } ],
-  "HU": [ { ...igual que EP... } ]
-}
-The number of elements in each list should be ${selectedOption} ${limit}. Do not wrap in \`\`\`json blocks.`;
+  const promptRules = `Please create a JSON object with the following structure: 
+
+  {
+    'nombreProyecto': 'The name of the project',
+    'descripcion': 'A brief description of the project',
+    'estatus': 'Abierto/Cerrado',
+    'EP': [
+      { 'id': 'EP01', 'titulo': 'Titulo de Epica', 'data': 'Descripcion de epica' }
+    ],
+    'RF': [
+      { 'id': 'RF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento' }
+    ],
+    'RNF': [
+      { 'id': 'RNF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento' }
+    ],
+    'HU': [
+      { 'id': 'HU01', 'titulo': 'Titulo de historia de usuario', 'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])' }
+    ]
+  }
+  The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. 
+  Please do not include \`\`\`json or \`\`\` markers in the response.
+  Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -148,6 +141,7 @@ The number of elements in each list should be ${selectedOption} ${limit}. Do not
         <div className="main-title">
           <h1>Creación con IA</h1>
         </div>
+
 
         <button className="back-button" onClick={() => navigate("/home")}>
           ←
