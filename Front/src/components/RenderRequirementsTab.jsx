@@ -37,6 +37,8 @@ const RenderRequirementsTab = ({ ...props }) => {
     requirementEditData,
     handleInputChange,
     handleSaveEdit,
+    nextTaskNumber,
+    setNextTaskNumber,
   } = props;
 
   const requirementTabs = [
@@ -48,6 +50,22 @@ const RenderRequirementsTab = ({ ...props }) => {
 
   // Add error state for task‐form validation
   const [error, setError] = useState("");
+
+  // Nuevo helper para ID global dinámico
+  const getNextTaskId = () => {
+    // 1) Aplanar todas las tareas cargadas en memoria
+    const allTasks = Object.values(tasks).flat();
+    // 2) Extraer números de ID (quitando 'T')
+    const nums = allTasks
+      .map((t) => parseInt(t.id.replace(/^T/, ""), 10))
+      .filter((n) => !isNaN(n));
+    // 3) Añadir el contador global
+    nums.push(nextTaskNumber);
+    // 4) Obtener máximo y sumar 1
+    const max = nums.length ? Math.max(...nums) : 0;
+    // 5) Formatear con padding
+    return `T${(max + 1).toString().padStart(2, "0")}`;
+  };
 
   // handle assignment change
   const handleAssignee = async (taskId, assigneeEmail) => {
@@ -62,7 +80,7 @@ const RenderRequirementsTab = ({ ...props }) => {
       requirementType: activeRequirement,
       elementId: selectedItem.id,
       tasks: updated.map((t) => ({
-        id: t.id.toString(),
+        id: t.id.startsWith("T") ? t.id.slice(1) : t.id,
         titulo: t.title,
         descripcion: t.description,
         prioridad: t.priority,
@@ -570,7 +588,7 @@ const RenderRequirementsTab = ({ ...props }) => {
 
                         // Si pasa la validación, crear objeto de tarea
                         const newTask = {
-                          id: Date.now(),
+                          id: getNextTaskId(),
                           title: taskFormData.title,
                           description: taskFormData.description,
                           priority: taskFormData.priority,
@@ -590,7 +608,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                           requirementType: activeRequirement,
                           elementId: selectedItem.id,
                           tasks: updatedTasks.map((task) => ({
-                            id: task.id.toString(),
+                            id: task.id.startsWith("T") ? task.id.slice(1) : task.id,
                             titulo: task.title,
                             descripcion: task.description,
                             prioridad: task.priority,
@@ -616,6 +634,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                           }
                         ).catch(console.error);
 
+                        setNextTaskNumber((n) => n + 1); // Incrementar global
                         setSuccessMessage("Tarea creada exitosamente.");
                         setError("");
                         setShowTaskForm(false);

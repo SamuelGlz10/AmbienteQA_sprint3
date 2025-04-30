@@ -67,6 +67,9 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
+  // Estado para manejar el número máximo de tareas
+  const [nextTaskNumber, setNextTaskNumber] = useState(0);
+
   // UseEffect para cargar el proyecto y los miembros del equipo
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +77,7 @@ const Dashboard = () => {
       await fetchProject();
       const projectMembers = await fetchTeamMembers(); // Llamar primero para filtrar usuarios
       await fetchAvailableUsers(projectMembers);
+      await fetchAllTasks(); // Llamar para obtener todas las tareas
       setLoading(false);
     };
 
@@ -186,6 +190,29 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error fetching team members:", error);
       setError("Error al cargar los miembros del equipo.");
+    }
+  };
+
+  const fetchAllTasks = async () => {
+    try {
+      const resp = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/tasks?all=true`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!resp.ok) throw new Error();
+      const { tasks: dbTasks } = await resp.json();
+      const nums = dbTasks
+        .map((t) => parseInt(t.id.toString().replace(/^T/, ""), 10))
+        .filter((n) => !isNaN(n));
+      setNextTaskNumber(nums.length ? Math.max(...nums) : 0);
+    } catch {
+      console.error("Error fetching all tasks");
     }
   };
 
@@ -336,14 +363,21 @@ const Dashboard = () => {
       );
       if (!resp.ok) throw new Error("Failed to fetch tasks");
       const { tasks: dbTasks } = await resp.json();
-      // Mapear al formato de front
-      const mapped = dbTasks.map((t) => ({
-        id: t.id,
-        title: t.titulo,
-        description: t.descripcion,
-        priority: t.prioridad,
-        assignee: teamMembers.find((m) => m.id === t.asignados)?.email || "",
-      }));
+      // Mapear al formato de front con prefijo 'T' y padding de 2 dígitos
+      const mapped = dbTasks.map((t) => {
+        const rawId = t.id.toString();
+        const num = rawId.startsWith("T")
+          ? rawId.slice(1)
+          : rawId;
+        const padded = num.padStart(2, "0");
+        return {
+          id: `T${padded}`,
+          title: t.titulo,
+          description: t.descripcion,
+          priority: t.prioridad,
+          assignee: teamMembers.find((m) => m.id === t.asignados)?.email || "",
+        };
+      });
       setTasks((prev) => ({ ...prev, [item.id]: mapped }));
     } catch (err) {
       console.error("Error fetching tasks:", err);
@@ -823,6 +857,8 @@ const Dashboard = () => {
                 setEditData={setEditData}
                 handleSaveEdit={handleSaveEdit}
                 handleInputChange={handleInputChange}
+                nextTaskNumber={nextTaskNumber}
+                setNextTaskNumber={setNextTaskNumber}
               />
             )}
           </div>
