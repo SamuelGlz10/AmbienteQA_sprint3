@@ -10,6 +10,7 @@ import Generate from "./pages/Generate";
 import Registro from "./pages/Registro";
 import RevisionIA from "./pages/RevisionIA";
 import Dashboard from "./pages/Dashboard";
+import SprintBacklog from "./pages/SprintBacklog";
 
 function App() {
   const { isLogin } = useContext(AuthContext);
@@ -38,6 +39,10 @@ function App() {
         <Route
           path="/project/:projectId"
           element={isLogin ? <Dashboard /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/project/:projectId/sprint-backlog"
+          element={isLogin ? <SprintBacklog /> : <Navigate to="/login" />}
         />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

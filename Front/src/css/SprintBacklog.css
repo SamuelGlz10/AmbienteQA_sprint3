@@ -1,0 +1,164 @@
+.sprints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.sprint-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sprint-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.sprint-title {
+  color: #5d3a7f;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.sprint-status-container {
+  margin-bottom: 15px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status-badge.en-progreso {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.planificado {
+  background-color: #cce5ff;
+  color: #004085;
+}
+
+.status-badge.pendiente {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.status-badge.completado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.sprint-dates {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.date-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.calendar-icon {
+  font-size: 1.2rem;
+}
+
+.date-text {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.date-separator {
+  color: #9e72be;
+  font-weight: bold;
+}
+
+.sprint-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.sprint-task {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #9e72be;
+}
+
+.sprint-task h4 {
+  color: #333;
+  margin-bottom: 8px;
+  font-size: 1rem;
+}
+
+.sprint-task p {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.task-status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.task-status-badge.en-progreso {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.task-status-badge.completado {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.task-status-badge.pendiente {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.no-sprints {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sprints-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .sprint-card {
+    padding: 15px;
+  }
+  
+  .sprint-dates {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .date-separator {
+    display: none;
+  }
+} 

@@ -808,6 +808,34 @@ const Dashboard = () => {
     </div>
   );
 
+  const renderSprintTab = () => (
+    <div className="sprint-section">
+      <div className="sprint-header">
+        <h2>Sprint Backlog</h2>
+        <p>Gestiona las tareas del sprint actual</p>
+      </div>
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Título</th>
+              <th>Descripción</th>
+              <th>Estado</th>
+              <th>Asignado a</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colSpan="4" className="no-items">
+                No hay tareas en el sprint actual
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
   return (
     <div className="dashboard-container">
       <TopAppBar />
@@ -840,12 +868,22 @@ const Dashboard = () => {
             >
               Elementos
             </button>
+            <button
+              className={`tab-button ${
+                activeTab === "sprint" ? "active" : ""
+              }`}
+              onClick={() => navigate(`/project/${projectId}/sprint-backlog`)}
+            >
+              Sprint Backlog
+            </button>
           </div>
 
           <div className="tab-content">
             {activeTab === "overview"
               ? renderOverviewTab()
-              : renderRequirementsTab()}
+              : activeTab === "requirements"
+              ? renderRequirementsTab()
+              : renderSprintTab()}
           </div>
         </div>
 

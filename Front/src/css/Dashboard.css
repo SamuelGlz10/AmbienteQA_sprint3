@@ -1408,3 +1408,31 @@ td {
 .confirmation-actions .delete-button:hover {
   background-color: #ff5252;
 }
+
+.sprint-section {
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sprint-header {
+  margin-bottom: 20px;
+}
+
+.sprint-header h2 {
+  color: #5d3a7f;
+  margin-bottom: 8px;
+}
+
+.sprint-header p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.no-items {
+  text-align: center;
+  color: #666;
+  padding: 20px;
+  font-style: italic;
+}
