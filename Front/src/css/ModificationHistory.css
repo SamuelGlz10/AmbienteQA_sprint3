@@ -1,0 +1,106 @@
+.modification-history {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  padding: 24px 24px 12px 24px;
+  margin-top: 0;
+  border: 1px solid #eee;
+}
+
+.modification-history h3 {
+  color: #333;
+  margin-bottom: 18px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.history-list::-webkit-scrollbar {
+  width: 6px; 
+}
+
+.history-list::-webkit-scrollbar-track {
+  background: #f0e6ff;
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+  background-color: #9e72be;
+  border-radius: 3px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+  background-color: #8d60b4; 
+}
+
+.history-item {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 14px 18px;
+  border-left: 4px solid #9e72be;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.history-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.history-type {
+  background-color: #f0e6ff;
+  color: #5d3a7f;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.history-date {
+  color: #9e72be;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.history-description {
+  color: #333;
+  margin: 4px 0 0 0;
+  font-size: 0.97rem;
+}
+
+.history-user {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+
+.user-label {
+  color: #666;
+}
+
+.user-name {
+  color: #5d3a7f;
+  font-weight: 500;
+}
+
+.change-list {
+  margin: 0 0 8px 0;
+  padding-left: 18px;
+  font-size: 0.97rem;
+  color: #333;
+  text-align: left;
+} 

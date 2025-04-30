@@ -12,7 +12,6 @@ body,
   margin: 0;
   padding: 0;
   overflow-x: hidden;
-  background-color: white;
 }
 
 .white-container {
@@ -80,14 +79,14 @@ body,
 
 .pagination-info {
   color: #666;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .sort-control {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
 }
 
@@ -147,19 +146,26 @@ body,
 
 .project-info h3 {
   margin: 0 0 6px 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
   text-align: center;
+  display: -webkit-box; /* Permitir el uso de flexbox */
+  -webkit-line-clamp: 1; /* Número de líneas a mostrar */
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .project-info p {
   margin: 0;
   color: #666;
-  font-size: 13px;
+  font-size: 15px;
   display: -webkit-box;
-  line-clamp: 2;
-  box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: center;

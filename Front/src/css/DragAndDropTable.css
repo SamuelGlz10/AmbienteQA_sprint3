@@ -11,7 +11,8 @@ table {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Sombra ligera */
 }
 
-th, td {
+th,
+td {
   padding: 12px 15px;
   border: 1px solid #eae0f2; /* Gris claro */
 }
@@ -96,4 +97,34 @@ button.delete-icon:hover {
 
 .star.filled {
   color: #ffc107; /* Dorado */
+}
+
+.search-bar-container {
+  position: relative;
+  width: 100%;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 8px 12px;
+  padding-right: 30px; /* Add space for the clear button */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.clear-search-button {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.clear-search-button:hover {
+  color: #333;
 }

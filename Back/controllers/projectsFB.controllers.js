@@ -62,6 +62,7 @@ export const getProject = async (req, res) => {
       RF: project.data().RF,
       RNF: project.data().RNF,
       fechaCreacion: project.data().fechaCreacion,
+      modificationHistory: project.data().modificationHistory || [],
     });
   } catch (err) {
     console.error("Firebase Error:", err);
@@ -109,22 +110,171 @@ export const linkUserToProject = async (req, res) => {
 
     res
       .status(200)
-      .json({ success: true, message: "User linked to project successfully" });
+      .json({ success: true, message: "¡Usuario vinculado al proyecto exitosamente!" });
   } catch (err) {
     console.error("Error linking user to project:", err);
     res.status(500).json({ error: "Failed to link user to project" });
   }
 };
 
+export const unlinkUserFromProject = async (req, res) => {
+  try {
+    const { userId, projectId } = req.body;
+
+    if (!userId || !projectId) {
+      return res
+        .status(400)
+        .json({ error: "UserID and ProjectID are required" });
+    }
+
+    const pool = await sqlConnect();
+
+    // Eliminar el usuario y el proyecto de la tabla Users_Projects
+    await pool
+      .request()
+      .input("UserID", sql.Int, userId)
+      .input("ProjectID", sql.VarChar, projectId).query(`
+        DELETE FROM Users_Projects
+        WHERE UserID = @UserID AND ProjectID = @ProjectID
+      `);
+
+    res.status(200).json({
+      success: true,
+      message: "¡Usuario desvinculado del proyecto exitosamente!",
+    });
+  } catch (err) {
+    console.error("Failed to unlink user from proyect", err);
+    res.status(500).json({ error: "Error al desvincular el usuario del proyecto." });
+  }
+}
+
+export const getProjectTeamMembers = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      return res.status(400).json({ error: "ProjectID is required" });
+    }
+
+    const pool = await sqlConnect();
+
+    // Query to fetch users linked to the project
+    const result = await pool
+      .request()
+      .input("ProjectID", sql.VarChar, projectId)
+      .query(`
+        SELECT u.UserID, u.username, u.lastname, u.email, up.title
+        FROM Users_Projects up
+        INNER JOIN dbo.Users u ON up.UserID = u.UserID
+        WHERE up.ProjectID = @ProjectID
+      `);
+
+    res.status(200).json({
+      success: true,
+      teamMembers: result.recordset,
+    });
+  } catch (err) {
+    console.error("Error fetching team members:", err);
+    res.status(500).json({ error: "Failed to fetch team members" });
+  }
+};
+
 // Funcion para actualizar un proyecto
 export const putProject = async (req, res) => {
   try {
-    await db.collection("proyectos").doc(req.params.id).update(req.body);
+    const projectId = req.params.id;
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+    
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const currentProject = projectDoc.data();
+    const updates = req.body;
+
+    // Obtener nombre y apellido del usuario
+    let userName = '';
+    let userLastname = '';
+    try {
+      const pool = await sqlConnect();
+      const userResult = await pool
+        .request()
+        .input("userId", sql.Int, req.user.userId)
+        .query("SELECT username, lastname FROM dbo.Users WHERE UserID = @userId");
+      if (userResult.recordset.length > 0) {
+        userName = userResult.recordset[0].username || '';
+        userLastname = userResult.recordset[0].lastname || '';
+      }
+    } catch (e) {
+      console.error("Error fetching user for modification history", e);
+    }
+    
+    // Crear el registro de modificación
+    const modification = {
+      timestamp: new Date().toISOString(),
+      userId: req.user.userId,
+      userName,
+      userLastname,
+      changes: {}
+    };
+
+    // Comparar y registrar cambios
+    Object.keys(updates).forEach(key => {
+      if (key !== 'modificationHistory' && JSON.stringify(currentProject[key]) !== JSON.stringify(updates[key])) {
+        // Si es un arreglo de elementos (EP, RF, RNF, HU), comparar internamente
+        if (["EP", "RF", "RNF", "HU"].includes(key) && Array.isArray(updates[key]) && Array.isArray(currentProject[key])) {
+          const oldArr = currentProject[key];
+          const newArr = updates[key];
+          const elementChanges = [];
+          newArr.forEach(newItem => {
+            const oldItem = oldArr.find(item => item.id === newItem.id);
+            if (oldItem) {
+              const changes = {};
+              Object.keys(newItem).forEach(field => {
+                if (JSON.stringify(newItem[field]) !== JSON.stringify(oldItem[field])) {
+                  changes[field] = { oldValue: oldItem[field], newValue: newItem[field] };
+                }
+              });
+              if (Object.keys(changes).length > 0) {
+                elementChanges.push({ id: newItem.id, changes });
+              }
+            } else {
+              // Elemento nuevo
+              elementChanges.push({ id: newItem.id, changes: { nuevo: newItem } });
+            }
+          });
+          // Detectar eliminaciones
+          oldArr.forEach(oldItem => {
+            if (!newArr.find(item => item.id === oldItem.id)) {
+              elementChanges.push({ id: oldItem.id, changes: { eliminado: oldItem } });
+            }
+          });
+          if (elementChanges.length > 0) {
+            modification.changes[key] = elementChanges;
+          }
+        } else {
+          // Cambio simple
+          modification.changes[key] = {
+            oldValue: currentProject[key],
+            newValue: updates[key]
+          };
+        }
+      }
+    });
+
+    // Si hay cambios, agregar al historial
+    if (Object.keys(modification.changes).length > 0) {
+      const modificationHistory = currentProject.modificationHistory || [];
+      updates.modificationHistory = [...modificationHistory, modification];
+    }
+
+    await projectRef.update(updates);
+    
     res.status(200).json({
       project_updated: true,
-      id: req.params.id,
-      descripcion: req.body.descripcion,
-      estatus: req.body.estatus,
+      id: projectId,
+      modification: modification
     });
   } catch (err) {
     console.error("Firebase Error:", err);
@@ -221,5 +371,55 @@ export const uploadProjectImage = async (req, res) => {
   } catch (error) {
     console.error("Error uploading image:", error);
     res.status(500).json({ error: "Failed to upload image" });
+  }
+};
+
+export const updateTasks = async (req, res) => {
+  try {
+    const { requirementType, elementId, tasks } = req.body;
+    const projectId = req.params.id;
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const data = projectDoc.data();
+    const section = data[requirementType];
+    if (!Array.isArray(section)) {
+      return res.status(400).json({ error: "Invalid requirementType" });
+    }
+    const updatedSection = section.map(item =>
+      item.id === elementId
+        ? { ...item, tasks }
+        : item
+    );
+    await projectRef.update({ [requirementType]: updatedSection });
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("Error updating tasks:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};
+
+export const getTasks = async (req, res) => {
+  try {
+    const { requirementType, elementId } = req.query;
+    const projectId = req.params.id;
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+    const data = projectDoc.data();
+    const section = data[requirementType];
+    if (!Array.isArray(section)) {
+      return res.status(400).json({ error: "Invalid requirementType" });
+    }
+    const item = section.find((i) => i.id === elementId);
+    const tasks = item?.tasks || [];
+    res.status(200).json({ tasks });
+  } catch (err) {
+    console.error("Error fetching tasks:", err);
+    res.status(500).json({ error: "Server Error" });
   }
 };

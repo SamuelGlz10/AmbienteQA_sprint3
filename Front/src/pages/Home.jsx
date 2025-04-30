@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserContext } from "../components/UserContext"; // Importar el contexto de usuario
+import { AuthContext } from "../components/AuthContext"; // Importar el contexto de autenticación
 import TopAppBar from "../components/TopAppBar";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
@@ -13,17 +14,22 @@ const Home = () => {
   const [sortType, setSortType] = useState("Por Defecto");
   const [isLoading, setIsLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false); // Estado para verificar si el usuario es admin
+  const [isEditor, setIsEditor] = useState(false); // Estado para verificar si el usuario es editor
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
 
   const navigate = useNavigate();
 
   const { userId, role, userLoading } = useContext(UserContext); // Obtener variables del contexto de usuario
+  const { isLogin } = useContext(AuthContext); // Obtener variables del contexto de autenticación
 
   const getProjects = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login"); // Redirige al login si no hay token
+      setError("Token no encontrado. Por favor, inicia sesión nuevamente."); // Muestra el popup de error
+      setTimeout(() => {
+        navigate("/login"); // Redirige al login si el token es inválido
+      }, 5000);
       return;
     }
 
@@ -46,9 +52,12 @@ const Home = () => {
       );
 
       if (result.status === 401) {
+        console.log("Token inválido. Redirigiendo al login...");
         setError("Token inválido. Por favor, inicia sesión nuevamente."); // Muestra el popup de error
-        localStorage.removeItem("token"); // Elimina el token inválido
-        navigate("/login"); // Redirige al login si el token es inválido
+        setTimeout(() => {
+          localStorage.removeItem("token"); // Elimina el token inválido
+          navigate("/login"); // Redirige al login si el token es inválido
+        }, 3000);
         return;
       }
 
@@ -64,13 +73,19 @@ const Home = () => {
   };
 
   useEffect(() => {
-    if (!userLoading) {
+    if (!userLoading && isLogin) {
       getProjects();
       if (role === "admin") {
         setIsAdmin(true); // Si el rol es admin, actualizar el estado
+      } else if (role === "editor") {
+        setIsEditor(true); // Si el rol es editor, actualizar el estado
       }
+    } else if (!isLogin && error) {
+      setTimeout(() => {
+        navigate("/login"); // Redirige al login si el token es inválido
+      }, 5000);
     }
-  }, [userLoading, role]);
+  }, [userLoading, isLogin, role, error]);
 
   const sortProjects = (projects) => {
     if (sortType === "Nombre") {
@@ -121,6 +136,19 @@ const Home = () => {
         </div>
 
         <div className="projects-grid">
+          {(isAdmin || isEditor) && (
+            <div
+              className="new-project-card"
+              onClick={() => navigate("/generate")}
+            >
+              <div className="plus-icon">+</div>
+              <div className="new-project-text">
+                NUEVO
+                <br />
+                PROYECTO
+              </div>
+            </div>
+          )}
           {sortedProjects.slice(0, displayCount).map((project) => (
             <div
               key={project.id}
@@ -134,20 +162,6 @@ const Home = () => {
               </div>
             </div>
           ))}
-
-          {isAdmin && (
-            <div
-              className="new-project-card"
-              onClick={() => navigate("/generate")}
-            >
-              <div className="plus-icon">+</div>
-              <div className="new-project-text">
-                NUEVO
-                <br />
-                PROYECTO
-              </div>
-            </div>
-          )}
         </div>
         {isLoading && (
           <div className="loading-overlay">
@@ -160,8 +174,6 @@ const Home = () => {
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />
 
-      {/* Popup de éxito */}
-      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 };
