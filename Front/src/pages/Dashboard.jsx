@@ -42,6 +42,10 @@ const Dashboard = () => {
     nombreProyecto: "",
     descripcion: "",
   });
+  const [requirementEditData, setRequirementEditData] = useState({
+    title: "",
+    description: "",
+  });
 
   const [showMemberMenu, setShowMemberMenu] = useState(null);
   const [editingMember, setEditingMember] = useState(null);
@@ -226,11 +230,22 @@ const Dashboard = () => {
         ...project,
         [activeRequirement]: project[activeRequirement].map((item) =>
           item.id === selectedItem.id
-            ? { ...item, titulo: editData.title, data: editData.description }
+            ? {
+                ...item,
+                titulo: requirementEditData.title,
+                data: requirementEditData.description,
+              }
             : item
         ),
       };
       setProject(updatedProject);
+
+      // Actualizar el estado local de selectedItem
+      setSelectedItem((prev) => ({
+        ...prev,
+        titulo: requirementEditData.title,
+        data: requirementEditData.description,
+      }));
 
       const response = await fetch(
         `http://localhost:5001/projectsFB/${projectId}`,
@@ -276,10 +291,19 @@ const Dashboard = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Checar si estamos editando un requerimiento o el proyecto
+    if (editing) {
+      setRequirementEditData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else {
+      setEditData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const closeErrorPopup = () => {
@@ -292,7 +316,7 @@ const Dashboard = () => {
 
   const handleItemClick = async (item) => {
     setSelectedItem(item);
-    setEditData({
+    setRequirementEditData({
       title: item.titulo,
       description: item.data,
     });
@@ -670,10 +694,10 @@ const Dashboard = () => {
         ) : (
           <>
             <h1>{project.nombreProyecto}</h1>
-            <p>{project.descripcion}</p>
+            <p style={{ marginBottom: "10px", fontSize: '16px'}}>{project.descripcion}</p>
             {(role === "admin" || role === "editor") && (
               <button
-                className="edit-button"
+                className="popup-button primary"
                 onClick={() => setIsEditing(true)}
               >
                 Editar Proyecto
@@ -795,7 +819,7 @@ const Dashboard = () => {
                 setEditing={setEditing}
                 saveStatus={saveStatus}
                 setSaveStatus={setSaveStatus}
-                editData={editData}
+                requirementEditData={requirementEditData}
                 setEditData={setEditData}
                 handleSaveEdit={handleSaveEdit}
                 handleInputChange={handleInputChange}
@@ -811,9 +835,15 @@ const Dashboard = () => {
               <div key={index} className="team-member-card">
                 <div className="member-profile">{member.initials}</div>
                 <div className="member-info">
-                  <div className="member-name">{member.name}</div>
-                  <div className="member-role">{member.title}</div>
-                  <div className="member-email">{member.email}</div>
+                  <div className="member-name" style={{ fontSize: "16px" }}>
+                    {member.name}
+                  </div>
+                  <div className="member-role" style={{ fontSize: "16px" }}>
+                    {member.title}
+                  </div>
+                  <div className="member-email" style={{ fontSize: "16px" }}>
+                    {member.email}
+                  </div>
                 </div>
                 {(role === "editor" || role === "admin") && (
                   <div className="member-actions">
