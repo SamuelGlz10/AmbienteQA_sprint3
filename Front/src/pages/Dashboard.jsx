@@ -823,10 +823,10 @@ const Dashboard = () => {
           <div className="tab-content">
             {activeTab === "overview" ? (
               renderOverviewTab()
-            ) : activeTab === "requirements"
-              ? (
-              <RenderRequirementsTab()
-              : renderSprintTab
+            ) : activeTab === "requirements" ? (
+              <RenderRequirementsTab />
+            ) : (
+              <SprintTab
                 project={project}
                 activeRequirement={activeRequirement}
                 setActiveRequirement={setActiveRequirement}
