@@ -53,7 +53,7 @@ function Generate() {
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
-           "asignados": "userIdAsignado",
+           "asignados": "NULL",
            "estado": "En progreso"
          }
          // ...más tareas...
@@ -69,7 +69,7 @@ function Generate() {
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
-           "asignados": "userIdAsignado",
+           "asignados": "NULL",
            "estado": "En progreso"
          }
          // ...más tareas...
@@ -85,7 +85,7 @@ function Generate() {
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
-           "asignados": "userIdAsignado",
+           "asignados": "NULL",
            "estado": "En progreso"
          }
          // ...más tareas...
@@ -101,7 +101,7 @@ function Generate() {
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
-           "asignados": "userIdAsignado",
+           "asignados": "NULL",
            "estado": "En progreso"
          }
          // ...más tareas...
