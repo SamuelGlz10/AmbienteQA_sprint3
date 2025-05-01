@@ -1118,6 +1118,7 @@ const Dashboard = () => {
           teamMembers={teamMembers}
           handleSaveTeam={handleSaveTeam}
           handleCancelTeam={() => setShowTeamPopup(false)}
+          setError={setError}
         />
       )}
 
