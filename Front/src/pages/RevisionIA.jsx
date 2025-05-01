@@ -30,6 +30,7 @@ function RevisionIA() {
   const [editingProject, setEditingProject] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
   const [showBackConfirm, setShowBackConfirm] = useState(false);
+  const [editTasksData, setEditTasksData] = useState([]); // Estado para editar tareas
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -43,26 +44,26 @@ function RevisionIA() {
       if (!section) return [];
 
       return Array.isArray(section)
-      ? section.map((item) => ({
-          id: item.id,
-          titulo: item.titulo,
-          data: item.data,
-          tasks: Array.isArray(item.tasks) ? item.tasks : [],  // <-- preservar o inicializar
-        }))
-      : [];
+        ? section.map((item) => ({
+            id: item.id,
+            titulo: item.titulo,
+            data: item.data,
+            tasks: Array.isArray(item.tasks) ? item.tasks : [], // <-- preservar o inicializar
+          }))
+        : [];
     };
 
     return {
       nombreProyecto:
-         data.projectName || data.nombreProyecto || "Proyecto sin nombre",
-       descripcion: data.description || data.descripcion || "Sin descripción",
-       estatus: data.estatus || "Abierto",
-       fechaCreacion:
-         data.fechaCreacion || new Date().toISOString().split("T")[0],
+        data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+      descripcion: data.description || data.descripcion || "Sin descripción",
+      estatus: data.estatus || "Abierto",
+      fechaCreacion:
+        data.fechaCreacion || new Date().toISOString().split("T")[0],
       EP: parseSection(data.EP || data.epics),
-       RF: parseSection(data.RF || data.functionalRequirements),
-       RNF: parseSection(data.RNF || data.nonFunctionalRequirements),
-       HU: parseSection(data.HU || data.userStories),
+      RF: parseSection(data.RF || data.functionalRequirements),
+      RNF: parseSection(data.RNF || data.nonFunctionalRequirements),
+      HU: parseSection(data.HU || data.userStories),
     };
   };
 
@@ -252,9 +253,31 @@ function RevisionIA() {
       title: item.titulo,
       description: item.data,
     });
+    setEditTasksData(item.tasks || []); // Cargar tareas
     setShowPopup(true);
     setEditing(false);
     setSaveStatus({ loading: false, error: null, success: false });
+  };
+
+  const handleTaskChange = (index, field, value) => {
+    setEditTasksData((prev) => {
+      const arr = [...prev];
+      const t = { ...arr[index] };
+      if (field === "title") {
+        t.title = value;
+        t.titulo = value;
+      } else if (field === "description") {
+        t.descripcion = value;
+        // opcional borrar claves antiguas
+        delete t.data;
+        delete t.description;
+      } else if (field === "priority") {
+        t.priority = value;
+        t.prioridad = value;
+      }
+      arr[index] = t;
+      return arr;
+    });
   };
 
   const handleSaveEdit = async () => {
@@ -275,6 +298,7 @@ function RevisionIA() {
             ...updatedTab[itemIndex],
             titulo: editData.title,
             data: editData.description,
+            tasks: editTasksData, // Guardar tareas editadas
           };
         }
 
@@ -292,6 +316,7 @@ function RevisionIA() {
         ...prev,
         titulo: editData.title,
         data: editData.description,
+        tasks: editTasksData, // Actualizar selectedItem
       }));
 
       setSaveStatus({ loading: false, error: null, success: true });
@@ -683,7 +708,103 @@ function RevisionIA() {
                     />
                   </>
                 ) : (
-                  <div className="description-text">{selectedItem.data}</div>
+                  <div className="description-text">
+                    {selectedItem.data ||
+                      selectedItem.description ||
+                      selectedItem.descripcion}
+                  </div>
+                )}
+              </div>
+              <div className="tasks-table-container">
+                {editTasksData.length > 0 ? (
+                  <table className="tasks-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Descripción</th>
+                        <th>Prioridad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {editTasksData.map((task, i) => (
+                        <tr key={task.id}>
+                          <td>{task.id}</td>
+                          <td>
+                            {editing ? (
+                              <input
+                                type="text"
+                                value={task.titulo || task.title}
+                                onChange={(e) =>
+                                  handleTaskChange(i, "title", e.target.value)
+                                }
+                                className="edit-input"
+                              />
+                            ) : (
+                              task.titulo || task.title
+                            )}
+                          </td>
+                          <td>
+                            {editing ? (
+                              <textarea
+                                value={task.descripcion || task.data}
+                                onChange={(e) =>
+                                  handleTaskChange(
+                                    i,
+                                    "description",
+                                    e.target.value
+                                  )
+                                }
+                                className="edit-textarea"
+                                rows={2}
+                              />
+                            ) : (
+                              task.descripcion || task.data
+                            )}
+                          </td>
+                          <td>
+                            {editing ? (
+                              <select
+                                value={task.prioridad || task.priority || ""}
+                                onChange={(e) =>
+                                  handleTaskChange(
+                                    i,
+                                    "priority",
+                                    e.target.value
+                                  )
+                                }
+                                className="assignee-dropdown-button"
+                              >
+                                <option value="">Seleccionar prioridad</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Media</option>
+                                <option value="baja">Baja</option>
+                              </select>
+                            ) : (
+                              <span
+                                className={`priority-badge ${
+                                  task.prioridad || task.priority
+                                }`}
+                              >
+                                {(task.prioridad || task.priority || "")
+                                  .charAt(0)
+                                  .toUpperCase() +
+                                  (task.prioridad || task.priority || "").slice(
+                                    1
+                                  )}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  activeTab === "HU" && (
+                    <p className="no-tasks-message">
+                      No hay tareas registradas para este elemento.
+                    </p>
+                  )
                 )}
               </div>
             </div>
@@ -728,12 +849,18 @@ function RevisionIA() {
 
       {showBackConfirm && (
         <div className="popup-overlay" onClick={cancelBack}>
-          <div className="popup-content" onClick={e => e.stopPropagation()}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <h3 className="popup-title">¿Estás seguro que quieres volver?</h3>
-            <p>Si vuelves, <b>se borrarán los datos actuales del proyecto.</b></p>
+            <p>
+              Si vuelves, <b>se borrarán los datos actuales del proyecto.</b>
+            </p>
             <div className="popup-footer">
-              <button className="popup-button secondary" onClick={cancelBack}>Cancelar</button>
-              <button className="popup-button primary" onClick={confirmBack}>Sí, volver</button>
+              <button className="popup-button secondary" onClick={cancelBack}>
+                Cancelar
+              </button>
+              <button className="popup-button primary" onClick={confirmBack}>
+                Sí, volver
+              </button>
             </div>
           </div>
         </div>
