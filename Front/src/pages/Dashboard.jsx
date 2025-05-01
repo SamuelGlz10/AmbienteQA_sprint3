@@ -75,9 +75,13 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       await fetchProject();
+      console.log("Project fetched");
       const projectMembers = await fetchTeamMembers(); // Llamar primero para filtrar usuarios
+      console.log("Team members fetched");
       await fetchAvailableUsers(projectMembers);
+      console.log("Available users fetched");
       await fetchAllTasks(); // Llamar para obtener todas las tareas
+      console.log("All tasks fetched");
       setLoading(false);
     };
 
@@ -196,7 +200,7 @@ const Dashboard = () => {
   const fetchAllTasks = async () => {
     try {
       const resp = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/tasks?all=true`,
+        `http://localhost:5001/projectsFB/${projectId}/all-tasks`,
         {
           method: "GET",
           headers: {
@@ -205,14 +209,18 @@ const Dashboard = () => {
           },
         }
       );
-      if (!resp.ok) throw new Error();
+      if (!resp.ok) throw new Error("Failed to fetch all tasks");
+
       const { tasks: dbTasks } = await resp.json();
-      const nums = dbTasks
-        .map((t) => parseInt(t.id.toString().replace(/^T/, ""), 10))
-        .filter((n) => !isNaN(n));
-      setNextTaskNumber(nums.length ? Math.max(...nums) : 0);
-    } catch {
-      console.error("Error fetching all tasks");
+
+      // Guardar las tareas en el estado local
+
+      // Calcular el siguiente número de tarea
+      const nextTaskNumber = dbTasks.length;
+      setNextTaskNumber(nextTaskNumber);
+      console.log(nextTaskNumber);
+    } catch (error) {
+      console.error("Error fetching all tasks:", error);
     }
   };
 
@@ -366,9 +374,7 @@ const Dashboard = () => {
       // Mapear al formato de front con prefijo 'T' y padding de 2 dígitos
       const mapped = dbTasks.map((t) => {
         const rawId = t.id.toString();
-        const num = rawId.startsWith("T")
-          ? rawId.slice(1)
-          : rawId;
+        const num = rawId.startsWith("T") ? rawId.slice(1) : rawId;
         const padded = num.padStart(2, "0");
         return {
           id: `T${padded}`,
@@ -728,7 +734,9 @@ const Dashboard = () => {
         ) : (
           <>
             <h1>{project.nombreProyecto}</h1>
-            <p style={{ marginBottom: "10px", fontSize: '16px'}}>{project.descripcion}</p>
+            <p style={{ marginBottom: "10px", fontSize: "16px" }}>
+              {project.descripcion}
+            </p>
             {(role === "admin" || role === "editor") && (
               <button
                 className="popup-button primary"
