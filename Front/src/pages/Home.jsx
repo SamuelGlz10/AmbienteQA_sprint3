@@ -64,7 +64,6 @@ const Home = () => {
       const data = await result.json();
       setProjects(data);
       setIsLoading(false);
-      setSuccessMessage("Proyectos cargados exitosamente."); // Muestra el popup de éxito
     } catch (error) {
       console.error("Error fetching projects:", error);
       setError("Error al cargar los proyectos. Por favor, inténtalo de nuevo."); // Muestra el popup de error
@@ -89,7 +88,7 @@ const Home = () => {
 
   const sortedProjects = React.useMemo(() => {
     if (sortType === "Nombre") {
-      return [...projects].sort((a, b) => 
+      return [...projects].sort((a, b) =>
         (a.nombreProyecto || a.id).localeCompare(b.nombreProyecto || b.id)
       );
     }
@@ -99,14 +98,15 @@ const Home = () => {
   return (
     <div className="home-container">
       <TopAppBar />
-      
+
       <div className="main-title">
         <h1>Mis Proyectos</h1>
       </div>
 
       <div className="controls-container">
         <div className="pagination-info">
-          Mostrando 1 - {Math.min(displayCount, projects.length)} de {projects.length}
+          Mostrando 1 - {Math.min(displayCount, projects.length)} de{" "}
+          {projects.length}
         </div>
 
         <div className="sort-control">
@@ -142,11 +142,13 @@ const Home = () => {
             className="project-card"
             onClick={() => navigate(`/project/${project.id}`)}
           >
-            <div 
+            <div
               className="project-image"
               style={{
-                backgroundImage: project.imagen ? `url(${project.imagen})` : 'none',
-                backgroundColor: project.imagen ? 'transparent' : '#f0e6ff'
+                backgroundImage: project.imagen
+                  ? `url(${project.imagen})`
+                  : "none",
+                backgroundColor: project.imagen ? "transparent" : "#f0e6ff",
               }}
             />
             <div className="project-info">
@@ -165,7 +167,10 @@ const Home = () => {
       )}
 
       <ErrorPopup message={error} onClose={() => setError(null)} />
-      <SuccessPopup message={successMessage} onClose={() => setSuccessMessage(null)} />
+      <SuccessPopup
+        message={successMessage}
+        onClose={() => setSuccessMessage(null)}
+      />
     </div>
   );
 };
