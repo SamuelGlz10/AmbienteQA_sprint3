@@ -263,12 +263,13 @@ function RevisionIA() {
     setEditTasksData((prev) => {
       const arr = [...prev];
       const t = { ...arr[index] };
-      if (field === "title") {
+      if (field === "id") {
+        t.id = value;
+      } else if (field === "title") {
         t.title = value;
         t.titulo = value;
       } else if (field === "description") {
         t.descripcion = value;
-        // opcional borrar claves antiguas
         delete t.data;
         delete t.description;
       } else if (field === "priority") {
@@ -332,6 +333,15 @@ function RevisionIA() {
         success: false,
       });
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditing(false);
+    if (selectedItem) {
+      setEditData({ title: selectedItem.titulo, description: selectedItem.data });
+      setEditTasksData(selectedItem.tasks || []);
+    }
+    setSaveStatus({ loading: false, error: null, success: false });
   };
 
   const handleConfirm = async () => {
@@ -715,98 +725,103 @@ function RevisionIA() {
                   </div>
                 )}
               </div>
-              <div className="tasks-table-container">
-                {editTasksData.length > 0 ? (
-                  <table className="tasks-table">
-                    <thead>
-                      <tr>
-                        <th>ID</th>
-                        <th>Título</th>
-                        <th>Descripción</th>
-                        <th>Prioridad</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {editTasksData.map((task, i) => (
-                        <tr key={task.id}>
-                          <td>{task.id}</td>
-                          <td>
-                            {editing ? (
-                              <input
-                                type="text"
-                                value={task.titulo || task.title}
-                                onChange={(e) =>
-                                  handleTaskChange(i, "title", e.target.value)
-                                }
-                                className="edit-input"
-                              />
-                            ) : (
-                              task.titulo || task.title
-                            )}
-                          </td>
-                          <td>
-                            {editing ? (
-                              <textarea
-                                value={task.descripcion || task.data}
-                                onChange={(e) =>
-                                  handleTaskChange(
-                                    i,
-                                    "description",
-                                    e.target.value
-                                  )
-                                }
-                                className="edit-textarea"
-                                rows={2}
-                              />
-                            ) : (
-                              task.descripcion || task.data
-                            )}
-                          </td>
-                          <td>
-                            {editing ? (
-                              <select
-                                value={task.prioridad || task.priority || ""}
-                                onChange={(e) =>
-                                  handleTaskChange(
-                                    i,
-                                    "priority",
-                                    e.target.value
-                                  )
-                                }
-                                className="assignee-dropdown-button"
-                              >
-                                <option value="">Seleccionar prioridad</option>
-                                <option value="alta">Alta</option>
-                                <option value="media">Media</option>
-                                <option value="baja">Baja</option>
-                              </select>
-                            ) : (
-                              <span
-                                className={`priority-badge ${
-                                  task.prioridad || task.priority
-                                }`}
-                              >
-                                {(task.prioridad || task.priority || "")
-                                  .charAt(0)
-                                  .toUpperCase() +
-                                  (task.prioridad || task.priority || "").slice(
-                                    1
-                                  )}
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  activeTab === "HU" && (
+
+              {activeTab === "HU" && (
+                <div className="tasks-section">
+                  <h4 className="label-title"><b>Tareas relacionadas:</b></h4>
+                  {editTasksData.length > 0 ? (
+                    <div className="tasks-table-container">
+                      <table className="tasks-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Prioridad</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {editTasksData.map((task, i) => (
+                            <tr key={i}>
+                              <td>
+                                {task.id}
+                              </td>
+                              <td>
+                                {editing ? (
+                                  <textarea
+                                    value={task.titulo || task.title}
+                                    onChange={(e) =>
+                                      handleTaskChange(i, "title", e.target.value)
+                                    }
+                                    className="edit-textarea"
+                                    rows={2} // Adjust rows as needed for better visibility
+                                  />
+                                ) : (
+                                  task.titulo || task.title
+                                )}
+                              </td>
+                              <td>
+                                {editing ? (
+                                  <textarea
+                                    value={task.descripcion || task.data}
+                                    onChange={(e) =>
+                                      handleTaskChange(
+                                        i,
+                                        "description",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="edit-textarea"
+                                    rows={2}
+                                  />
+                                ) : (
+                                  task.descripcion || task.data
+                                )}
+                              </td>
+                              <td>
+                                {editing ? (
+                                  <select
+                                    value={task.prioridad || task.priority || ""}
+                                    onChange={(e) =>
+                                      handleTaskChange(
+                                        i,
+                                        "priority",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="assignee-dropdown-button"
+                                  >
+                                    <option value="alta">Alta</option>
+                                    <option value="media">Media</option>
+                                    <option value="baja">Baja</option>
+                                  </select>
+                                ) : (
+                                  <span
+                                    className={`priority-badge ${
+                                      task.prioridad || task.priority
+                                    }`}
+                                  >
+                                    {(task.prioridad || task.priority || "")
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                      (task.prioridad || task.priority || "").slice(
+                                        1
+                                      )}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
                     <p className="no-tasks-message">
                       No hay tareas registradas para este elemento.
                     </p>
-                  )
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="popup-footer">
@@ -821,7 +836,7 @@ function RevisionIA() {
                 <>
                   <button
                     className="popup-button secondary"
-                    onClick={() => setEditing(false)}
+                    onClick={handleCancelEdit}
                     disabled={saveStatus.loading}
                   >
                     Cancelar
