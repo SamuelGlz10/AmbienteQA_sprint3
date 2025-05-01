@@ -18,6 +18,7 @@ function Generate() {
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
+  const [sprints, setSprints] = useState(1); // Estado para controlar el número de sprints
 
   const userID = localStorage.getItem("UserID");
 
@@ -39,70 +40,58 @@ function Generate() {
 
   const promptRules = `Please create a JSON object with the following structure:
  {
-   "nombreProyecto": "The name of the project",
-   "descripcion": "Brief description",
+   "nombreProyecto": "Nombre del proyecto",
+   "descripcion": "Breve descripción del proyecto",
    "estatus": "Abierto" or "Cerrado",
    "EP": [
      {
        "id": "EP01",
        "titulo": "Título de la épica",
        "data": "Descripción de la épica",
-       "tasks": [
-         {
-           "id": "T01",
-           "titulo": "Título de tarea",
-           "descripcion": "Descripción de la tarea",
-           "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
-           "estado": "En progreso"
-         }
-         // ...más tareas...
        ]
      }
      // ...más épicas...
    ],
    'RF': [
-       { 'id': 'RF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento',
-        "tasks": [
-         {
-           "id": "T02",
-           "titulo": "Título de tarea",
-           "descripcion": "Descripción de la tarea",
-           "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
-           "estado": "En progreso"
-         }
-         // ...más tareas...
+       {
+        'id': 'RF01',
+        'titulo': 'Titulo de Requerimiento',
+        'data': 'Descricpcion de requerimiento',
        ]
      }
      // ...más requerimientos funcionales... }
      ],
      'RNF': [
-       { 'id': 'RNF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento',
-        "tasks": [
-         {
-           "id": "T03",
-           "titulo": "Título de tarea",
-           "descripcion": "Descripción de la tarea",
-           "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
-           "estado": "En progreso"
-         }
-         // ...más tareas...
+       {
+        'id': 'RNF01',
+        'titulo': 'Titulo de Requerimiento',
+        'data': 'Descricpcion de requerimiento',
        ]
      }
      // ...más requerimientos no funcionales... } }
      ],
      'HU': [
-       { 'id': 'HU01', 'titulo': 'Titulo de historia de usuario', 'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])',
-        "tasks": [
+       {
+        'id': 'HU01',
+        'titulo': 'Titulo de historia de usuario',
+        'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])',
+        'criteriosAceptacion':
+        [
+          {
+            'criterio': 'Criterio de aceptacion 1',
+          }
+          // ...más criterios de aceptación...
+        ],
+        "tasks":
+        [
          {
            "id": "T04",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
            "asignados": "NULL",
-           "estado": "En progreso"
+           "estado": "En progreso",
+           "sprint": "1",
          }
          // ...más tareas...
        ]
@@ -111,7 +100,10 @@ function Generate() {
      ]
  }
  The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. 
+ The tasks should be generated based on the user stories, and each task should have a unique ID.
+ The task ID should be in the format "T01", "T02", etc.
  Task IDs should be unique within the project, no repeating even if they are in different lists.
+ The sprint number should be a number between 1 and ${sprints}, and be sure to distribute all tasks across the sprints.
    Please do not include \`\`\`json or \`\`\` markers in the response.
    Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
 
