@@ -33,7 +33,7 @@ function Generate() {
     if (!userID) return;
 
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
-    allHistories[userID] = history; 
+    allHistories[userID] = history;
     localStorage.setItem("history", JSON.stringify(allHistories));
   }, [history, userID]);
 
@@ -65,7 +65,7 @@ function Generate() {
        { 'id': 'RF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento',
         "tasks": [
          {
-           "id": "T01",
+           "id": "T02",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
@@ -81,7 +81,7 @@ function Generate() {
        { 'id': 'RNF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento',
         "tasks": [
          {
-           "id": "T01",
+           "id": "T03",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
@@ -97,7 +97,7 @@ function Generate() {
        { 'id': 'HU01', 'titulo': 'Titulo de historia de usuario', 'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])',
         "tasks": [
          {
-           "id": "T01",
+           "id": "T04",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
@@ -111,6 +111,7 @@ function Generate() {
      ]
  }
  The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. 
+ Task IDs should be unique within the project, no repeating even if they are in different lists.
    Please do not include \`\`\`json or \`\`\` markers in the response.
    Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
 
@@ -195,7 +196,6 @@ function Generate() {
         <div className="main-title">
           <h1>Creación con IA</h1>
         </div>
-
 
         <button className="back-button" onClick={() => navigate("/home")}>
           ←
