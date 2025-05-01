@@ -157,7 +157,7 @@ function Generate() {
     }
   };
 
-  const handleClear = () => {
+  const handleErase = () => {
     setPrompt("");
     setSuccessMessage("Campo de texto limpiado");
   };
@@ -193,7 +193,7 @@ function Generate() {
                   <button type="button" className="action-button" onClick={handlePaste}>
                     Pegar
                   </button>
-                  <button type="button" className="action-button" onClick={handleClear}>
+                  <button type="button" className="action-button" onClick={handleErase}>
                     Limpiar
                   </button>
                 </div>
@@ -231,10 +231,10 @@ function Generate() {
                   type="submit"
                   disabled={loading}
                 >
-                  Generar
+                  {loading ? "Generando..." : "Generar"}
                 </button>
                 <button
-                  className="main-button"
+                  className="main-button delete"
                   type="button"
                   onClick={handleErase}
                 >
@@ -242,6 +242,7 @@ function Generate() {
                 </button>
               </div>
             </div>
+          </div>
 
           <div className="right-container">
             <div className="prompt-options">
