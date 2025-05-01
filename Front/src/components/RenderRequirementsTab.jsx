@@ -88,21 +88,103 @@ const RenderRequirementsTab = ({ ...props }) => {
       })),
     };
     try {
-      await fetch(
-        `http://localhost:5001/projectsFB/${project.id}/tasks`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      await fetch(`http://localhost:5001/projectsFB/${project.id}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
     } catch (err) {
       console.error(err);
       setError("Error al asignar la tarea.");
     }
+  };
+
+  const createTask = async () => {
+    // Array para recolectar mensajes de error
+    const missingFields = [];
+
+    // Validar todos los campos requeridos
+    if (!taskFormData.title.trim()) {
+      missingFields.push("título");
+    }
+    if (!taskFormData.description.trim()) {
+      missingFields.push("descripción");
+    }
+    if (!taskFormData.priority) {
+      missingFields.push("prioridad");
+    }
+    if (!taskFormData.assignee) {
+      missingFields.push("asignación a un miembro");
+    }
+
+    // Si hay campos faltantes, mostrar error
+    if (missingFields.length > 0) {
+      if (missingFields.length === 1) {
+        setError(`Debe completar el campo de ${missingFields[0]}.`);
+      } else {
+        const last = missingFields.pop();
+        setError(
+          `Debe completar los campos de ${missingFields.join(", ")} y ${last}.`
+        );
+      }
+      return;
+    }
+
+    // Si pasa la validación, crear objeto de tarea
+    const newTask = {
+      id: getNextTaskId(),
+      title: taskFormData.title,
+      description: taskFormData.description,
+      priority: taskFormData.priority,
+      assignee: taskFormData.assignee,
+    };
+
+    // update local state
+    const currentTasks = tasks[selectedItem.id] || [];
+    const updatedTasks = [...currentTasks, newTask];
+    setTasks((prev) => ({
+      ...prev,
+      [selectedItem.id]: updatedTasks,
+    }));
+
+    // build payload for Firestore
+    const payload = {
+      requirementType: activeRequirement,
+      elementId: selectedItem.id,
+      tasks: updatedTasks.map((task) => ({
+        id: task.id.startsWith("T") ? task.id.slice(1) : task.id,
+        titulo: task.title,
+        descripcion: task.description,
+        prioridad: task.priority,
+        asignados:
+          teamMembers.find((m) => m.email === task.assignee)?.id || null,
+        estado: "En progreso",
+      })),
+    };
+
+    // persist to Firebase via new endpoint
+    fetch(`http://localhost:5001/projectsFB/${project.id}/tasks`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(payload),
+    }).catch(console.error);
+
+    setNextTaskNumber((n) => n + 1); // Incrementar global
+    setSuccessMessage("Tarea creada exitosamente.");
+    setError("");
+    setShowTaskForm(false);
+    setTaskFormData({
+      title: "",
+      description: "",
+      priority: "",
+      assignee: "",
+    });
   };
 
   return (
@@ -232,6 +314,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                       </thead>
                       <tbody>
                         {tasks[selectedItem.id].map((task, index) => {
+                          if(!task) return null; // Evitar tareas nulas
                           // Encontrar el miembro del equipo por email
                           const assignedMember = teamMembers.find(
                             (member) => member.email === task.assignee
@@ -357,11 +440,16 @@ const RenderRequirementsTab = ({ ...props }) => {
                                   <select
                                     className="assignee-dropdown-button"
                                     value={task.assignee}
-                                    onChange={(e) => handleAssignee(task.id, e.target.value)}
+                                    onChange={(e) =>
+                                      handleAssignee(task.id, e.target.value)
+                                    }
                                   >
                                     <option value="">Asignar</option>
                                     {teamMembers.map((member) => (
-                                      <option key={member.email} value={member.email}>
+                                      <option
+                                        key={member.email}
+                                        value={member.email}
+                                      >
                                         {member.name}
                                       </option>
                                     ))}
@@ -552,98 +640,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                     <button
                       className="save-button"
                       onClick={() => {
-                        // Array para recolectar mensajes de error
-                        const missingFields = [];
-
-                        // Validar todos los campos requeridos
-                        if (!taskFormData.title.trim()) {
-                          missingFields.push("título");
-                        }
-                        if (!taskFormData.description.trim()) {
-                          missingFields.push("descripción");
-                        }
-                        if (!taskFormData.priority) {
-                          missingFields.push("prioridad");
-                        }
-                        if (!taskFormData.assignee) {
-                          missingFields.push("asignación a un miembro");
-                        }
-
-                        // Si hay campos faltantes, mostrar error
-                        if (missingFields.length > 0) {
-                          if (missingFields.length === 1) {
-                            setError(
-                              `Debe completar el campo de ${missingFields[0]}.`
-                            );
-                          } else {
-                            const last = missingFields.pop();
-                            setError(
-                              `Debe completar los campos de ${missingFields.join(
-                                ", "
-                              )} y ${last}.`
-                            );
-                          }
-                          return;
-                        }
-
-                        // Si pasa la validación, crear objeto de tarea
-                        const newTask = {
-                          id: getNextTaskId(),
-                          title: taskFormData.title,
-                          description: taskFormData.description,
-                          priority: taskFormData.priority,
-                          assignee: taskFormData.assignee,
-                        };
-
-                        // update local state
-                        const currentTasks = tasks[selectedItem.id] || [];
-                        const updatedTasks = [...currentTasks, newTask];
-                        setTasks((prev) => ({
-                          ...prev,
-                          [selectedItem.id]: updatedTasks,
-                        }));
-
-                        // build payload for Firestore
-                        const payload = {
-                          requirementType: activeRequirement,
-                          elementId: selectedItem.id,
-                          tasks: updatedTasks.map((task) => ({
-                            id: task.id.startsWith("T") ? task.id.slice(1) : task.id,
-                            titulo: task.title,
-                            descripcion: task.description,
-                            prioridad: task.priority,
-                            asignados:
-                              teamMembers.find((m) => m.email === task.assignee)
-                                ?.id || null,
-                            estado: "En progreso",
-                          })),
-                        };
-
-                        // persist to Firebase via new endpoint
-                        fetch(
-                          `http://localhost:5001/projectsFB/${project.id}/tasks`,
-                          {
-                            method: "POST",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${localStorage.getItem(
-                                "token"
-                              )}`,
-                            },
-                            body: JSON.stringify(payload),
-                          }
-                        ).catch(console.error);
-
-                        setNextTaskNumber((n) => n + 1); // Incrementar global
-                        setSuccessMessage("Tarea creada exitosamente.");
-                        setError("");
-                        setShowTaskForm(false);
-                        setTaskFormData({
-                          title: "",
-                          description: "",
-                          priority: "",
-                          assignee: "",
-                        });
+                        createTask();
                       }}
                     >
                       Crear Tarea

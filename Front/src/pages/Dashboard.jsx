@@ -8,6 +8,7 @@ import EditMemberPopup from "../components/EditMemeberPopup";
 import RenderRequirementsTab from "../components/RenderRequirementsTab";
 import TeamEditPopup from "../components/TeamEditPopup";
 import ModificationHistory from "../components/ModificationHistory";
+import SprintDetails from "../components/SprintDetails";
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
@@ -33,8 +34,63 @@ const Dashboard = () => {
     success: false,
   });
 
+  // Sprint backlog states
+  const [sprints, setSprints] = useState([
+    {
+      number: 1,
+      status: "En progreso",
+      startDate: "2024-04-01",
+      endDate: "2024-04-14",
+      tasks: [
+        {
+          title: "Implementar autenticación",
+          description: "Crear sistema de login y registro",
+          status: "En progreso"
+        },
+        {
+          title: "Diseñar interfaz de usuario",
+          description: "Crear wireframes y mockups",
+          status: "Completado"
+        }
+      ]
+    },
+    {
+      number: 2,
+      status: "Planificado",
+      startDate: "2024-04-15",
+      endDate: "2024-04-28",
+      tasks: [
+        {
+          title: "Desarrollar API",
+          description: "Implementar endpoints principales",
+          status: "Pendiente"
+        },
+        {
+          title: "Configurar base de datos",
+          description: "Crear esquema y migraciones",
+          status: "Pendiente"
+        }
+      ]
+    },
+    {
+      number: 3,
+      status: "Pendiente",
+      startDate: "2024-04-29",
+      endDate: "2024-05-12",
+      tasks: [
+        {
+          title: "Pruebas de integración",
+          description: "Realizar pruebas de sistema completo",
+          status: "Pendiente"
+        }
+      ]
+    }
+  ]);
+  const [selectedSprint, setSelectedSprint] = useState(null);
+
   const [teamMembers, setTeamMembers] = useState([]);
   const [availableMembers, setAvailableMembers] = useState([]);
+  const [countdown, setCountdown] = useState(3);
 
   const [editData, setEditData] = useState({
     title: "",
@@ -67,6 +123,10 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
+  const [showProjectDeleteConfirmation, setShowProjectDeleteConfirmation] =
+    useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
+
   // Estado para manejar el número máximo de tareas
   const [nextTaskNumber, setNextTaskNumber] = useState(0);
 
@@ -83,6 +143,25 @@ const Dashboard = () => {
 
     fetchData();
   }, [projectId]);
+
+  // UseEffect para manejar el temporizador de cuenta regresiva
+  useEffect(() => {
+    if (showProjectDeleteConfirmation) {
+      let timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    } else {
+      setCountdown(3);
+    }
+  }, [showProjectDeleteConfirmation]);
 
   const fetchProject = async () => {
     try {
@@ -196,7 +275,7 @@ const Dashboard = () => {
   const fetchAllTasks = async () => {
     try {
       const resp = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/tasks?all=true`,
+        `http://localhost:5001/projectsFB/${projectId}/all-tasks`,
         {
           method: "GET",
           headers: {
@@ -205,14 +284,18 @@ const Dashboard = () => {
           },
         }
       );
-      if (!resp.ok) throw new Error();
+      if (!resp.ok) throw new Error("Failed to fetch all tasks");
+
       const { tasks: dbTasks } = await resp.json();
-      const nums = dbTasks
-        .map((t) => parseInt(t.id.toString().replace(/^T/, ""), 10))
-        .filter((n) => !isNaN(n));
-      setNextTaskNumber(nums.length ? Math.max(...nums) : 0);
-    } catch {
-      console.error("Error fetching all tasks");
+
+      // Guardar las tareas en el estado local
+
+      // Calcular el siguiente número de tarea
+      const nextTaskNumber = dbTasks.length;
+      setNextTaskNumber(nextTaskNumber);
+      console.log(nextTaskNumber);
+    } catch (error) {
+      console.error("Error fetching all tasks:", error);
     }
   };
 
@@ -366,9 +449,7 @@ const Dashboard = () => {
       // Mapear al formato de front con prefijo 'T' y padding de 2 dígitos
       const mapped = dbTasks.map((t) => {
         const rawId = t.id.toString();
-        const num = rawId.startsWith("T")
-          ? rawId.slice(1)
-          : rawId;
+        const num = rawId.startsWith("T") ? rawId.slice(1) : rawId;
         const padded = num.padStart(2, "0");
         return {
           id: `T${padded}`,
@@ -659,6 +740,139 @@ const Dashboard = () => {
     }
   };
 
+  const handleSprintClick = (sprint) => {
+    setSelectedSprint(sprint);
+  };
+
+  const handleCloseSprintDetails = () => {
+    setSelectedSprint(null);
+  };
+
+  const renderSprintBacklogTab = () => (
+    <div className="sprints-grid">
+      {sprints.length > 0 ? (
+        sprints.map((sprint, index) => (
+          <div 
+            key={index} 
+            className="sprint-card"
+            onClick={() => handleSprintClick(sprint)}
+          >
+            <h3 className="sprint-title">SPRINT {sprint.number}</h3>
+            <div className="sprint-status-container">
+              <span className={`status-badge ${sprint.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                {sprint.status}
+              </span>
+            </div>
+            <div className="sprint-dates">
+              <div className="date-item">
+                <span className="calendar-icon">📅</span>
+                <span className="date-text">
+                  {new Date(sprint.startDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </span>
+              </div>
+              <div className="date-separator">→</div>
+              <div className="date-item">
+                <span className="calendar-icon">📅</span>
+                <span className="date-text">
+                  {new Date(sprint.endDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                </span>
+              </div>
+            </div>
+            <div className="sprint-tasks">
+              {sprint.tasks?.map((task, taskIndex) => (
+                <div key={taskIndex} className="sprint-task">
+                  <h4>{task.title}</h4>
+                  <p>{task.description}</p>
+                  <span className={`task-status-badge ${task.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {task.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="no-sprints">
+          <p>No hay sprints disponibles</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderRequirementsTab = () => (
+              <RenderRequirementsTab
+                project={project}
+                activeRequirement={activeRequirement}
+                setActiveRequirement={setActiveRequirement}
+                handleItemClick={handleItemClick}
+                showPopup={showPopup}
+                selectedItem={selectedItem}
+                handleClosePopup={handleClosePopup}
+                tasks={tasks}
+                setTasks={setTasks}
+                teamMembers={teamMembers}
+                setTaskToDelete={setTaskToDelete}
+                deleteMode={deleteMode}
+                setDeleteMode={setDeleteMode}
+                handleDragStart={handleDragStart}
+                handleDragOver={handleDragOver}
+                handleDragEnter={handleDragEnter}
+                handleDragLeave={handleDragLeave}
+                handleDrop={handleDrop}
+                handleDragEnd={handleDragEnd}
+                showTaskForm={showTaskForm}
+                setShowTaskForm={setShowTaskForm}
+                taskFormData={taskFormData}
+                setTaskFormData={setTaskFormData}
+                setSuccessMessage={setSuccessMessage}
+                setShowDeleteConfirmation={setShowDeleteConfirmation}
+                role={role}
+                editing={editing}
+                setEditing={setEditing}
+                saveStatus={saveStatus}
+                setSaveStatus={setSaveStatus}
+                requirementEditData={requirementEditData}
+                setEditData={setEditData}
+                handleSaveEdit={handleSaveEdit}
+                handleInputChange={handleInputChange}
+                nextTaskNumber={nextTaskNumber}
+                setNextTaskNumber={setNextTaskNumber}
+              />
+  );
+
+  const handleDeleteProject = async (projectId) => {
+    setProjectToDelete(projectId);
+    setShowProjectDeleteConfirmation(true);
+  };
+
+  const confirmDeleteProject = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete project");
+
+      setSuccessMessage("Proyecto eliminado exitosamente.");
+      setTimeout(() => {
+        navigate("/home");
+      }, 1000);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      setError("Error al eliminar el proyecto. Por favor, inténtalo de nuevo.");
+    } finally {
+      sethShowProjectDeleteConfirmation(false);
+      setProjectToDelete(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="white-container">
@@ -728,14 +942,24 @@ const Dashboard = () => {
         ) : (
           <>
             <h1>{project.nombreProyecto}</h1>
-            <p style={{ marginBottom: "10px", fontSize: '16px'}}>{project.descripcion}</p>
+            <p style={{ marginBottom: "10px", fontSize: "16px" }}>
+              {project.descripcion}
+            </p>
             {(role === "admin" || role === "editor") && (
-              <button
-                className="popup-button primary"
-                onClick={() => setIsEditing(true)}
-              >
-                Editar Proyecto
-              </button>
+              <div className="button-container">
+                <button
+                  className="popup-button primary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Editar Proyecto
+                </button>
+                <button
+                  className="popup-button delete"
+                  onClick={() => handleDeleteProject(projectId)}
+                >
+                  Eliminar Proyecto
+                </button>
+              </div>
             )}
           </>
         )}
@@ -784,8 +1008,8 @@ const Dashboard = () => {
       <div className="main-title">
         <h1>
           {project && project.nombreProyecto
-            ? project.nombreProyecto
-            : "Cargando proyecto..."}
+            ? `${project.nombreProyecto} - Dashboard`
+            : "Dashboard"}
         </h1>
       </div>
       <div className="dashboard-content">
@@ -804,15 +1028,17 @@ const Dashboard = () => {
             </button>
             <button
               className={`tab-button ${
-                activeTab === "elements" ? "active" : ""
+                activeTab === "requirements" ? "active" : ""
               }`}
-              onClick={() => setActiveTab("elements")}
+              onClick={() => setActiveTab("requirements")}
             >
               Elementos
             </button>
             <button
-              className="tab-button"
-              onClick={() => navigate(`/project/${projectId}/sprint-backlog`)}
+              className={`tab-button ${
+                activeTab === "sprint-backlog" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("sprint-backlog")}
             >
               Sprint Backlog
             </button>
@@ -821,45 +1047,12 @@ const Dashboard = () => {
           <div className="tab-content">
             {activeTab === "overview" ? (
               renderOverviewTab()
+            ) : activeTab === "requirements" ? (
+              renderRequirementsTab()
             ) : (
-              <RenderRequirementsTab
-                project={project}
-                activeRequirement={activeRequirement}
-                setActiveRequirement={setActiveRequirement}
-                handleItemClick={handleItemClick}
-                showPopup={showPopup}
-                selectedItem={selectedItem}
-                handleClosePopup={handleClosePopup}
-                tasks={tasks}
-                setTasks={setTasks}
-                teamMembers={teamMembers}
-                setTaskToDelete={setTaskToDelete}
-                deleteMode={deleteMode}
-                setDeleteMode={setDeleteMode}
-                handleDragStart={handleDragStart}
-                handleDragOver={handleDragOver}
-                handleDragEnter={handleDragEnter}
-                handleDragLeave={handleDragLeave}
-                handleDrop={handleDrop}
-                handleDragEnd={handleDragEnd}
-                showTaskForm={showTaskForm}
-                setShowTaskForm={setShowTaskForm}
-                taskFormData={taskFormData}
-                setTaskFormData={setTaskFormData}
-                setSuccessMessage={setSuccessMessage}
-                setShowDeleteConfirmation={setShowDeleteConfirmation}
-                role={role}
-                editing={editing}
-                setEditing={setEditing}
-                saveStatus={saveStatus}
-                setSaveStatus={setSaveStatus}
-                requirementEditData={requirementEditData}
-                setEditData={setEditData}
-                handleSaveEdit={handleSaveEdit}
-                handleInputChange={handleInputChange}
-                nextTaskNumber={nextTaskNumber}
-                setNextTaskNumber={setNextTaskNumber}
-              />
+
+              renderSprintBacklogTab()
+
             )}
           </div>
         </div>
@@ -883,15 +1076,6 @@ const Dashboard = () => {
                 </div>
                 {(role === "editor" || role === "admin") && (
                   <div className="member-actions">
-                    {/* <button
-                      className="member-menu-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMemberMenuClick(e, member);
-                      }}
-                    >
-                      ⋮
-                    </button> */}
                     {showMemberMenu === member.email && (
                       <div className="member-menu">
                         {role === "admin" && (
@@ -932,15 +1116,24 @@ const Dashboard = () => {
         <TeamEditPopup
           availableMembers={availableMembers}
           teamMembers={teamMembers}
-          handleSaveTeam={handleSaveTeam} // recibe (addedMembers, removedMembers)
+          handleSaveTeam={handleSaveTeam}
           handleCancelTeam={() => setShowTeamPopup(false)}
         />
       )}
+
+      {selectedSprint && (
+        <SprintDetails 
+          sprint={selectedSprint} 
+          onClose={handleCloseSprintDetails} 
+        />
+      )}
+
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />
 
       {/* Popup de éxito */}
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
+
 
       {/* Confirmación de eliminación de tarea */}
       {showDeleteConfirmation && taskToDelete && (
@@ -983,6 +1176,46 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+      {showProjectDeleteConfirmation && (
+        <div
+          className="popup-overlay"
+          onClick={() => setShowProjectDeleteConfirmation(false)}
+        >
+          <div
+            className="popup-content confirmation-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "400px", textAlign: "center" }}
+          >
+            <h3>Confirmar eliminación</h3>
+            <p>
+              ¿Estás seguro que deseas eliminar el proyecto? Esta acción no se
+              puede deshacer.
+            </p>
+            <div className="confirmation-actions">
+              <button
+                className="cancel-button"
+                onClick={() => setShowProjectDeleteConfirmation(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="delete-button"
+                id="project-delete-button"
+                disabled={countdown > 0}
+                onClick={confirmDeleteProject}
+              >
+                {countdown > 0 ? `Eliminar (${countdown})` : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup de error */}
+      <ErrorPopup message={error} onClose={closeErrorPopup} />
+
+      {/* Popup de éxito */}
+      <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
 };

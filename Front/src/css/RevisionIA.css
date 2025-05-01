@@ -26,7 +26,6 @@ body, .page-container {
   overflow-x: auto;
   box-sizing: border-box;
 }
-
 .white-container {
   width: 100%;
   max-width: 100vw;
@@ -87,7 +86,7 @@ body, .page-container {
   border-radius: 0;
   box-shadow: none;
   margin-top: 10px;
-}
+
 
 /* Pestañas */
 .tabs-container {
@@ -117,12 +116,25 @@ body, .page-container {
 .tab:hover {
   background: #7a5a96;
   color: #fff;
-}
 .tab.active {
   background: #ede7f6;
   color: #5d3a7f;
   font-weight: 700;
   box-shadow: none;
+=======
+  color: #f8f1fc;
+  background-color: #9e72be;
+  border: none;
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background-color: #9e72be;
 }
 
 .tab-title {
@@ -267,6 +279,7 @@ tr:last-child td {
   background: #ff6f6f;
   color: #fff;
 }
+
 .delete-button:hover {
   background: #e05555;
   color: #fff;
@@ -383,7 +396,7 @@ tr:last-child td {
 }
 
 .edit-textarea {
-  width:90%;
+  width: 90%;
   padding: 15px;
   font-size: 16px;
   border: 1px solid #ddd;
@@ -428,6 +441,22 @@ tr:last-child td {
 
 .popup-button.secondary:hover {
   background-color: #f1b7bc;
+}
+
+.popup-button.delete {
+  background-color: #ff7b7b;
+  color: white;
+  border: none;
+}
+
+.popup-button.delete:hover {
+  background-color: #dc3545;
+}
+
+#project-delete-button:disabled {
+  background-color: black;
+  color: white;
+  cursor: not-allowed;
 }
 
 .save-success {
@@ -491,8 +520,12 @@ tr:last-child td {
 
 /* Animaciones */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Responsive */
@@ -503,6 +536,7 @@ tr:last-child td {
   .full-width-header {
     padding: 10px 0 4px 0;
   }
+
   .tab {
     padding: 0.2rem 0.7rem;
     font-size: 0.93rem;
