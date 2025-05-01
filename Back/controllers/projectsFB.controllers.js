@@ -37,7 +37,6 @@ export const getProjects = async (req, res) => {
           id: projectDoc.id,
           ...projectDoc.data(),
         });
-        console.log("Project Data:", projectDoc.data()); // Log para verificar los datos del proyecto
       }
     }
 
@@ -351,11 +350,20 @@ export const updateRatings = async (req, res) => {
 // Funcion para eliminar un proyecto
 export const deleteProject = async (req, res) => {
   try {
-    await db.collection("proyectos").doc(req.params.id).delete();
+    const projectId = req.params.id;
+    // Borramos el proyecto de Firebase
+    await db.collection("proyectos").doc(projectId).delete();
+    // Borramos el proyecto de la base de datos SQL y los usuarios asignados
+    const pool = await sqlConnect();
+    await pool.request().input("ProjectID", sql.VarChar, projectId).query(`
+        DELETE FROM Users_Projects
+        WHERE ProjectID = @ProjectID
+      `);
+
     res.status(200).json({ project_deleted: true });
   } catch (err) {
-    console.error("Firebase Error:", err);
-    res.status(500).send("Server Error");
+    console.error("Error deleting project:", err);
+    res.status(500).json({ error: "Server Error" });
   }
 };
 
