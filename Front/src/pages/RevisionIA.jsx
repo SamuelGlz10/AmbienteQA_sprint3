@@ -30,6 +30,7 @@ function RevisionIA() {
   const [editingProject, setEditingProject] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
   const [showBackConfirm, setShowBackConfirm] = useState(false);
+  const [editTasksData, setEditTasksData] = useState([]); // Estado para editar tareas
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -47,18 +48,20 @@ function RevisionIA() {
             id: item.id,
             titulo: item.titulo,
             data: item.data,
-            tasks: item.tasks || [],
+
+            tasks: Array.isArray(item.tasks) ? item.tasks : [], // <-- preservar o inicializar
+
           }))
         : [];
     };
 
     return {
       nombreProyecto:
-        data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+      data.projectName || data.nombreProyecto || "Proyecto sin nombre",
       descripcion: data.description || data.descripcion || "Sin descripción",
       estatus: data.estatus || "Abierto",
       fechaCreacion:
-        data.fechaCreacion || new Date().toISOString().split("T")[0],
+      data.fechaCreacion || new Date().toISOString().split("T")[0],
       sprintNumber: data.sprintNumber || 0,
       EP: parseSection(data.EP || data.epics),
       RF: parseSection(data.RF || data.functionalRequirements),
@@ -266,9 +269,32 @@ function RevisionIA() {
       title: item.titulo,
       description: item.data,
     });
+    setEditTasksData(item.tasks || []); // Cargar tareas
     setShowPopup(true);
     setEditing(false);
     setSaveStatus({ loading: false, error: null, success: false });
+  };
+
+  const handleTaskChange = (index, field, value) => {
+    setEditTasksData((prev) => {
+      const arr = [...prev];
+      const t = { ...arr[index] };
+      if (field === "id") {
+        t.id = value;
+      } else if (field === "title") {
+        t.title = value;
+        t.titulo = value;
+      } else if (field === "description") {
+        t.descripcion = value;
+        delete t.data;
+        delete t.description;
+      } else if (field === "priority") {
+        t.priority = value;
+        t.prioridad = value;
+      }
+      arr[index] = t;
+      return arr;
+    });
   };
 
   const handleSaveEdit = async () => {
@@ -289,6 +315,7 @@ function RevisionIA() {
             ...updatedTab[itemIndex],
             titulo: editData.title,
             data: editData.description,
+            tasks: editTasksData, // Guardar tareas editadas
           };
         }
 
@@ -306,6 +333,7 @@ function RevisionIA() {
         ...prev,
         titulo: editData.title,
         data: editData.description,
+        tasks: editTasksData, // Actualizar selectedItem
       }));
 
       setSaveStatus({ loading: false, error: null, success: true });
@@ -321,6 +349,15 @@ function RevisionIA() {
         success: false,
       });
     }
+  };
+
+  const handleCancelEdit = () => {
+    setEditing(false);
+    if (selectedItem) {
+      setEditData({ title: selectedItem.titulo, description: selectedItem.data });
+      setEditTasksData(selectedItem.tasks || []);
+    }
+    setSaveStatus({ loading: false, error: null, success: false });
   };
 
   const handleConfirm = async () => {
@@ -697,9 +734,110 @@ function RevisionIA() {
                     />
                   </>
                 ) : (
-                  <div className="description-text">{selectedItem.data}</div>
+                  <div className="description-text">
+                    {selectedItem.data ||
+                      selectedItem.description ||
+                      selectedItem.descripcion}
+                  </div>
                 )}
               </div>
+
+              {activeTab === "HU" && (
+                <div className="tasks-section">
+                  <h4 className="label-title"><b>Tareas relacionadas:</b></h4>
+                  {editTasksData.length > 0 ? (
+                    <div className="tasks-table-container">
+                      <table className="tasks-table">
+                        <thead>
+                          <tr>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Prioridad</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {editTasksData.map((task, i) => (
+                            <tr key={i}>
+                              <td>
+                                {task.id}
+                              </td>
+                              <td>
+                                {editing ? (
+                                  <textarea
+                                    value={task.titulo || task.title}
+                                    onChange={(e) =>
+                                      handleTaskChange(i, "title", e.target.value)
+                                    }
+                                    className="edit-textarea"
+                                    rows={2} // Adjust rows as needed for better visibility
+                                  />
+                                ) : (
+                                  task.titulo || task.title
+                                )}
+                              </td>
+                              <td>
+                                {editing ? (
+                                  <textarea
+                                    value={task.descripcion || task.data}
+                                    onChange={(e) =>
+                                      handleTaskChange(
+                                        i,
+                                        "description",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="edit-textarea"
+                                    rows={2}
+                                  />
+                                ) : (
+                                  task.descripcion || task.data
+                                )}
+                              </td>
+                              <td>
+                                {editing ? (
+                                  <select
+                                    value={task.prioridad || task.priority || ""}
+                                    onChange={(e) =>
+                                      handleTaskChange(
+                                        i,
+                                        "priority",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="assignee-dropdown-button"
+                                  >
+                                    <option value="alta">Alta</option>
+                                    <option value="media">Media</option>
+                                    <option value="baja">Baja</option>
+                                  </select>
+                                ) : (
+                                  <span
+                                    className={`priority-badge ${
+                                      task.prioridad || task.priority
+                                    }`}
+                                  >
+                                    {(task.prioridad || task.priority || "")
+                                      .charAt(0)
+                                      .toUpperCase() +
+                                      (task.prioridad || task.priority || "").slice(
+                                        1
+                                      )}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="no-tasks-message">
+                      No hay tareas registradas para este elemento.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="popup-footer">
@@ -714,7 +852,7 @@ function RevisionIA() {
                 <>
                   <button
                     className="popup-button secondary"
-                    onClick={() => setEditing(false)}
+                    onClick={handleCancelEdit}
                     disabled={saveStatus.loading}
                   >
                     Cancelar

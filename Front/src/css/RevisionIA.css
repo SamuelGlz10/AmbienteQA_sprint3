@@ -177,6 +177,8 @@ tr:last-child td {
   border-bottom: none;
 }
 
+
+
 .home-container {
   padding: 0;
   background-color: white;
@@ -692,3 +694,4 @@ tr:last-child td {
 .back-to-generate-button:hover {
   background: #d1c4e9;
 }
+
