@@ -4,6 +4,7 @@ export const generateEpic = async (req, res) => {
   const { prompt, rules } = req.body;
 
   console.log("Received prompt:", prompt);
+  console.log("Received rules:", rules);
 
   try {
     const response = await fetch(
@@ -17,6 +18,8 @@ export const generateEpic = async (req, res) => {
           prompt,
           data: {
             rules,
+            limit: rules.match(/The number of elements in each list should be (MAX|MIN) (\d+)/)?.[2] || 1,
+            option: rules.match(/The number of elements in each list should be (MAX|MIN) (\d+)/)?.[1] || "MAX"
           },
         }),
       }
