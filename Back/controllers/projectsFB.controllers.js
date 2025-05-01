@@ -108,9 +108,10 @@ export const linkUserToProject = async (req, res) => {
         VALUES (@UserID, @ProjectID)
       `);
 
-    res
-      .status(200)
-      .json({ success: true, message: "¡Usuario vinculado al proyecto exitosamente!" });
+    res.status(200).json({
+      success: true,
+      message: "¡Usuario vinculado al proyecto exitosamente!",
+    });
   } catch (err) {
     console.error("Error linking user to project:", err);
     res.status(500).json({ error: "Failed to link user to project" });
@@ -144,9 +145,11 @@ export const unlinkUserFromProject = async (req, res) => {
     });
   } catch (err) {
     console.error("Failed to unlink user from proyect", err);
-    res.status(500).json({ error: "Error al desvincular el usuario del proyecto." });
+    res
+      .status(500)
+      .json({ error: "Error al desvincular el usuario del proyecto." });
   }
-}
+};
 
 export const getProjectTeamMembers = async (req, res) => {
   try {
@@ -161,8 +164,7 @@ export const getProjectTeamMembers = async (req, res) => {
     // Query to fetch users linked to the project
     const result = await pool
       .request()
-      .input("ProjectID", sql.VarChar, projectId)
-      .query(`
+      .input("ProjectID", sql.VarChar, projectId).query(`
         SELECT u.UserID, u.username, u.lastname, u.email, up.title
         FROM Users_Projects up
         INNER JOIN dbo.Users u ON up.UserID = u.UserID
@@ -185,7 +187,7 @@ export const putProject = async (req, res) => {
     const projectId = req.params.id;
     const projectRef = db.collection("proyectos").doc(projectId);
     const projectDoc = await projectRef.get();
-    
+
     if (!projectDoc.exists) {
       return res.status(404).json({ error: "Project not found" });
     }
@@ -194,46 +196,61 @@ export const putProject = async (req, res) => {
     const updates = req.body;
 
     // Obtener nombre y apellido del usuario
-    let userName = '';
-    let userLastname = '';
+    let userName = "";
+    let userLastname = "";
     try {
       const pool = await sqlConnect();
       const userResult = await pool
         .request()
         .input("userId", sql.Int, req.user.userId)
-        .query("SELECT username, lastname FROM dbo.Users WHERE UserID = @userId");
+        .query(
+          "SELECT username, lastname FROM dbo.Users WHERE UserID = @userId"
+        );
       if (userResult.recordset.length > 0) {
-        userName = userResult.recordset[0].username || '';
-        userLastname = userResult.recordset[0].lastname || '';
+        userName = userResult.recordset[0].username || "";
+        userLastname = userResult.recordset[0].lastname || "";
       }
     } catch (e) {
       console.error("Error fetching user for modification history", e);
     }
-    
+
     // Crear el registro de modificación
     const modification = {
       timestamp: new Date().toISOString(),
       userId: req.user.userId,
       userName,
       userLastname,
-      changes: {}
+      changes: {},
     };
 
     // Comparar y registrar cambios
-    Object.keys(updates).forEach(key => {
-      if (key !== 'modificationHistory' && JSON.stringify(currentProject[key]) !== JSON.stringify(updates[key])) {
+    Object.keys(updates).forEach((key) => {
+      if (
+        key !== "modificationHistory" &&
+        JSON.stringify(currentProject[key]) !== JSON.stringify(updates[key])
+      ) {
         // Si es un arreglo de elementos (EP, RF, RNF, HU), comparar internamente
-        if (["EP", "RF", "RNF", "HU"].includes(key) && Array.isArray(updates[key]) && Array.isArray(currentProject[key])) {
+        if (
+          ["EP", "RF", "RNF", "HU"].includes(key) &&
+          Array.isArray(updates[key]) &&
+          Array.isArray(currentProject[key])
+        ) {
           const oldArr = currentProject[key];
           const newArr = updates[key];
           const elementChanges = [];
-          newArr.forEach(newItem => {
-            const oldItem = oldArr.find(item => item.id === newItem.id);
+          newArr.forEach((newItem) => {
+            const oldItem = oldArr.find((item) => item.id === newItem.id);
             if (oldItem) {
               const changes = {};
-              Object.keys(newItem).forEach(field => {
-                if (JSON.stringify(newItem[field]) !== JSON.stringify(oldItem[field])) {
-                  changes[field] = { oldValue: oldItem[field], newValue: newItem[field] };
+              Object.keys(newItem).forEach((field) => {
+                if (
+                  JSON.stringify(newItem[field]) !==
+                  JSON.stringify(oldItem[field])
+                ) {
+                  changes[field] = {
+                    oldValue: oldItem[field],
+                    newValue: newItem[field],
+                  };
                 }
               });
               if (Object.keys(changes).length > 0) {
@@ -241,13 +258,19 @@ export const putProject = async (req, res) => {
               }
             } else {
               // Elemento nuevo
-              elementChanges.push({ id: newItem.id, changes: { nuevo: newItem } });
+              elementChanges.push({
+                id: newItem.id,
+                changes: { nuevo: newItem },
+              });
             }
           });
           // Detectar eliminaciones
-          oldArr.forEach(oldItem => {
-            if (!newArr.find(item => item.id === oldItem.id)) {
-              elementChanges.push({ id: oldItem.id, changes: { eliminado: oldItem } });
+          oldArr.forEach((oldItem) => {
+            if (!newArr.find((item) => item.id === oldItem.id)) {
+              elementChanges.push({
+                id: oldItem.id,
+                changes: { eliminado: oldItem },
+              });
             }
           });
           if (elementChanges.length > 0) {
@@ -257,7 +280,7 @@ export const putProject = async (req, res) => {
           // Cambio simple
           modification.changes[key] = {
             oldValue: currentProject[key],
-            newValue: updates[key]
+            newValue: updates[key],
           };
         }
       }
@@ -270,11 +293,11 @@ export const putProject = async (req, res) => {
     }
 
     await projectRef.update(updates);
-    
+
     res.status(200).json({
       project_updated: true,
       id: projectId,
-      modification: modification
+      modification: modification,
     });
   } catch (err) {
     console.error("Firebase Error:", err);
@@ -388,10 +411,8 @@ export const updateTasks = async (req, res) => {
     if (!Array.isArray(section)) {
       return res.status(400).json({ error: "Invalid requirementType" });
     }
-    const updatedSection = section.map(item =>
-      item.id === elementId
-        ? { ...item, tasks }
-        : item
+    const updatedSection = section.map((item) =>
+      item.id === elementId ? { ...item, tasks } : item
     );
     await projectRef.update({ [requirementType]: updatedSection });
     res.status(200).json({ success: true });
@@ -421,5 +442,49 @@ export const getTasks = async (req, res) => {
   } catch (err) {
     console.error("Error fetching tasks:", err);
     res.status(500).json({ error: "Server Error" });
+  }
+};
+
+export const getAllTasks = async (req, res) => {
+  try {
+    const { id: projectId } = req.params;
+
+    // Obtener el proyecto por ID
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const projectData = projectDoc.data();
+
+    const sections = ["EP", "RF", "RNF", "HU"];
+    const allTasks = [];
+
+    // Iterar sobre cada sección y extraer las tareas
+    sections.forEach((section) => {
+      // Verificar si la sección existe y es un array
+      if (Array.isArray(projectData[section])) {
+        // Iterar sobre cada elemento de la sección
+        projectData[section].forEach((element) => {
+          // Verificar si el elemento tiene tareas
+          if (Array.isArray(element.tasks)) {
+            // Agregar las tareas al array de todas las tareas
+            allTasks.push(
+              ...element.tasks.map((task) => ({
+                ...task,
+                elementId: element.id, // ID del elemento al que pertenece la tarea
+                requirementType: section, // Tipo de requerimiento (EP, RF, RNF, HU)
+              }))
+            );
+          }
+        });
+      }
+    });
+    return res.status(200).json({ tasks: allTasks });
+  } catch (error) {
+    console.error("Error fetching all tasks:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
