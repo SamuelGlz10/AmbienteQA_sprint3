@@ -18,12 +18,11 @@ body, .page-container {
   margin: 0 auto;
   left: 0;
   position: relative;
-  padding: 18px 0 8px 0;
+  padding: 18px 20px 8px 20px;
   background: #f8f9fa;
   border-radius: 10px 10px 0 0;
   box-shadow: none;
   text-align: center;
-  overflow-x: auto;
   box-sizing: border-box;
 }
 .white-container {
@@ -36,6 +35,7 @@ body, .page-container {
   border-radius: 10px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.04);
   margin-top: 18px;
+  overflow-x: hidden;
 }
 
 .logo-container {
@@ -86,7 +86,7 @@ body, .page-container {
   border-radius: 0;
   box-shadow: none;
   margin-top: 10px;
-
+}
 
 /* Pestañas */
 .tabs-container {
@@ -102,39 +102,29 @@ body, .page-container {
   font-size: 1rem;
   min-height: 44px;
   padding: 0.6rem 1.6rem;
-  border-radius: 10px 10px 0 0;
+  border-radius: 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
   border: none;
-  background: #ede7f6;
+  background: #f8f9fa;
   color: #5d3a7f;
   transition: background 0.15s, color 0.15s;
-  box-shadow: none;
   position: relative;
   min-width: 60px;
 }
+
 .tab:hover {
-  background: #7a5a96;
-  color: #fff;
-.tab.active {
   background: #ede7f6;
-  color: #5d3a7f;
-  font-weight: 700;
-  box-shadow: none;
-=======
-  color: #f8f1fc;
-  background-color: #9e72be;
-  border: none;
+}
+
+.tab.active {
+  background: #9e72be;
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .tab.active::after {
-  content: "";
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background-color: #9e72be;
+  display: none;
 }
 
 .tab-title {
@@ -143,7 +133,8 @@ body, .page-container {
 
 .tab-full-text {
   font-size: 0.85rem;
-  color: #b481d8;
+  color: inherit;
+  opacity: 0.8;
 }
 
 /* Tabla */
@@ -153,29 +144,34 @@ body, .page-container {
   overflow-x: auto;
   box-sizing: border-box;
   margin-bottom: 1rem;
+  padding: 0 20px;
 }
+
 table {
   width: 100%;
   min-width: 480px;
   max-width: 100%;
   box-sizing: border-box;
   table-layout: auto;
+  background: white;
 }
+
 th {
-  background: #f3f3f3;
+  background: #f8f9fa;
   color: #5d3a7f;
   font-size: 0.98rem;
   font-weight: 600;
-  padding: 10px 8px;
-  border-radius: 7px 7px 0 0;
-  border-bottom: 1px solid #ececec;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
 }
+
 td {
-  background: #fff;
-  padding: 9px 8px;
-  border-bottom: 1px solid #f3f3f3;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e0e0e0;
   font-size: 0.97rem;
+  color: #333;
 }
+
 tr:last-child td {
   border-bottom: none;
 }
@@ -207,14 +203,15 @@ tr:last-child td {
 }
 
 .clickable-title {
-  color: #7a5a96;
+  color: #5d3a7f;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.15s;
 }
+
 .clickable-title:hover {
-  color: #5d3a7f;
-  text-decoration: underline;
+  color: #7a5a96;
+  text-decoration: none;
 }
 
 .no-items {
@@ -256,25 +253,26 @@ tr:last-child td {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  min-width: 140px;
+  height: 40px;
   width: 180px;
-  font-size: 1rem;
-  font-weight: 600;
-  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 6px;
   border: none;
-  box-shadow: none;
   padding: 0 24px;
-  margin: 0 8px;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s;
+  cursor: pointer;
 }
+
 .confirm-button {
-  background: #7a5a96;
+  background: #9e72be;
   color: #fff;
 }
+
 .confirm-button:hover {
-  background: #5d3a7f;
+  background: #7a5a96;
 }
+
 .delete-button {
   background: #ff6f6f;
   color: #fff;
@@ -282,13 +280,14 @@ tr:last-child td {
 
 .delete-button:hover {
   background: #e05555;
-  color: #fff;
 }
+
 .delete-button.cancel {
   background: #f8d7da;
   color: #dc3545;
   border: 1px solid #dc3545;
 }
+
 .delete-button.cancel:hover {
   background: #f1b7bc;
 }
@@ -530,15 +529,17 @@ tr:last-child td {
 
 /* Responsive */
 @media (max-width: 900px) {
-  .white-container, .popup-content {
-    padding: 8px 2px;
+  .white-container {
+    padding: 8px 1vw;
   }
   .full-width-header {
-    padding: 10px 0 4px 0;
+    padding: 10px 10px 4px 10px;
   }
-
+  .table-container {
+    padding: 0 10px;
+  }
   .tab {
-    padding: 0.2rem 0.7rem;
+    padding: 0.4rem 1rem;
     font-size: 0.93rem;
   }
   th, td {
@@ -551,20 +552,25 @@ tr:last-child td {
 }
 @media (max-width: 600px) {
   .white-container {
-    padding: 2px 0;
-    max-width: 100vw;
+    padding: 4px 0.5vw;
   }
   .full-width-header {
-    padding: 6px 0 2px 0;
+    padding: 6px 5px 2px 5px;
+  }
+  .table-container {
+    padding: 0 5px;
   }
   .tab {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     min-height: 38px;
-    padding: 0.4rem 0.9rem;
+    padding: 0.4rem 0.8rem;
   }
-  th, td {
-    padding: 5px 2px;
-    font-size: 0.91rem;
+  .tabs-container {
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+  table {
+    min-width: 300px;
   }
   .popup-content {
     padding: 6px 2px;
@@ -578,15 +584,14 @@ tr:last-child td {
     height: 26px;
     font-size: 0.9rem;
   }
-  .table-container {
-    padding: 0 0.5vw;
+  .back-to-generate-button:hover {
+    background: #d1c4e9;
+    color: #5d3a7f;
+    transform: scale(1.05);
   }
-  table {
-    min-width: 340px;
-    font-size: 0.89rem;
-  }
-  .tabs-container {
-    gap: 0.5rem;
+  .back-to-generate-button:active {
+    transform: scale(0.95);
+    background-color: #7a5a96;
   }
 }
 
@@ -663,31 +668,24 @@ tr:last-child td {
 
 /* Back to Generate button */
 .back-to-generate-button {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: #ede7f6;
-  color: #7a5a96;
-  font-size: 1.1rem;
+  color: #5d3a7f;
+  font-size: 1rem;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background 0.15s, transform 0.15s;
-  box-shadow: none;
+  transition: background 0.15s;
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 20px;
+  top: 20px;
   z-index: 10;
 }
+
 .back-to-generate-button:hover {
   background: #d1c4e9;
-  color: #5d3a7f;
-  transform: scale(1.05);
-}
-
-.back-to-generate-button:active {
-  transform: scale(0.95);
-  background-color: #7a5a96;
 }

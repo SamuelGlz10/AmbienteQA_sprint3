@@ -306,6 +306,46 @@
   background-color: #c82333;
 }
 
+.buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.generate-button, .delete-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 180px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  padding: 0 24px;
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.generate-button {
+  background: #9e72be;
+  color: #fff;
+}
+
+.generate-button:hover {
+  background: #7a5a96;
+}
+
+.delete-button {
+  background: #ff6f6f;
+  color: #fff;
+}
+
+.delete-button:hover {
+  background: #e05555;
+}
+
 @media (max-width: 1200px) {
   .content-container {
     flex-direction: column;
