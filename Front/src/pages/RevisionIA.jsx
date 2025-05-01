@@ -43,26 +43,27 @@ function RevisionIA() {
       if (!section) return [];
 
       return Array.isArray(section)
-      ? section.map((item) => ({
-          id: item.id,
-          titulo: item.titulo,
-          data: item.data,
-          tasks: Array.isArray(item.tasks) ? item.tasks : [],  // <-- preservar o inicializar
-        }))
-      : [];
+        ? section.map((item) => ({
+            id: item.id,
+            titulo: item.titulo,
+            data: item.data,
+            tasks: item.tasks || [],
+          }))
+        : [];
     };
 
     return {
       nombreProyecto:
-         data.projectName || data.nombreProyecto || "Proyecto sin nombre",
-       descripcion: data.description || data.descripcion || "Sin descripción",
-       estatus: data.estatus || "Abierto",
-       fechaCreacion:
-         data.fechaCreacion || new Date().toISOString().split("T")[0],
+        data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+      descripcion: data.description || data.descripcion || "Sin descripción",
+      estatus: data.estatus || "Abierto",
+      fechaCreacion:
+        data.fechaCreacion || new Date().toISOString().split("T")[0],
+      sprintNumber: data.sprintNumber || 0,
       EP: parseSection(data.EP || data.epics),
-       RF: parseSection(data.RF || data.functionalRequirements),
-       RNF: parseSection(data.RNF || data.nonFunctionalRequirements),
-       HU: parseSection(data.HU || data.userStories),
+      RF: parseSection(data.RF || data.functionalRequirements),
+      RNF: parseSection(data.RNF || data.nonFunctionalRequirements),
+      HU: parseSection(data.HU || data.userStories),
     };
   };
 
@@ -134,6 +135,7 @@ function RevisionIA() {
 
           const parsedData = JSON.parse(jsonData);
           const transformedData = transformGeneratedData(parsedData);
+          console.log("Datos transformados:", transformedData);
 
           setProjectData(transformedData);
 
@@ -153,6 +155,7 @@ function RevisionIA() {
             "Datos de ejemplo cargados por error en los datos originales",
           estatus: "Abierto",
           fechaCreacion: new Date().toISOString().split("T")[0],
+          sprints: 3,
           EP: [
             {
               id: "EP01",
@@ -179,6 +182,17 @@ function RevisionIA() {
               id: "HU01",
               titulo: "Ejemplo HU",
               data: "Como usuario quiero...",
+              tasks: [
+                {
+                  id: "task1",
+                  titulo: "Tarea 1",
+                  descripcion: "Descripción",
+                  asignado: NULL,
+                  estado: "En progreso",
+                  prioridad: "Alta",
+                  sprint: 1,
+                },
+              ],
             },
           ],
         };
@@ -728,12 +742,18 @@ function RevisionIA() {
 
       {showBackConfirm && (
         <div className="popup-overlay" onClick={cancelBack}>
-          <div className="popup-content" onClick={e => e.stopPropagation()}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <h3 className="popup-title">¿Estás seguro que quieres volver?</h3>
-            <p>Si vuelves, <b>se borrarán los datos actuales del proyecto.</b></p>
+            <p>
+              Si vuelves, <b>se borrarán los datos actuales del proyecto.</b>
+            </p>
             <div className="popup-footer">
-              <button className="popup-button secondary" onClick={cancelBack}>Cancelar</button>
-              <button className="popup-button primary" onClick={confirmBack}>Sí, volver</button>
+              <button className="popup-button secondary" onClick={cancelBack}>
+                Cancelar
+              </button>
+              <button className="popup-button primary" onClick={confirmBack}>
+                Sí, volver
+              </button>
             </div>
           </div>
         </div>
