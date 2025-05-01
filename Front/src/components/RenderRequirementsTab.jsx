@@ -1,49 +1,109 @@
 import React, { useState } from "react";
+import ErrorPopup from "../components/ErrorPopup";
 
 import "../css/Dashboard.css";
 
-const RenderRequirementsTab = ({
-  project,
-  activeRequirement,
-  setActiveRequirement,
-  handleItemClick,
-  showPopup,
-  selectedItem,
-  handleClosePopup,
-  tasks,
-  setTasks,
-  teamMembers,
-  deleteMode,
-  setDeleteMode,
-  setTaskToDelete,
-  handleDragStart,
-  handleDragOver,
-  handleDragEnter,
-  handleDragLeave,
-  handleDrop,
-  handleDragEnd,
-  showTaskForm,
-  setShowTaskForm,
-  taskFormData,
-  setTaskFormData,
-  setSuccessMessage,
-  setShowDeleteConfirmation,
-  role,
-  editing,
-  setEditing,
-  saveStatus,
-  setSaveStatus,
-  editData,
-  setEditData,
-  handleInputChange,
-  handleSaveEdit,
-}) => {
+const RenderRequirementsTab = ({ ...props }) => {
+  const {
+    project,
+    activeRequirement,
+    setActiveRequirement,
+    handleItemClick,
+    showPopup,
+    selectedItem,
+    handleClosePopup,
+    tasks,
+    setTasks,
+    teamMembers,
+    deleteMode,
+    setDeleteMode,
+    setTaskToDelete,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnter,
+    handleDragLeave,
+    handleDrop,
+    handleDragEnd,
+    showTaskForm,
+    setShowTaskForm,
+    taskFormData,
+    setTaskFormData,
+    setSuccessMessage,
+    setShowDeleteConfirmation,
+    role,
+    editing,
+    setEditing,
+    saveStatus,
+    requirementEditData,
+    handleInputChange,
+    handleSaveEdit,
+    nextTaskNumber,
+    setNextTaskNumber,
+  } = props;
+
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
     { id: "RNF", title: "RNF", fullText: "Requerimientos no funcionales" },
     { id: "HU", title: "HU", fullText: "Historias de usuario" },
   ];
+
+  // Add error state for task‐form validation
+  const [error, setError] = useState("");
+
+  // Nuevo helper para ID global dinámico
+  const getNextTaskId = () => {
+    // 1) Aplanar todas las tareas cargadas en memoria
+    const allTasks = Object.values(tasks).flat();
+    // 2) Extraer números de ID (quitando 'T')
+    const nums = allTasks
+      .map((t) => parseInt(t.id.replace(/^T/, ""), 10))
+      .filter((n) => !isNaN(n));
+    // 3) Añadir el contador global
+    nums.push(nextTaskNumber);
+    // 4) Obtener máximo y sumar 1
+    const max = nums.length ? Math.max(...nums) : 0;
+    // 5) Formatear con padding
+    return `T${(max + 1).toString().padStart(2, "0")}`;
+  };
+
+  // handle assignment change
+  const handleAssignee = async (taskId, assigneeEmail) => {
+    const member = teamMembers.find((m) => m.email === assigneeEmail);
+    const updated = (tasks[selectedItem.id] || []).map((t) =>
+      t.id === taskId ? { ...t, assignee: assigneeEmail } : t
+    );
+    setTasks((prev) => ({ ...prev, [selectedItem.id]: updated }));
+
+    // build and send payload
+    const payload = {
+      requirementType: activeRequirement,
+      elementId: selectedItem.id,
+      tasks: updated.map((t) => ({
+        id: t.id.startsWith("T") ? t.id.slice(1) : t.id,
+        titulo: t.title,
+        descripcion: t.description,
+        prioridad: t.priority,
+        asignados: teamMembers.find((m) => m.email === t.assignee)?.id || null,
+      })),
+    };
+    try {
+      await fetch(
+        `http://localhost:5001/projectsFB/${project.id}/tasks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+    } catch (err) {
+      console.error(err);
+      setError("Error al asignar la tarea.");
+    }
+  };
 
   return (
     <div className="requirements-section">
@@ -123,7 +183,7 @@ const RenderRequirementsTab = ({
             </div>
             <div className="popup-body">
               <div className="description-section">
-                <h4>{!editing ? ("Descripción:"):("")}</h4>
+                <h4>{!editing ? "Descripción:" : ""}</h4>
                 {editing ? (
                   <>
                     <label htmlFor="title-input" className="label-title">
@@ -133,7 +193,7 @@ const RenderRequirementsTab = ({
                       id="title-input"
                       type="text"
                       name="title"
-                      value={editData.title}
+                      value={requirementEditData.title}
                       onChange={handleInputChange}
                       className="edit-input"
                     />
@@ -143,7 +203,7 @@ const RenderRequirementsTab = ({
                     <textarea
                       id="description-input"
                       name="description"
-                      value={editData.description}
+                      value={requirementEditData.description}
                       onChange={handleInputChange}
                       className="edit-textarea"
                       rows="8"
@@ -163,10 +223,11 @@ const RenderRequirementsTab = ({
                       <thead>
                         <tr>
                           <th></th> {/* Columna para el ícono de arrastre */}
+                          <th>ID</th>
                           <th>Título</th>
                           <th>Descripción</th>
                           <th>Prioridad</th>
-                          <th>Asignado a</th>
+                          <th>Asignado</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -278,6 +339,7 @@ const RenderRequirementsTab = ({
                                   </div>
                                 )}
                               </td>
+                              <td>{task.id}</td>
                               <td>{task.title}</td>
                               <td>{task.description}</td>
                               <td>
@@ -289,9 +351,22 @@ const RenderRequirementsTab = ({
                                 </span>
                               </td>
                               <td>
-                                {assignedMember
-                                  ? assignedMember.name
-                                  : "No asignado"}
+                                {assignedMember ? (
+                                  assignedMember.name
+                                ) : (
+                                  <select
+                                    className="assignee-dropdown-button"
+                                    value={task.assignee}
+                                    onChange={(e) => handleAssignee(task.id, e.target.value)}
+                                  >
+                                    <option value="">Asignar</option>
+                                    {teamMembers.map((member) => (
+                                      <option key={member.email} value={member.email}>
+                                        {member.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
                               </td>
                             </tr>
                           );
@@ -375,7 +450,7 @@ const RenderRequirementsTab = ({
                             setDeleteMode(!deleteMode);
                           }}
                         >
-                          {deleteMode ? "Cancelar" : "Eliminar Tarea"}
+                          {deleteMode ? "Cancelar" : "Eliminar Tareas"}
                         </button>
                       )}
                   </div>
@@ -393,6 +468,7 @@ const RenderRequirementsTab = ({
                   }}
                 >
                   <h4>Crear Nueva Tarea</h4>
+
                   <div className="form-group">
                     <label>Título:</label>
                     <input
@@ -459,7 +535,7 @@ const RenderRequirementsTab = ({
                   </div>
                   <div className="task-form-actions">
                     <button
-                      className="cancel-button"
+                      class="popup-button secondary"
                       onClick={() => {
                         setShowTaskForm(false);
                         setTaskFormData({
@@ -468,6 +544,7 @@ const RenderRequirementsTab = ({
                           priority: "",
                           assignee: "",
                         });
+                        setError("");
                       }}
                     >
                       Cancelar
@@ -499,11 +576,11 @@ const RenderRequirementsTab = ({
                               `Debe completar el campo de ${missingFields[0]}.`
                             );
                           } else {
-                            const lastField = missingFields.pop();
+                            const last = missingFields.pop();
                             setError(
                               `Debe completar los campos de ${missingFields.join(
                                 ", "
-                              )} y ${lastField}.`
+                              )} y ${last}.`
                             );
                           }
                           return;
@@ -511,26 +588,55 @@ const RenderRequirementsTab = ({
 
                         // Si pasa la validación, crear objeto de tarea
                         const newTask = {
-                          id: Date.now(),
+                          id: getNextTaskId(),
                           title: taskFormData.title,
                           description: taskFormData.description,
                           priority: taskFormData.priority,
                           assignee: taskFormData.assignee,
                         };
 
-                        // Guardar la tarea en el estado
-                        setTasks((prevTasks) => ({
-                          ...prevTasks,
-                          [selectedItem.id]: [
-                            ...(prevTasks[selectedItem.id] || []),
-                            newTask,
-                          ],
+                        // update local state
+                        const currentTasks = tasks[selectedItem.id] || [];
+                        const updatedTasks = [...currentTasks, newTask];
+                        setTasks((prev) => ({
+                          ...prev,
+                          [selectedItem.id]: updatedTasks,
                         }));
 
-                        // Mostrar mensaje de éxito
-                        setSuccessMessage("Tarea creada exitosamente.");
+                        // build payload for Firestore
+                        const payload = {
+                          requirementType: activeRequirement,
+                          elementId: selectedItem.id,
+                          tasks: updatedTasks.map((task) => ({
+                            id: task.id.startsWith("T") ? task.id.slice(1) : task.id,
+                            titulo: task.title,
+                            descripcion: task.description,
+                            prioridad: task.priority,
+                            asignados:
+                              teamMembers.find((m) => m.email === task.assignee)
+                                ?.id || null,
+                            estado: "En progreso",
+                          })),
+                        };
 
-                        // Reset form
+                        // persist to Firebase via new endpoint
+                        fetch(
+                          `http://localhost:5001/projectsFB/${project.id}/tasks`,
+                          {
+                            method: "POST",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${localStorage.getItem(
+                                "token"
+                              )}`,
+                            },
+                            body: JSON.stringify(payload),
+                          }
+                        ).catch(console.error);
+
+                        setNextTaskNumber((n) => n + 1); // Incrementar global
+                        setSuccessMessage("Tarea creada exitosamente.");
+                        setError("");
                         setShowTaskForm(false);
                         setTaskFormData({
                           title: "",
@@ -549,6 +655,9 @@ const RenderRequirementsTab = ({
           </div>
         </div>
       )}
+
+      {/* show validation errors in popup */}
+      {error && <ErrorPopup message={error} onClose={() => setError("")} />}
     </div>
   );
 };

@@ -82,16 +82,15 @@ body,
 }
 
 .pagination-info {
-  color: #333;
-  font-size: 14px;
-  font-weight: 500;
+  color: #666;
+  font-size: 16px;
 }
 
 .sort-control {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 8px;
+  font-size: 16px;
   color: #333;
 }
 
@@ -177,19 +176,26 @@ body,
 }
 
 .project-info h3 {
-  margin: 0 0 5px 0;
-  font-size: 16px;
+  margin: 0 0 6px 0;
+  font-size: 18px;
   font-weight: 600;
   color: #333;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .project-info p {
   margin: 0;
   color: #666;
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 15px;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

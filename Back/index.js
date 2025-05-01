@@ -9,7 +9,10 @@ import userRoutes from "./routes/user.routes.js";
 
 const app = express();
 
-const allowedOrigins = [`http://localhost:5173`, "https://softedge.vercel.app"];
+const allowedOrigins = [
+  `http://localhost:5173`,
+  "https://soft-edge-two.vercel.app",
+];
 
 // Middleware
 app.use(

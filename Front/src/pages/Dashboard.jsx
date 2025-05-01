@@ -32,13 +32,19 @@ const Dashboard = () => {
     error: null,
     success: false,
   });
+
   const [teamMembers, setTeamMembers] = useState([]);
   const [availableMembers, setAvailableMembers] = useState([]);
+
   const [editData, setEditData] = useState({
     title: "",
     description: "",
     nombreProyecto: "",
     descripcion: "",
+  });
+  const [requirementEditData, setRequirementEditData] = useState({
+    title: "",
+    description: "",
   });
 
   const [showMemberMenu, setShowMemberMenu] = useState(null);
@@ -61,6 +67,9 @@ const Dashboard = () => {
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
 
+  // Estado para manejar el número máximo de tareas
+  const [nextTaskNumber, setNextTaskNumber] = useState(0);
+
   // UseEffect para cargar el proyecto y los miembros del equipo
   useEffect(() => {
     const fetchData = async () => {
@@ -68,6 +77,7 @@ const Dashboard = () => {
       await fetchProject();
       const projectMembers = await fetchTeamMembers(); // Llamar primero para filtrar usuarios
       await fetchAvailableUsers(projectMembers);
+      await fetchAllTasks(); // Llamar para obtener todas las tareas
       setLoading(false);
     };
 
@@ -165,7 +175,7 @@ const Dashboard = () => {
           id: member.UserID,
           name: member.username,
           lastname: member.lastname,
-          role: member.role,
+          title: member.title,
           email: member.email,
           initials: `${member.username[0] || ""}${
             member.lastname?.[0] || ""
@@ -180,6 +190,29 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error fetching team members:", error);
       setError("Error al cargar los miembros del equipo.");
+    }
+  };
+
+  const fetchAllTasks = async () => {
+    try {
+      const resp = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/tasks?all=true`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!resp.ok) throw new Error();
+      const { tasks: dbTasks } = await resp.json();
+      const nums = dbTasks
+        .map((t) => parseInt(t.id.toString().replace(/^T/, ""), 10))
+        .filter((n) => !isNaN(n));
+      setNextTaskNumber(nums.length ? Math.max(...nums) : 0);
+    } catch {
+      console.error("Error fetching all tasks");
     }
   };
 
@@ -224,11 +257,22 @@ const Dashboard = () => {
         ...project,
         [activeRequirement]: project[activeRequirement].map((item) =>
           item.id === selectedItem.id
-            ? { ...item, titulo: editData.title, data: editData.description }
+            ? {
+                ...item,
+                titulo: requirementEditData.title,
+                data: requirementEditData.description,
+              }
             : item
         ),
       };
       setProject(updatedProject);
+
+      // Actualizar el estado local de selectedItem
+      setSelectedItem((prev) => ({
+        ...prev,
+        titulo: requirementEditData.title,
+        data: requirementEditData.description,
+      }));
 
       const response = await fetch(
         `http://localhost:5001/projectsFB/${projectId}`,
@@ -274,10 +318,19 @@ const Dashboard = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Checar si estamos editando un requerimiento o el proyecto
+    if (editing) {
+      setRequirementEditData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    } else {
+      setEditData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const closeErrorPopup = () => {
@@ -288,13 +341,47 @@ const Dashboard = () => {
     setSuccessMessage(null); // Cierra el popup de éxito
   };
 
-  const handleItemClick = (item) => {
+  const handleItemClick = async (item) => {
     setSelectedItem(item);
-    setEditData({
+    setRequirementEditData({
       title: item.titulo,
       description: item.data,
-    })
+    });
     setShowPopup(true);
+
+    // Fetch tasks for this element
+    try {
+      const resp = await fetch(
+        `http://localhost:5001/projectsFB/${projectId}/tasks?requirementType=${activeRequirement}&elementId=${item.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (!resp.ok) throw new Error("Failed to fetch tasks");
+      const { tasks: dbTasks } = await resp.json();
+      // Mapear al formato de front con prefijo 'T' y padding de 2 dígitos
+      const mapped = dbTasks.map((t) => {
+        const rawId = t.id.toString();
+        const num = rawId.startsWith("T")
+          ? rawId.slice(1)
+          : rawId;
+        const padded = num.padStart(2, "0");
+        return {
+          id: `T${padded}`,
+          title: t.titulo,
+          description: t.descripcion,
+          priority: t.prioridad,
+          assignee: teamMembers.find((m) => m.id === t.asignados)?.email || "",
+        };
+      });
+      setTasks((prev) => ({ ...prev, [item.id]: mapped }));
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
+    }
   };
 
   const handleStatCardClick = (requirementType) => {
@@ -316,38 +403,58 @@ const Dashboard = () => {
     });
   };
 
-  const handleSaveTeam = async () => {
+  const handleSaveTeam = async (addedMembers, removedMembers) => {
     try {
-      // Hacer la llamada a la API para vincular los usuarios seleccionados al proyecto
-      for (const member of selectedMembers) {
-        console.log("Linking user to project:", member);
-        await fetch("http://localhost:5001/projectsFB/linkUserToProject", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            userId: member.id,
-            projectId,
-          }),
-        });
-      }
-
-      // Actualizar el estado de los miembros del equipo y los miembros disponibles
-      setTeamMembers((prev) => [...prev, ...selectedMembers]);
-      setAvailableMembers((prev) =>
-        prev.filter(
-          (member) =>
-            !selectedMembers.some((selected) => selected.email === member.email)
+      // 1) Vincular los nuevos
+      await Promise.all(
+        addedMembers.map((m) =>
+          fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ userId: m.id, projectId }),
+          })
         )
       );
+
+      // 2) Desvincular los eliminados
+      await Promise.all(
+        removedMembers.map((m) =>
+          fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ userId: m.id, projectId }),
+          })
+        )
+      );
+
+      // 3) Actualizar estado local
+      setTeamMembers((prev) => [
+        // quitamos los eliminados
+        ...prev.filter(
+          (tm) => !removedMembers.find((rm) => rm.email === tm.email)
+        ),
+        // añadimos los nuevos
+        ...addedMembers,
+      ]);
+
+      setAvailableMembers((prev) => [
+        // recuperamos a los eliminados
+        ...removedMembers,
+        // quitamos a los recién añadidos
+        ...prev.filter((am) => !addedMembers.find((m) => m.email === am.email)),
+      ]);
+
       setShowTeamPopup(false);
-      setSelectedMembers([]);
-      setSuccessMessage("Miembros agregados exitosamente.");
-    } catch (error) {
-      console.error("Error linking users to project:", error);
-      setError("Error al agregar miembros al proyecto.");
+      setSuccessMessage("Equipo actualizado correctamente.");
+    } catch (err) {
+      console.error(err);
+      setError("No se pudieron guardar los cambios de equipo.");
     }
   };
 
@@ -463,57 +570,93 @@ const Dashboard = () => {
     e.currentTarget.classList.remove("drag-over");
   };
 
-  const handleDrop = (e, targetIndex, elementId) => {
+  const handleDrop = async (e, targetIndex, elementId) => {
     e.preventDefault();
     e.currentTarget.classList.remove("drag-over");
+    document
+      .querySelectorAll(".dragging")
+      .forEach((el) => el.classList.remove("dragging"));
 
-    // Eliminar la clase dragging de todos los elementos
-    document.querySelectorAll(".dragging").forEach((element) => {
-      element.classList.remove("dragging");
-    });
-
-    const draggedTaskId = e.dataTransfer.getData("taskId");
     const sourceIndex = parseInt(e.dataTransfer.getData("index"));
-
-    // Si se suelta en el mismo lugar, no hacemos nada
     if (sourceIndex === targetIndex) return;
 
-    // Crear una copia del array de tareas actual para el elemento seleccionado
     const tasksCopy = { ...tasks };
     const currentTasks = [...(tasksCopy[elementId] || [])];
-
-    // Obtener la tarea arrastrada
     const draggedTask = currentTasks[sourceIndex];
-
-    // Eliminar la tarea de su posición original
     currentTasks.splice(sourceIndex, 1);
-
-    // Insertar la tarea en la nueva posición
     currentTasks.splice(targetIndex, 0, draggedTask);
-
-    // Actualizar el estado con las tareas reordenadas
     tasksCopy[elementId] = currentTasks;
     setTasks(tasksCopy);
+
+    // Persistir el nuevo orden en la base de datos
+    try {
+      const payload = {
+        requirementType: activeRequirement,
+        elementId,
+        tasks: tasksCopy[elementId].map((task) => ({
+          id: task.id.toString(),
+          titulo: task.title,
+          descripcion: task.description,
+          prioridad: task.priority,
+          asignados:
+            teamMembers.find((m) => m.email === task.assignee)?.id || null,
+        })),
+      };
+      await fetch(`http://localhost:5001/projectsFB/${projectId}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Error al actualizar el orden de tareas:", err);
+      setError("Error al actualizar el orden de las tareas en el servidor.");
+    }
   };
 
   // Modificar la función handleDeleteTask para desactivar el modo eliminación
-  const handleDeleteTask = (taskId, elementId) => {
-    // Actualizar el estado eliminando la tarea del arreglo
-    setTasks((prevTasks) => {
-      const updatedTasks = { ...prevTasks };
-      updatedTasks[elementId] = updatedTasks[elementId].filter(
-        (task) => task.id !== taskId
-      );
-      return updatedTasks;
-    });
-
-    // Mostrar mensaje de éxito
+  const handleDeleteTask = async (taskId, elementId) => {
+    // 1. Actualizar estado local
+    const updatedTasksArr = (tasks[elementId] || []).filter(
+      (task) => task.id !== taskId
+    );
+    setTasks((prev) => ({
+      ...prev,
+      [elementId]: updatedTasksArr,
+    }));
     setSuccessMessage("Tarea eliminada exitosamente.");
-
-    // Cerrar el diálogo de confirmación y desactivar modo eliminación
     setShowDeleteConfirmation(false);
     setTaskToDelete(null);
-    setDeleteMode(false); // Desactivar modo eliminación al terminar
+    setDeleteMode(false);
+
+    // 2. Persistir eliminación en la base de datos
+    try {
+      const payload = {
+        requirementType: activeRequirement,
+        elementId,
+        tasks: updatedTasksArr.map((task) => ({
+          id: task.id.toString(),
+          titulo: task.title,
+          descripcion: task.description,
+          prioridad: task.priority,
+          asignados:
+            teamMembers.find((m) => m.email === task.assignee)?.id || null,
+        })),
+      };
+      await fetch(`http://localhost:5001/projectsFB/${projectId}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    } catch (err) {
+      console.error("Error al eliminar tarea en servidor:", err);
+      setError("Error al eliminar la tarea en el servidor.");
+    }
   };
 
   if (loading) {
@@ -585,10 +728,10 @@ const Dashboard = () => {
         ) : (
           <>
             <h1>{project.nombreProyecto}</h1>
-            <p>{project.descripcion}</p>
+            <p style={{ marginBottom: "10px", fontSize: '16px'}}>{project.descripcion}</p>
             {(role === "admin" || role === "editor") && (
               <button
-                className="edit-button"
+                className="popup-button primary"
                 onClick={() => setIsEditing(true)}
               >
                 Editar Proyecto
@@ -652,13 +795,17 @@ const Dashboard = () => {
           </button>
           <div className="dashboard-tabs">
             <button
-              className={`tab-button ${activeTab === "overview" ? "active" : ""}`}
+              className={`tab-button ${
+                activeTab === "overview" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("overview")}
             >
               Vista General
             </button>
             <button
-              className={`tab-button ${activeTab === "elements" ? "active" : ""}`}
+              className={`tab-button ${
+                activeTab === "elements" ? "active" : ""
+              }`}
               onClick={() => setActiveTab("elements")}
             >
               Elementos
@@ -706,10 +853,12 @@ const Dashboard = () => {
                 setEditing={setEditing}
                 saveStatus={saveStatus}
                 setSaveStatus={setSaveStatus}
-                editData={editData}
+                requirementEditData={requirementEditData}
                 setEditData={setEditData}
                 handleSaveEdit={handleSaveEdit}
                 handleInputChange={handleInputChange}
+                nextTaskNumber={nextTaskNumber}
+                setNextTaskNumber={setNextTaskNumber}
               />
             )}
           </div>
@@ -722,13 +871,19 @@ const Dashboard = () => {
               <div key={index} className="team-member-card">
                 <div className="member-profile">{member.initials}</div>
                 <div className="member-info">
-                  <div className="member-name">{member.name}</div>
-                  <div className="member-role">{member.role}</div>
-                  <div className="member-email">{member.email}</div>
+                  <div className="member-name" style={{ fontSize: "16px" }}>
+                    {member.name}
+                  </div>
+                  <div className="member-role" style={{ fontSize: "16px" }}>
+                    {member.title}
+                  </div>
+                  <div className="member-email" style={{ fontSize: "16px" }}>
+                    {member.email}
+                  </div>
                 </div>
                 {(role === "editor" || role === "admin") && (
                   <div className="member-actions">
-                    <button
+                    {/* <button
                       className="member-menu-button"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -736,7 +891,7 @@ const Dashboard = () => {
                       }}
                     >
                       ⋮
-                    </button>
+                    </button> */}
                     {showMemberMenu === member.email && (
                       <div className="member-menu">
                         {role === "admin" && (
@@ -777,12 +932,8 @@ const Dashboard = () => {
         <TeamEditPopup
           availableMembers={availableMembers}
           teamMembers={teamMembers}
-          selectedMembers={selectedMembers}
-          setSelectedMembers={setSelectedMembers}
-          handleMemberSelect={handleMemberSelect}
-          handleSaveTeam={handleSaveTeam}
-          handleCancelTeam={handleCancelTeam}
-          setShowTeamPopup={setShowTeamPopup}
+          handleSaveTeam={handleSaveTeam} // recibe (addedMembers, removedMembers)
+          handleCancelTeam={() => setShowTeamPopup(false)}
         />
       )}
       {/* Popup de error */}
