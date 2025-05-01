@@ -27,7 +27,7 @@ const TopAppBar = () => {
   const handleClick = (tab) => {
     switch (tab.name) {
       case "Perfil":
-        navigate("/profile");
+        navigate("/perfil");
         break;
       case "Configuraciones":
         navigate("/settings");
