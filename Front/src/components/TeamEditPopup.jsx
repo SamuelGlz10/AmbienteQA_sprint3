@@ -8,6 +8,7 @@ const TeamEditPopup = ({
   teamMembers,
   handleSaveTeam,
   handleCancelTeam,
+  setError,
 }) => {
   // Aseguramos que los miembros tengan identificadores únicos
   const formatMembers = (members) => {
@@ -30,6 +31,8 @@ const TeamEditPopup = ({
     return formatMembers(teamMembers || []);
   });
 
+  const currentUserId = Number(localStorage.getItem("userId"));
+
   // Estado para seguir los miembros que se han movido (añadidos y eliminados)
   const [addedMembers, setAddedMembers] = useState([]);
   const [removedMembers, setRemovedMembers] = useState([]);
@@ -49,6 +52,12 @@ const TeamEditPopup = ({
   // Función para manejar el drag and drop entre las listas
   const handleDrop = (source, destination, item) => {
     console.log(`Moviendo de ${source} a ${destination}:`, item);
+    console.log(item.id, currentUserId);
+
+    if (item.id === currentUserId) {
+      setError("No puedes eliminarte a ti mismo del equipo.");
+      return;
+    }
 
     if (source === "available" && destination === "team") {
       // Buscamos el miembro en la lista de disponibles
@@ -59,7 +68,9 @@ const TeamEditPopup = ({
         setAvailableList((prev) => prev.filter((m) => m.email !== item.email));
 
         // Registramos el miembro como añadido
-        setAddedMembers((prev) => [...prev, memberToAdd]);
+        if (!teamMembers.some((m) => m.email === memberToAdd.email)) {
+          setAddedMembers((prev) => [...prev, memberToAdd]);
+        }
 
         // Si estaba en la lista de eliminados, lo quitamos
         setRemovedMembers((prev) =>
@@ -194,6 +205,7 @@ const TeamEditPopup = ({
                       ? "new-member"
                       : ""
                   }`}
+                  draggable={item.id !== currentUserId}
                 >
                   <div className="member-profile">{item.initials}</div>
                   <div className="member-info">
