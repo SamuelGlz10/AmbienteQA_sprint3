@@ -676,7 +676,44 @@ function RevisionIA() {
                     />
                   </>
                 ) : (
-                  <div className="description-text">{selectedItem.data}</div>
+                  <div className="description-text">
+                    {selectedItem.data || selectedItem.description || selectedItem.descripcion}
+                  </div>
+                )}
+              </div>
+              <div className="tasks-table-container">
+                {selectedItem.tasks && selectedItem.tasks.length > 0 ? (
+                  <table className="tasks-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Descripción</th>
+                        <th>Prioridad</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedItem.tasks.map((task) => (
+                        <tr key={task.id}>
+                          <td>{task.id}</td>
+                          <td>{task.titulo || task.title}</td>
+                          <td>{task.data || task.description || task.descripcion}</td>
+                          <td>
+                            <span
+                              className={`priority-badge ${task.prioridad || task.priority}`}
+                            >
+                              {(task.prioridad || task.priority)
+                                .charAt(0)
+                                .toUpperCase() +
+                                (task.prioridad || task.priority).slice(1)}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p>No hay tareas registradas para este elemento.</p>
                 )}
               </div>
             </div>
