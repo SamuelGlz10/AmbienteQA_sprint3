@@ -5,10 +5,13 @@ import "../css/index.css";
 const TopAppBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const popupRef = useRef(null);
-
   const navigate = useNavigate();
 
-  const tabs = ["Perfil", "Configuraciones", "Cerrar Sesión"];
+  const tabs = [
+    { name: "Perfil", icon: "person" },
+    { name: "Configuraciones", icon: "settings" },
+    { name: "Cerrar Sesión", icon: "logout" }
+  ];
 
   const profilePopup = () => {
     setIsOpen(!isOpen);
@@ -18,27 +21,26 @@ const TopAppBar = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
     localStorage.removeItem("role");
-    navigate("/login"); // Redirige al login después de cerrar sesión
+    navigate("/login");
   };
 
   const handleClick = (tab) => {
-    switch (tab) {
+    switch (tab.name) {
       case "Perfil":
-        navigate("/profile"); // Navigate to the profile page
+        navigate("/profile");
         break;
       case "Configuraciones":
-        navigate("/settings"); // Navigate to the settings page
+        navigate("/settings");
         break;
       case "Cerrar Sesión":
-        handleLogout(); // Call the logout function
+        handleLogout();
         break;
       default:
-        console.log(`No action defined for ${tab}`);
+        console.log(`No action defined for ${tab.name}`);
     }
   };
 
   useEffect(() => {
-    // Cerrar el popup al hacer clic fuera de él
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         setIsOpen(false);
@@ -52,27 +54,44 @@ const TopAppBar = () => {
   }, []);
 
   return (
-    <div className="logo-container">
-      <img
-        src="/softedge_logo2.png"
-        alt="SoftEdge Logo"
-        className="softedge-logo"
-      />
-      <div className="profile-container" onClick={profilePopup}></div>
-      {isOpen && (
-        <div className="profile-popup" ref={popupRef}>
-          {tabs.map((tab, index) => (
-            <div
-              key={index}
-              className="profile-popup-tab"
-              onClick={() => handleClick(tab)}
-            >
-              <p>{tab}</p>
-            </div>
-          ))}
+    <nav className="navbar">
+      <div className="navbar-content">
+        <div className="navbar-left">
+          <img
+            src="/softedge_logo2.png"
+            alt="SoftEdge Logo"
+            className="navbar-logo"
+            onClick={() => navigate("/home")}
+          />
         </div>
-      )}
-    </div>
+        
+        <div className="navbar-right">
+          <button className="home-button" onClick={() => navigate("/home")}>
+            <span className="material-icons">home</span>
+          </button>
+          <div className="profile-container" onClick={profilePopup}>
+            <div className="profile-avatar">
+              <span className="material-icons profile-icon">person</span>
+            </div>
+          </div>
+          
+          {isOpen && (
+            <div className="profile-popup" ref={popupRef}>
+              {tabs.map((tab, index) => (
+                <div
+                  key={index}
+                  className="profile-popup-tab"
+                  onClick={() => handleClick(tab)}
+                >
+                  <span className="material-icons tab-icon">{tab.icon}</span>
+                  <span className="tab-text">{tab.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </nav>
   );
 };
 
