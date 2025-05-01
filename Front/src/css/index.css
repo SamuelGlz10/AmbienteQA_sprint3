@@ -13,6 +13,24 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+#root::-webkit-scrollbar {
+  width: 6px; /* Set the width of the scrollbar */
+}
+
+#root::-webkit-scrollbar-track {
+  background: #f0e6ff; /* Background color of the scrollbar track */
+  border-radius: 3px;
+}
+
+#root::-webkit-scrollbar-thumb {
+  background-color: #9e72be; /* Color of the scrollbar thumb */
+  border-radius: 3px;
+}
+
+#root::-webkit-scrollbar-thumb:hover {
+  background-color: #8d60b4; /* Hover color for the scrollbar thumb */
+}
+
 a {
   font-weight: 500;
   color: #646cff;
