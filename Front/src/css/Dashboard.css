@@ -487,8 +487,7 @@ td {
 
 .popup-content {
   background-color: white;
-  width: 90%;
-  max-width: 800px;
+  min-width: 800px;
   border-radius: 12px;
   padding: 2rem;
   position: relative;
