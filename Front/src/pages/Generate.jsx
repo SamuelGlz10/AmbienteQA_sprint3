@@ -225,18 +225,18 @@ function Generate() {
                 }}
               />
 
-              <div className="button-container">
+              <div className="buttons-container">
                 <button
-                  className="main-button"
-                  type="submit"
+                  className="generate-button"
+                  onClick={onSubmit}
                   disabled={loading}
                 >
                   {loading ? "Generando..." : "Generar"}
                 </button>
                 <button
-                  className="main-button delete"
-                  type="button"
+                  className="delete-button"
                   onClick={handleErase}
+                  disabled={loading}
                 >
                   Eliminar
                 </button>
