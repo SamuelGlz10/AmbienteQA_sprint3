@@ -29,6 +29,7 @@ function RevisionIA() {
   });
   const [editingProject, setEditingProject] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
 
   const tabs = [
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -431,12 +432,18 @@ function RevisionIA() {
   };
 
   const handleBackToGenerate = () => {
-    // Limpiar sessionStorage
+    setShowBackConfirm(true);
+  };
+
+  const confirmBack = () => {
     sessionStorage.removeItem("projectData");
     sessionStorage.removeItem("projectRatings");
-
-    // Navegar a la página de Generate
+    setShowBackConfirm(false);
     navigate("/generate");
+  };
+
+  const cancelBack = () => {
+    setShowBackConfirm(false);
   };
 
   if (loading) {
@@ -751,6 +758,19 @@ function RevisionIA() {
                   Editar
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBackConfirm && (
+        <div className="popup-overlay" onClick={cancelBack}>
+          <div className="popup-content" onClick={e => e.stopPropagation()}>
+            <h3 className="popup-title">¿Estás seguro que quieres volver?</h3>
+            <p>Si vuelves, <b>se borrarán los datos actuales del proyecto.</b></p>
+            <div className="popup-footer">
+              <button className="popup-button secondary" onClick={cancelBack}>Cancelar</button>
+              <button className="popup-button primary" onClick={confirmBack}>Sí, volver</button>
             </div>
           </div>
         </div>
