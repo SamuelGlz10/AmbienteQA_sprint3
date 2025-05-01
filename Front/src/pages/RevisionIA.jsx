@@ -48,18 +48,21 @@ function RevisionIA() {
             id: item.id,
             titulo: item.titulo,
             data: item.data,
+
             tasks: Array.isArray(item.tasks) ? item.tasks : [], // <-- preservar o inicializar
+
           }))
         : [];
     };
 
     return {
       nombreProyecto:
-        data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+      data.projectName || data.nombreProyecto || "Proyecto sin nombre",
       descripcion: data.description || data.descripcion || "Sin descripción",
       estatus: data.estatus || "Abierto",
       fechaCreacion:
-        data.fechaCreacion || new Date().toISOString().split("T")[0],
+      data.fechaCreacion || new Date().toISOString().split("T")[0],
+      sprintNumber: data.sprintNumber || 0,
       EP: parseSection(data.EP || data.epics),
       RF: parseSection(data.RF || data.functionalRequirements),
       RNF: parseSection(data.RNF || data.nonFunctionalRequirements),
@@ -135,6 +138,7 @@ function RevisionIA() {
 
           const parsedData = JSON.parse(jsonData);
           const transformedData = transformGeneratedData(parsedData);
+          console.log("Datos transformados:", transformedData);
 
           setProjectData(transformedData);
 
@@ -154,6 +158,7 @@ function RevisionIA() {
             "Datos de ejemplo cargados por error en los datos originales",
           estatus: "Abierto",
           fechaCreacion: new Date().toISOString().split("T")[0],
+          sprints: 3,
           EP: [
             {
               id: "EP01",
@@ -180,6 +185,17 @@ function RevisionIA() {
               id: "HU01",
               titulo: "Ejemplo HU",
               data: "Como usuario quiero...",
+              tasks: [
+                {
+                  id: "task1",
+                  titulo: "Tarea 1",
+                  descripcion: "Descripción",
+                  asignado: NULL,
+                  estado: "En progreso",
+                  prioridad: "Alta",
+                  sprint: 1,
+                },
+              ],
             },
           ],
         };

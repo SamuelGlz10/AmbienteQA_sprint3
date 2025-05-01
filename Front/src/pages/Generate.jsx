@@ -40,8 +40,8 @@ function Generate() {
  {
    "nombreProyecto": "Nombre del proyecto",
    "descripcion": "Breve descripción del proyecto",
+   "sprintNumber": ${sprints},
    "estatus": "Abierto" or "Cerrado",
-   "sprints": '${sprints}',
    "EP": [
      {
        "id": "EP01",
@@ -82,14 +82,14 @@ function Generate() {
           }
           // ...más criterios de aceptación...
         ],
-        "tasks":
+        'tasks':
         [
          {
            "id": "T04",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
+           "asignado": "NULL",
            "estado": "En progreso",
            "sprint": "1",
          }
@@ -100,12 +100,13 @@ function Generate() {
      ]
  }
  The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values.
- Tasks are not limited by the limit, but should be generated based on the user stories.
+ Only User Stories may have tasks. Tasks are not limited by the limit, but should be generated based on the user stories.
+ You MUST include the 'sprintNumber' for the generated project, and it should always be equal to ${sprints}.
+ The 'sprintNumber' should be at the same level as 'nombreProyecto', 'descripcion', and 'estatus', and is not the same as the 'sprint' field in tasks.
  You are allowed to provide more than the requested number of elements if enough data is available.
  The tasks should be generated based on the user stories, and each task should have a unique ID.
  The task ID should be in the format "T01", "T02", etc. Task IDs should be unique within the project.
  The 'epica' field in each user story should reference the ID of the corresponding epic.
- The sprint number under status should always be exactly ${sprints}.
  The sprint number inside each task should be a number between 1 and ${sprints}, and be sure to distribute all tasks across the sprints.
   Please do not include \`\`\`json or \`\`\` markers in the response.
   Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
@@ -121,7 +122,7 @@ function Generate() {
       const response = await fetch("http://localhost:5001/generateEpic", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, rules: promptRules }),
+        body: JSON.stringify({ prompt, rules: promptRules, sprints, limit }),
       });
       const { data } = await response.json();
 
@@ -159,15 +160,15 @@ function Generate() {
     }
   };
 
-   const handleErase = () => {
+  const handleErase = () => {
     setShowConfirmationPopup(true); // Show confirmation popup
   };
-  
+
   const confirmErase = () => {
     setPrompt("");
     setShowConfirmationPopup(false); // Close the popup
   };
-  
+
   const cancelErase = () => {
     setShowConfirmationPopup(false); // Close the popup without clearing
   };
@@ -277,9 +278,14 @@ function Generate() {
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value === "") {
-                      setSprints(1);
+                      setSprints("");
                     } else {
                       setSprints(Math.max(1, Math.min(10, Number(value))));
+                    }
+                  }}
+                  onBlur={() => {
+                    if (sprints === "") {
+                      setSprints(1);
                     }
                   }}
                   min={1}

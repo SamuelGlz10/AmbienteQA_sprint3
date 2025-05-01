@@ -1,10 +1,12 @@
 import fetch from "node-fetch";
 
 export const generateEpic = async (req, res) => {
-  const { prompt, rules } = req.body;
+  const { prompt, rules, sprints, limit } = req.body;
 
   console.log("Received prompt:", prompt);
   console.log("Received rules:", rules);
+  console.log("Received sprints:", sprints);
+  console.log("Received limit:", limit);
 
   try {
     const response = await fetch(
@@ -18,8 +20,12 @@ export const generateEpic = async (req, res) => {
           prompt,
           data: {
             rules,
-            limit: rules.match(/The number of elements in each list should be (MAX|MIN) (\d+)/)?.[2] || 1,
-            option: rules.match(/The number of elements in each list should be (MAX|MIN) (\d+)/)?.[1] || "MAX"
+            limit,
+            option:
+              rules.match(
+                /The number of elements in each list should be (MAX|MIN) (\d+)/
+              )?.[1] || "MAX",
+            sprints,
           },
         }),
       }
