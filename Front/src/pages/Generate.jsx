@@ -9,13 +9,16 @@ import "../css/Generate.css";
 function Generate() {
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
-  const [selectedDetail, setSelectedDetail] = useState("Bajo");
-  const [selectedOption, setSelectedOption] = useState("MAX"); // Estado para controlar la opción seleccionada
+  const [selectedOption, setSelectedOption] = useState("MIN"); // Estado para controlar la opción seleccionada
   const [limit, setLimit] = useState(1); // Estado para controlar el límite
   const [history, setHistory] = useState([]); // Estado para controlar el historial
   const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
+  const [sprints, setSprints] = useState(1); // Estado para controlar el número de sprints
+  const [copyButtonText, setCopyButtonText] = useState("Copiar");
+  const [pasteButtonText, setPasteButtonText] = useState("Pegar");
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
 
   const userID = localStorage.getItem("UserID");
 
@@ -35,70 +38,60 @@ function Generate() {
 
   const promptRules = `Please create a JSON object with the following structure:
  {
-   "nombreProyecto": "The name of the project",
-   "descripcion": "Brief description",
+   "nombreProyecto": "Nombre del proyecto",
+   "descripcion": "Breve descripción del proyecto",
    "estatus": "Abierto" or "Cerrado",
+   "sprints": '${sprints}',
    "EP": [
      {
        "id": "EP01",
        "titulo": "Título de la épica",
        "data": "Descripción de la épica",
-       "tasks": [
-         {
-           "id": "T01",
-           "titulo": "Título de tarea",
-           "descripcion": "Descripción de la tarea",
-           "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
-           "estado": "En progreso"
-         }
-         // ...más tareas...
        ]
      }
      // ...más épicas...
    ],
    'RF': [
-       { 'id': 'RF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento',
-        "tasks": [
-         {
-           "id": "T02",
-           "titulo": "Título de tarea",
-           "descripcion": "Descripción de la tarea",
-           "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
-           "estado": "En progreso"
-         }
-         // ...más tareas...
+       {
+        'id': 'RF01',
+        'titulo': 'Titulo de Requerimiento',
+        'data': 'Descricpcion de requerimiento',
        ]
      }
      // ...más requerimientos funcionales... }
      ],
      'RNF': [
-       { 'id': 'RNF01', 'titulo': 'Titulo de Requerimiento', 'data': 'Descricpcion de requerimiento',
-        "tasks": [
-         {
-           "id": "T03",
-           "titulo": "Título de tarea",
-           "descripcion": "Descripción de la tarea",
-           "prioridad": "alta/ media/ baja",
-           "asignados": "NULL",
-           "estado": "En progreso"
-         }
-         // ...más tareas...
+       {
+        'id': 'RNF01',
+        'titulo': 'Titulo de Requerimiento',
+        'data': 'Descricpcion de requerimiento',
        ]
      }
      // ...más requerimientos no funcionales... } }
      ],
      'HU': [
-       { 'id': 'HU01', 'titulo': 'Titulo de historia de usuario', 'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])',
-        "tasks": [
+       {
+        'id': 'HU01',
+        'titulo': 'Titulo de historia de usuario',
+        'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])',
+        'epica': 'EP01',
+        'criteriosAceptacion':
+        [
+          {
+            'criterio': 'Criterio de aceptacion 1',
+          }
+          // ...más criterios de aceptación...
+        ],
+        "tasks":
+        [
          {
            "id": "T04",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
            "asignados": "NULL",
-           "estado": "En progreso"
+           "estado": "En progreso",
+           "sprint": "1",
          }
          // ...más tareas...
        ]
@@ -106,10 +99,16 @@ function Generate() {
      // ...más historias de usuario... } }
      ]
  }
- The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values. 
- Task IDs should be unique within the project, no repeating even if they are in different lists.
-   Please do not include \`\`\`json or \`\`\` markers in the response.
-   Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
+ The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values.
+ Tasks are not limited by the limit, but should be generated based on the user stories.
+ You are allowed to provide more than the requested number of elements if enough data is available.
+ The tasks should be generated based on the user stories, and each task should have a unique ID.
+ The task ID should be in the format "T01", "T02", etc. Task IDs should be unique within the project.
+ The 'epica' field in each user story should reference the ID of the corresponding epic.
+ The sprint number under status should always be exactly ${sprints}.
+ The sprint number inside each task should be a number between 1 and ${sprints}, and be sure to distribute all tasks across the sprints.
+  Please do not include \`\`\`json or \`\`\` markers in the response.
+  Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -145,22 +144,32 @@ function Generate() {
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(prompt);
-    setSuccessMessage("Texto copiado al portapapeles");
+    setCopyButtonText("¡Texto copiado!");
+    setTimeout(() => setCopyButtonText("Copiar"), 3000); // Reset after 3 seconds
   };
 
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
       setPrompt(prompt + text);
-      setSuccessMessage("Texto pegado exitosamente");
+      setPasteButtonText("¡Texto pegado!");
+      setTimeout(() => setPasteButtonText("Pegar"), 3000); // Reset after 3 seconds
     } catch (err) {
       setError("No se pudo acceder al portapapeles");
     }
   };
 
-  const handleErase = () => {
+   const handleErase = () => {
+    setShowConfirmationPopup(true); // Show confirmation popup
+  };
+  
+  const confirmErase = () => {
     setPrompt("");
-    setSuccessMessage("Campo de texto limpiado");
+    setShowConfirmationPopup(false); // Close the popup
+  };
+  
+  const cancelErase = () => {
+    setShowConfirmationPopup(false); // Close the popup without clearing
   };
 
   const addToHistory = (prompt) => {
@@ -187,13 +196,25 @@ function Generate() {
               <div className="prompt-header">
                 <h2 className="prompt-title">Descripción del Proyecto</h2>
                 <div className="prompt-actions">
-                  <button type="button" className="action-button" onClick={handleCopy}>
-                    Copiar
+                  <button
+                    type="button"
+                    className="action-button"
+                    onClick={handleCopy}
+                  >
+                    {copyButtonText}
                   </button>
-                  <button type="button" className="action-button" onClick={handlePaste}>
-                    Pegar
+                  <button
+                    type="button"
+                    className="action-button"
+                    onClick={handlePaste}
+                  >
+                    {pasteButtonText}
                   </button>
-                  <button type="button" className="action-button" onClick={handleErase}>
+                  <button
+                    type="button"
+                    className="action-button"
+                    onClick={handleErase}
+                  >
                     Limpiar
                   </button>
                 </div>
@@ -247,22 +268,27 @@ function Generate() {
           <div className="right-container">
             <div className="prompt-options">
               <h3 className="options-title">Configuración de Generación</h3>
-              
               <div className="option-group">
-                <span className="option-label">Nivel de Detalle</span>
-                <select
-                  className="option-select"
-                  value={selectedDetail}
-                  onChange={(e) => setSelectedDetail(e.target.value)}
-                >
-                  <option value="Bajo">Bajo</option>
-                  <option value="Medio">Medio</option>
-                  <option value="Alto">Alto</option>
-                </select>
+                <span className="option-label">Número de Sprints</span>
+                <input
+                  type="number"
+                  className="option-input"
+                  value={sprints || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "") {
+                      setSprints(1);
+                    } else {
+                      setSprints(Math.max(1, Math.min(10, Number(value))));
+                    }
+                  }}
+                  min={1}
+                  max={10}
+                />
               </div>
 
               <div className="option-group">
-                <span className="option-label">Tipo de Generación</span>
+                <span className="option-label">Tipo de límite</span>
                 <select
                   className="option-select"
                   value={selectedOption}
@@ -275,15 +301,21 @@ function Generate() {
 
               <div className="option-group">
                 <span className="option-label">Límite de Elementos</span>
-                <select
-                  className="option-select"
-                  value={limit}
-                  onChange={(e) => setLimit(Number(e.target.value))}
-                >
-                  {[1, 2, 3, 4, 5].map((num) => (
-                    <option key={num} value={num}>{num}</option>
-                  ))}
-                </select>
+                <input
+                  type="number"
+                  className="option-input"
+                  value={limit || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "") {
+                      setLimit(0);
+                    } else {
+                      setLimit(Math.max(1, Math.min(10, Number(value))));
+                    }
+                  }}
+                  min={1}
+                  max={10}
+                />
               </div>
             </div>
 
@@ -306,7 +338,19 @@ function Generate() {
       </form>
 
       <ErrorPopup message={error} onClose={() => setError(null)} />
-      <SuccessPopup message={successMessage} onClose={() => setSuccessMessage(null)} />
+      <SuccessPopup
+        message={successMessage}
+        onClose={() => setSuccessMessage(null)}
+      />
+      {showConfirmationPopup && (
+        <div className="confirmation-popup">
+          <div className="confirmation-content">
+            <h3>¿Estás seguro de que deseas limpiar el campo?</h3>
+            <button onClick={confirmErase}>Sí</button>
+            <button onClick={cancelErase}>No</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
