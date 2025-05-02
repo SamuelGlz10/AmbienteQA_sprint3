@@ -25,6 +25,7 @@ const Dashboard = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [showTeamPopup, setShowTeamPopup] = useState(false);
+  const [allTasks, setAllTasks] = useState([]); // Todas las tareas del proyecto
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
   const [selectedMembers, setSelectedMembers] = useState([]);
@@ -322,6 +323,8 @@ const Dashboard = () => {
       const { tasks: dbTasks } = await resp.json();
 
       // Guardar las tareas en el estado local
+      setAllTasks(dbTasks);
+      console.log("Tareas obtenidas:", dbTasks);
 
       // Calcular el siguiente número de tarea
       const nextTaskNumber = dbTasks.length;
@@ -819,8 +822,6 @@ const Dashboard = () => {
     </div>
   );
 
-  
-
   const renderRequirementsTab = () => (
     <RenderRequirementsTab
       project={project}
@@ -1140,8 +1141,10 @@ const Dashboard = () => {
       {selectedSprint && (
         <SprintDetails
           sprint={selectedSprint}
-          tasks={tasks.filter((task) => task.sprint === selectedSprint.number)} // Filtrar tareas por sprint
-          setTasks={setTasks}
+          sprintTasks={allTasks.filter((task) => {
+            return parseInt(task.sprint, 10) === selectedSprint.number;
+          })}
+          setAllTasks={setAllTasks}
           onClose={handleCloseSprintDetails}
         />
       )}

@@ -1,49 +1,65 @@
-import React, { useState } from 'react';
-import '../css/SprintDetails.css';
+import React, { useState } from "react";
+import "../css/SprintDetails.css";
 
-const SprintDetails = ({ sprint, tasks, onClose }) => {
+const SprintDetails = ({ sprint, sprintTasks, onClose, setAllTasks }) => {
   const [draggedTask, setDraggedTask] = useState(null);
 
   // Manejar el inicio del arrastre de una tarea
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
-    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.effectAllowed = "move";
   };
 
   // Permitir que una tarea se arrastre sobre una columna
   const handleDragOver = (e) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = "move";
   };
 
   // Manejar el soltar de una tarea en una nueva columna
-  const handleDrop = (e, newStatus) => {
-    e.preventDefault();
-    if (draggedTask) {
-      // Actualizar el estado de la tarea arrastrada
-      const updatedTask = { ...draggedTask, status: newStatus };
+const handleDrop = (e, newStatus) => {
+  e.preventDefault();
+  if (draggedTask) {
+    // Actualizar el estado de la tarea arrastrada
+    const updatedTask = { ...draggedTask, estado: newStatus };
 
-      // Aquí podrías sincronizar los cambios con Firebase o el estado global
-      console.log('Tarea actualizada:', updatedTask);
+    // Actualizar la tarea en el estado local del sprint
+    const updatedSprintTasks = sprintTasks.map((task) =>
+      task.id === draggedTask.id ? updatedTask : task
+    );
 
-      setDraggedTask(null);
-    }
-  };
+    // Actualizar el estado de las tareas en el componente padre
+    setAllTasks((prevTasks) =>
+      prevTasks.map((task) => (task.id === draggedTask.id ? updatedTask : task))
+    );
+
+    // Actualizar la tarea en el back (por hacer)
+
+    // Actualizar el estado local del sprint
+    setDraggedTask(null);
+  }
+};
 
   // Filtrar las tareas por estado
   const getTasksByStatus = (status) => {
-    return tasks.filter((task) => task.status === status);
+    return sprintTasks.filter((task) => task.estado === status);
   };
-
   // Calcular el progreso del sprint
   const calculateProgress = () => {
-    const completedTasks = tasks.filter((task) => task.status === 'Completado').length;
-    return tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+    const completedTasks = sprintTasks.filter(
+      (task) => task.estado === "Completado"
+    ).length;
+    return sprintTasks.length > 0
+      ? (completedTasks / sprintTasks.length) * 100
+      : 0;
   };
 
   return (
     <div className="sprint-details-overlay" onClick={onClose}>
-      <div className="sprint-details-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="sprint-details-content"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button className="close-button" onClick={onClose}>
           ×
         </button>
@@ -66,7 +82,9 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
-          <span className="progress-text">{Math.round(calculateProgress())}% Completado</span>
+          <span className="progress-text">
+            {Math.round(calculateProgress())}% Completado
+          </span>
         </div>
 
         {/* Tablero Kanban */}
@@ -75,18 +93,20 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
           <div
             className="kanban-column"
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'Pendiente')}
+            onDrop={(e) => handleDrop(e, "Pendiente")}
           >
             <h3>Pendiente</h3>
-            {getTasksByStatus('Pendiente').map((task) => (
+            {getTasksByStatus("Pendiente").map((task) => (
               <div
                 key={task.id}
                 className="task-card"
                 draggable
                 onDragStart={(e) => handleDragStart(e, task)}
               >
-                <h4>{task.title}</h4>
-                <p>{task.description}</p>
+                <h4>
+                  {task.id}: {task.titulo}
+                </h4>
+                <p>{task.descripcion}</p>
               </div>
             ))}
           </div>
@@ -95,18 +115,20 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
           <div
             className="kanban-column"
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'En progreso')}
+            onDrop={(e) => handleDrop(e, "En progreso")}
           >
             <h3>En Progreso</h3>
-            {getTasksByStatus('En progreso').map((task) => (
+            {getTasksByStatus("En progreso").map((task) => (
               <div
                 key={task.id}
                 className="task-card"
                 draggable
                 onDragStart={(e) => handleDragStart(e, task)}
               >
-                <h4>{task.title}</h4>
-                <p>{task.description}</p>
+                <h4>
+                  {task.id}: {task.titulo}
+                </h4>
+                <p>{task.descripcion}</p>
               </div>
             ))}
           </div>
@@ -115,18 +137,20 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
           <div
             className="kanban-column"
             onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, 'Completado')}
+            onDrop={(e) => handleDrop(e, "Completado")}
           >
             <h3>Completado</h3>
-            {getTasksByStatus('Completado').map((task) => (
+            {getTasksByStatus("Completado").map((task) => (
               <div
                 key={task.id}
                 className="task-card"
                 draggable
                 onDragStart={(e) => handleDragStart(e, task)}
               >
-                <h4>{task.title}</h4>
-                <p>{task.description}</p>
+                <h4>
+                  {task.id}: {task.titulo}
+                </h4>
+                <p>{task.descripcion}</p>
               </div>
             ))}
           </div>
