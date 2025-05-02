@@ -323,7 +323,7 @@ function Perfil() {
                   <p>{project.descripcion}</p>
                   <p>
                     <strong>Rol:</strong>{" "}
-                    {project.userTitle || "Sin rol asignado"}
+                    {project.userTitle || "Sin rol asignado."}
                   </p>
                 </div>
               ))}
