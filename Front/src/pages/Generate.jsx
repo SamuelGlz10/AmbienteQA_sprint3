@@ -18,7 +18,8 @@ function Generate() {
   const [sprints, setSprints] = useState(1); // Estado para controlar el número de sprints
   const [copyButtonText, setCopyButtonText] = useState("Copiar");
   const [pasteButtonText, setPasteButtonText] = useState("Pegar");
-  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleteAction, setDeleteAction] = useState(""); // "history" or "prompt"
 
   const userID = localStorage.getItem("UserID");
 
@@ -161,12 +162,23 @@ function Generate() {
   };
 
   const handleErase = () => {
-    setShowConfirmationPopup(true); // Show confirmation popup
+    setDeleteAction("prompt");
+    setShowDeleteConfirmation(true);
   };
 
-  const confirmErase = () => {
-    setPrompt("");
-    setShowConfirmationPopup(false); // Close the popup
+  const handleDeleteHistory = () => {
+    setDeleteAction("history");
+    setShowDeleteConfirmation(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteAction === "prompt") {
+      setPrompt("");
+    } else if (deleteAction === "history") {
+      setHistory([]);
+      localStorage.setItem("history", JSON.stringify({ [userID]: [] }));
+    }
+    setShowDeleteConfirmation(false);
   };
 
   const cancelErase = () => {
@@ -211,13 +223,6 @@ function Generate() {
                   >
                     {pasteButtonText}
                   </button>
-                  <button
-                    type="button"
-                    className="action-button"
-                    onClick={handleErase}
-                  >
-                    Limpiar
-                  </button>
                 </div>
               </div>
 
@@ -256,6 +261,7 @@ function Generate() {
                   {loading ? "Generando..." : "Generar"}
                 </button>
                 <button
+                  type="button"
                   className="delete-button"
                   onClick={handleErase}
                   disabled={loading}
@@ -348,12 +354,44 @@ function Generate() {
         message={successMessage}
         onClose={() => setSuccessMessage(null)}
       />
-      {showConfirmationPopup && (
-        <div className="confirmation-popup">
-          <div className="confirmation-content">
-            <h3>¿Estás seguro de que deseas limpiar el campo?</h3>
-            <button onClick={confirmErase}>Sí</button>
-            <button onClick={cancelErase}>No</button>
+      {showDeleteConfirmation && (
+        <div
+          className="popup-overlay"
+          onClick={() => setShowDeleteConfirmation(false)}
+        >
+          <div
+            className="popup-content confirmation-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={{ minWidth: "500px", textAlign: "center" }}
+          >
+            <button
+              className="popup-close"
+              onClick={() => setShowDeleteConfirmation(false)}
+            >
+              ×
+            </button>
+            <h3>Confirmar eliminación</h3>
+            <p>
+              {deleteAction === "prompt"
+                ? "¿Estás seguro que deseas limpiar el campo de descripción del proyecto?"
+                : "¿Estás seguro que deseas eliminar el historial de prompts?"}
+            </p>
+            <p>Esta acción no se puede deshacer.</p>
+            <div className="confirmation-actions">
+              <button
+                className="cancel-button"
+                onClick={() => setShowDeleteConfirmation(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="delete-button"
+                onClick={confirmDelete}
+                disabled={loading}
+              >
+                Eliminar
+              </button>
+            </div>
           </div>
         </div>
       )}
