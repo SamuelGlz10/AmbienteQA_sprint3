@@ -167,27 +167,37 @@ const Home = () => {
             </div>
           </div>
         )}
-        {sortedProjects.slice(0, displayCount).map((project) => (
-          <div
-            key={project.id}
-            className="project-card"
-            onClick={() => navigate(`/project/${project.id}`)}
-          >
-            <div
-              className="project-image"
-              style={{
-                backgroundImage: project.imagen
-                  ? `url(${project.imagen})`
-                  : "none",
-                backgroundColor: project.imagen ? "transparent" : "#f0e6ff",
-              }}
-            />
-            <div className="project-info">
-              <h3>{project.nombreProyecto || project.id}</h3>
-              <p>{project.descripcion || "Sin descripción"}</p>
-            </div>
+        {!isLoading && sortedProjects.length === 0 ? (
+          <div className="no-projects-message">
+            {isAdmin ? (
+              <p>No hay proyectos disponibles, crea uno nuevo.</p>
+            ) : (
+              <p>No tienes proyectos asignados. Contacta a un administrador.</p>
+            )}
           </div>
-        ))}
+        ) : (
+          sortedProjects.slice(0, displayCount).map((project) => (
+            <div
+              key={project.id}
+              className="project-card"
+              onClick={() => navigate(`/project/${project.id}`)}
+            >
+              <div
+                className="project-image"
+                style={{
+                  backgroundImage: project.imagen
+                    ? `url(${project.imagen})`
+                    : "none",
+                  backgroundColor: project.imagen ? "transparent" : "#f0e6ff",
+                }}
+              />
+              <div className="project-info">
+                <h3>{project.nombreProyecto || project.id}</h3>
+                <p>{project.descripcion || "Sin descripción"}</p>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {isLoading && (
