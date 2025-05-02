@@ -65,7 +65,7 @@ export const getProject = async (req, res) => {
     });
   } catch (err) {
     console.error("Firebase Error:", err);
-    res.status(500).send("Server Error: ", err);
+    res.status(500).send(`Server Error: ${err}`);
   }
 };
 
