@@ -4,16 +4,19 @@ import '../css/SprintDetails.css';
 const SprintDetails = ({ sprint, tasks, onClose }) => {
   const [draggedTask, setDraggedTask] = useState(null);
 
+  // Manejar el inicio del arrastre de una tarea
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  // Permitir que una tarea se arrastre sobre una columna
   const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
+  // Manejar el soltar de una tarea en una nueva columna
   const handleDrop = (e, newStatus) => {
     e.preventDefault();
     if (draggedTask) {
@@ -27,10 +30,12 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
     }
   };
 
+  // Filtrar las tareas por estado
   const getTasksByStatus = (status) => {
     return tasks.filter((task) => task.status === status);
   };
 
+  // Calcular el progreso del sprint
   const calculateProgress = () => {
     const completedTasks = tasks.filter((task) => task.status === 'Completado').length;
     return tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
@@ -43,6 +48,7 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
           ×
         </button>
 
+        {/* Encabezado del sprint */}
         <div className="sprint-header">
           <h2>Sprint {sprint.number}</h2>
           <div className="sprint-dates">
@@ -52,6 +58,7 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
           </div>
         </div>
 
+        {/* Barra de progreso */}
         <div className="progress-container">
           <div className="progress-bar">
             <div
@@ -62,7 +69,9 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
           <span className="progress-text">{Math.round(calculateProgress())}% Completado</span>
         </div>
 
+        {/* Tablero Kanban */}
         <div className="kanban-board">
+          {/* Columna de tareas pendientes */}
           <div
             className="kanban-column"
             onDragOver={handleDragOver}
@@ -82,6 +91,7 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
             ))}
           </div>
 
+          {/* Columna de tareas en progreso */}
           <div
             className="kanban-column"
             onDragOver={handleDragOver}
@@ -101,6 +111,7 @@ const SprintDetails = ({ sprint, tasks, onClose }) => {
             ))}
           </div>
 
+          {/* Columna de tareas completadas */}
           <div
             className="kanban-column"
             onDragOver={handleDragOver}
