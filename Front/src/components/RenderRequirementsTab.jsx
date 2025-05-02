@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ErrorPopup from "../components/ErrorPopup";
 
 import "../css/Dashboard.css";
@@ -50,26 +50,32 @@ const RenderRequirementsTab = ({ ...props }) => {
     { id: "HU", title: "HU", fullText: "Historias de usuario" },
   ];
 
-  // Add error state for task‐form validation
   const [error, setError] = useState("");
+  const [editingTasks, setEditingTasks] = useState(false);
+  const [originalTasks, setOriginalTasks] = useState([]);
 
-  // Nuevo helper para ID global dinámico
+  useEffect(() => {
+    if (showPopup && selectedItem) {
+      setEditingTasks(false);
+    }
+  }, [showPopup, selectedItem]);
+
+  const handleStartEditTasks = () => {
+    const current = tasks[selectedItem.id] || [];
+    setOriginalTasks([...current]);
+    setEditingTasks(true);
+  };
+
   const getNextTaskId = () => {
-    // 1) Aplanar todas las tareas cargadas en memoria
     const allTasks = Object.values(tasks).flat();
-    // 2) Extraer números de ID (quitando 'T')
     const nums = allTasks
       .map((t) => parseInt(t.id.replace(/^T/, ""), 10))
       .filter((n) => !isNaN(n));
-    // 3) Añadir el contador global
     nums.push(nextTaskNumber);
-    // 4) Obtener máximo y sumar 1
     const max = nums.length ? Math.max(...nums) : 0;
-    // 5) Formatear con padding
     return `T${(max + 1).toString().padStart(2, "0")}`;
   };
 
-  // handle assignment change
   const handleAssignee = async (taskId, assigneeEmail) => {
     const member = teamMembers.find((m) => m.email === assigneeEmail);
     const updated = (tasks[selectedItem.id] || []).map((t) =>
@@ -77,7 +83,6 @@ const RenderRequirementsTab = ({ ...props }) => {
     );
     setTasks((prev) => ({ ...prev, [selectedItem.id]: updated }));
 
-    // build and send payload
     const payload = {
       requirementType: activeRequirement,
       elementId: selectedItem.id,
@@ -104,11 +109,50 @@ const RenderRequirementsTab = ({ ...props }) => {
     }
   };
 
+  const handleTaskEditChange = (taskId, field, value) => {
+    const updated = (tasks[selectedItem.id] || []).map((t) =>
+      t.id === taskId ? { ...t, [field]: value } : t
+    );
+    setTasks((prev) => ({ ...prev, [selectedItem.id]: updated }));
+  };
+
+  const handleSaveTasks = async () => {
+    try {
+      const payload = {
+        requirementType: activeRequirement,
+        elementId: selectedItem.id,
+        tasks: (tasks[selectedItem.id] || []).map((t) => ({
+          id: t.id.replace(/^T/, ""),
+          titulo: t.title,
+          descripcion: t.description,
+          prioridad: t.priority,
+          asignados:
+            teamMembers.find((m) => m.email === t.assignee)?.id || null,
+        })),
+      };
+      await fetch(`${BACKEND_URL}/projectsFB/${project.id}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      setEditingTasks(false);
+      setSuccessMessage("Tareas actualizadas exitosamente.");
+    } catch {
+      setError("Error al guardar las tareas.");
+    }
+  };
+
+  const handleCancelEditTasks = () => {
+    setTasks((prev) => ({ ...prev, [selectedItem.id]: originalTasks }));
+    setEditingTasks(false);
+  };
+
   const createTask = async () => {
-    // Array para recolectar mensajes de error
     const missingFields = [];
 
-    // Validar todos los campos requeridos
     if (!taskFormData.title.trim()) {
       missingFields.push("título");
     }
@@ -122,7 +166,6 @@ const RenderRequirementsTab = ({ ...props }) => {
       missingFields.push("asignación a un miembro");
     }
 
-    // Si hay campos faltantes, mostrar error
     if (missingFields.length > 0) {
       if (missingFields.length === 1) {
         setError(`Debe completar el campo de ${missingFields[0]}.`);
@@ -135,7 +178,6 @@ const RenderRequirementsTab = ({ ...props }) => {
       return;
     }
 
-    // Si pasa la validación, crear objeto de tarea
     const newTask = {
       id: getNextTaskId(),
       title: taskFormData.title,
@@ -144,7 +186,6 @@ const RenderRequirementsTab = ({ ...props }) => {
       assignee: taskFormData.assignee,
     };
 
-    // update local state
     const currentTasks = tasks[selectedItem.id] || [];
     const updatedTasks = [...currentTasks, newTask];
     setTasks((prev) => ({
@@ -152,7 +193,6 @@ const RenderRequirementsTab = ({ ...props }) => {
       [selectedItem.id]: updatedTasks,
     }));
 
-    // build payload for Firestore
     const payload = {
       requirementType: activeRequirement,
       elementId: selectedItem.id,
@@ -167,7 +207,6 @@ const RenderRequirementsTab = ({ ...props }) => {
       })),
     };
 
-    // persist to Firebase via new endpoint
     fetch(`${BACKEND_URL}/projectsFB/${project.id}/tasks`, {
       method: "POST",
       headers: {
@@ -177,7 +216,7 @@ const RenderRequirementsTab = ({ ...props }) => {
       body: JSON.stringify(payload),
     }).catch(console.error);
 
-    setNextTaskNumber((n) => n + 1); // Incrementar global
+    setNextTaskNumber((n) => n + 1);
     setSuccessMessage("Tarea creada exitosamente.");
     setError("");
     setShowTaskForm(false);
@@ -298,7 +337,6 @@ const RenderRequirementsTab = ({ ...props }) => {
                 )}
               </div>
 
-              {/* Tabla de tareas */}
               <div className="tasks-section">
                 <h4>Tareas relacionadas:</h4>
                 {tasks[selectedItem.id] && tasks[selectedItem.id].length > 0 ? (
@@ -306,7 +344,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                     <table className="tasks-table">
                       <thead>
                         <tr>
-                          <th></th> {/* Columna para el ícono de arrastre */}
+                          <th></th>
                           <th>ID</th>
                           <th>Título</th>
                           <th>Descripción</th>
@@ -316,30 +354,46 @@ const RenderRequirementsTab = ({ ...props }) => {
                       </thead>
                       <tbody>
                         {tasks[selectedItem.id].map((task, index) => {
-                          if (!task) return null; // Evitar tareas nulas
-                          // Encontrar el miembro del equipo por email
+                          if (!task) return null;
                           const assignedMember = teamMembers.find(
                             (member) => member.email === task.assignee
                           );
 
                           return (
                             <tr
+                              style={{ cursor: editingTasks ? "default" : undefined }}
                               key={task.id}
-                              draggable={!deleteMode}
+                              draggable={!deleteMode && !editingTasks}
                               onDragStart={
-                                !deleteMode
+                                !deleteMode && !editingTasks
                                   ? (e) => handleDragStart(e, task.id, index)
                                   : null
                               }
-                              onDragOver={!deleteMode ? handleDragOver : null}
-                              onDragEnter={!deleteMode ? handleDragEnter : null}
-                              onDragLeave={!deleteMode ? handleDragLeave : null}
+                              onDragOver={
+                                !deleteMode && !editingTasks
+                                  ? handleDragOver
+                                  : null
+                              }
+                              onDragEnter={
+                                !deleteMode && !editingTasks
+                                  ? handleDragEnter
+                                  : null
+                              }
+                              onDragLeave={
+                                !deleteMode && !editingTasks
+                                  ? handleDragLeave
+                                  : null
+                              }
                               onDrop={
-                                !deleteMode
+                                !deleteMode && !editingTasks
                                   ? (e) => handleDrop(e, index, selectedItem.id)
                                   : null
                               }
-                              onDragEnd={!deleteMode ? handleDragEnd : null}
+                              onDragEnd={
+                                !deleteMode && !editingTasks
+                                  ? handleDragEnd
+                                  : null
+                              }
                               className={`draggable-task-row ${
                                 deleteMode ? "delete-mode" : ""
                               }`}
@@ -352,7 +406,11 @@ const RenderRequirementsTab = ({ ...props }) => {
                                   maxWidth: "40px",
                                   height: "40px",
                                   textAlign: "center",
-                                  cursor: deleteMode ? "pointer" : "grab",
+                                  cursor: editingTasks
+                                    ? "default"
+                                    : deleteMode
+                                    ? "pointer"
+                                    : "grab",
                                   position: "relative",
                                   overflow: "visible",
                                 }}
@@ -425,18 +483,89 @@ const RenderRequirementsTab = ({ ...props }) => {
                                 )}
                               </td>
                               <td>{task.id}</td>
-                              <td>{task.title}</td>
-                              <td>{task.description}</td>
+                              {editingTasks ? (
+                                <td>
+                                  <textarea
+                                    className="edit-textarea"
+                                    rows={2}
+                                    value={task.title}
+                                    onChange={(e) =>
+                                      handleTaskEditChange(
+                                        task.id,
+                                        "title",
+                                        e.target.value
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ) : (
+                                <td>{task.title}</td>
+                              )}
+                              {editingTasks ? (
+                                <td>
+                                  <textarea
+                                    className="edit-textarea"
+                                    rows={3}
+                                    value={task.description}
+                                    onChange={(e) =>
+                                      handleTaskEditChange(
+                                        task.id,
+                                        "description",
+                                        e.target.value
+                                      )
+                                    }
+                                  />
+                                </td>
+                              ) : (
+                                <td>{task.description}</td>
+                              )}
                               <td>
-                                <span
-                                  className={`priority-badge ${task.priority}`}
-                                >
-                                  {task.priority.charAt(0).toUpperCase() +
-                                    task.priority.slice(1)}
-                                </span>
+                                {editingTasks ? (
+                                  <select
+                                    className="assignee-dropdown-button"
+                                    value={task.priority}
+                                    onChange={(e) =>
+                                      handleTaskEditChange(
+                                        task.id,
+                                        "priority",
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    <option value="alta">Alta</option>
+                                    <option value="media">Media</option>
+                                    <option value="baja">Baja</option>
+                                  </select>
+                                ) : (
+                                  <span
+                                    className={`priority-badge ${task.priority}`}
+                                  >
+                                    {task.priority.charAt(0).toUpperCase() +
+                                      task.priority.slice(1)}
+                                  </span>
+                                )}
                               </td>
                               <td>
-                                {assignedMember ? (
+                                {editingTasks ? (
+                                  <select
+                                    className="assignee-dropdown-button"
+                                    value={task.assignee}
+                                    onChange={(e) =>
+                                      handleTaskEditChange(
+                                        task.id,
+                                        "assignee",
+                                        e.target.value
+                                      )
+                                    }
+                                  >
+                                    <option value="">Seleccionar</option>
+                                    {teamMembers.map((m) => (
+                                      <option key={m.email} value={m.email}>
+                                        {m.name}
+                                      </option>
+                                    ))}
+                                  </select>
+                                ) : assignedMember ? (
                                   assignedMember.name
                                 ) : (
                                   <select
@@ -472,7 +601,6 @@ const RenderRequirementsTab = ({ ...props }) => {
               </div>
             </div>
 
-            {/* Simplificar la sección del popup-footer eliminando el mensaje de instrucciones */}
             {!showTaskForm ? (
               <div className="popup-footer">
                 {saveStatus.success && (
@@ -501,48 +629,82 @@ const RenderRequirementsTab = ({ ...props }) => {
                   </>
                 ) : (
                   <div className="popup-footer-buttons">
-                    {/* Mostrar botón de Nueva Tarea solo cuando NO estamos en modo eliminación */}
-                    {!deleteMode && (role === "admin" || role === "editor") && (
-                      <button
-                        className="edit-team-button"
-                        style={{
-                          position: "static",
-                          transform: "none",
-                          margin: "5px 0",
-                          left: "auto",
-                          maxWidth: "200px",
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowTaskForm(true);
-                        }}
-                      >
-                        Nueva Tarea
-                      </button>
-                    )}
-
-                    {/* Mostrar botón de eliminar solo si hay tareas */}
-                    {tasks[selectedItem.id] &&
-                      tasks[selectedItem.id].length > 0 && (
-                        <button
-                          className="delete-team-button"
-                          style={{
-                            position: "static",
-                            transform: "none",
-                            margin: "5px 0",
-                            left: "auto",
-                            width: "180px",
-                            backgroundColor: deleteMode ? "#e0e0e0" : "#ff6b6b",
-                            color: deleteMode ? "#333" : "white",
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteMode(!deleteMode);
-                          }}
-                        >
-                          {deleteMode ? "Cancelar" : "Eliminar Tareas"}
-                        </button>
+                    {!editingTasks &&
+                      (role === "admin" || role === "editor") && (
+                        <>
+                          <button
+                            className="edit-team-button"
+                            style={{
+                              position: "static",
+                              transform: "none",
+                              margin: "5px 0",
+                              marginRight: "auto",
+                              left: "auto",
+                              maxWidth: "200px",
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowTaskForm(true);
+                            }}
+                          >
+                            Nueva Tarea
+                          </button>
+                          {tasks[selectedItem.id] &&
+                            tasks[selectedItem.id].length > 0 && (
+                              <>
+                                <button
+                                  className="edit-team-button"
+                                  style={{
+                                    position: "static",
+                                    transform: "none",
+                                    margin: "5px 0",
+                                    left: "auto",
+                                    maxWidth: "200px",
+                                  }}
+                                  onClick={handleStartEditTasks}
+                                >
+                                  Editar Tareas
+                                </button>
+                                <button
+                                  className="delete-team-button"
+                                  style={{
+                                    position: "static",
+                                    transform: "none",
+                                    margin: "5px 0",
+                                    left: "auto",
+                                    width: "180px",
+                                    backgroundColor: deleteMode
+                                      ? "#e0e0e0"
+                                      : "#ff6b6b",
+                                    color: deleteMode ? "#333" : "white",
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDeleteMode(!deleteMode);
+                                  }}
+                                >
+                                  {deleteMode ? "Cancelar" : "Eliminar Tareas"}
+                                </button>
+                              </>
+                            )}
+                        </>
                       )}
+                    {editingTasks && (
+                      <>
+                        <button
+                          className="popup-button secondary"
+                          onClick={handleCancelEditTasks}
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          className="popup-button primary"
+                          onClick={handleSaveTasks}
+                        >
+                          Guardar Tareas
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -625,7 +787,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                   </div>
                   <div className="task-form-actions">
                     <button
-                      class="popup-button secondary"
+                      className="popup-button secondary"
                       onClick={() => {
                         setShowTaskForm(false);
                         setTaskFormData({
@@ -655,7 +817,6 @@ const RenderRequirementsTab = ({ ...props }) => {
         </div>
       )}
 
-      {/* show validation errors in popup */}
       {error && <ErrorPopup message={error} onClose={() => setError("")} />}
     </div>
   );
