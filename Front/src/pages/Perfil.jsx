@@ -15,6 +15,7 @@ function Perfil() {
   const [previewImage, setPreviewImage] = useState(""); // Previsualización de la imagen
   const [showPasswordPopup, setShowPasswordPopup] = useState(false); // Estado para el popup de contraseña
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -72,6 +73,16 @@ function Perfil() {
 
     fetchUserData();
   }, [userId]);
+
+  // Filtrar proyectos según la búsqueda
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.nombreProyecto
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (project.userTitle &&
+        project.userTitle.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
@@ -269,6 +280,26 @@ function Perfil() {
         {/* Lado derecho: Proyectos */}
         <div className="perfil-right">
           <h2>Proyectos</h2>
+          <div
+            className="search-bar-container"
+            style={{ marginBottom: "20px" }}
+          >
+            <input
+              type="text"
+              placeholder="Buscar proyectos por nombre o título..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-bar"
+            />
+            {searchQuery && (
+              <button
+                className="clear-search-button"
+                onClick={() => setSearchQuery("")}
+              >
+                ×
+              </button>
+            )}
+          </div>
           {loadingProjects ? (
             <div
               style={{
@@ -280,9 +311,9 @@ function Perfil() {
               <div className="spinner"></div>
               <p>Cargando proyectos...</p>
             </div>
-          ) : projects.length > 0 ? (
+          ) : filteredProjects.length > 0 ? (
             <div className="project-grid">
-              {projects.map((project) => (
+              {filteredProjects.map((project) => (
                 <div
                   key={project.id}
                   className="project-card"
@@ -298,7 +329,7 @@ function Perfil() {
               ))}
             </div>
           ) : (
-            <p>No estás asignado a ningún proyecto.</p>
+            <p>Proyectos no encontrados.</p>
           )}
         </div>
       </div>
