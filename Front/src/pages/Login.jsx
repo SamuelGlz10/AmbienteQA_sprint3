@@ -80,7 +80,7 @@ const Login = () => {
         <h1 className="title">Inicia Sesión</h1>
         <h2 className="subtitle">FRIDA Product Planner</h2>
         <p className="login-text">
-          Si todavía no tienes una cuenta:
+          Si todavía no tienes una cuenta,
           <br /> <br />
           <span className="register-link" onClick={goToRegister}>
             ¡Regístrate Aquí!
