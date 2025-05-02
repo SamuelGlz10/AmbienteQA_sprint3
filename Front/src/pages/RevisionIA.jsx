@@ -6,13 +6,13 @@ import DragAndDropTable from "../components/DragAndDropTable";
 import TopAppBar from "../components/TopAppBar";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
+import ConfirmationPopup from "../components/ConfirmationPopup";
 
 function RevisionIA() {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("RNF");
   const [expandedTab, setExpandedTab] = useState(null);
-  const [ratings, setRatings] = useState({ RF: {}, RNF: {}, HU: {}, EP: {} });
   const [showDeleteIcons, setShowDeleteIcons] = useState(false);
   const [projectData, setProjectData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,6 +22,7 @@ function RevisionIA() {
   const [showPopup, setShowPopup] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({ title: "", description: "" });
+
   const [saveStatus, setSaveStatus] = useState({
     loading: false,
     error: null,
@@ -30,6 +31,8 @@ function RevisionIA() {
   const [editingProject, setEditingProject] = useState(false);
   const [draggedItem, setDraggedItem] = useState(null); // Estado para Drag-and-Drop
   const [showBackConfirm, setShowBackConfirm] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // Estado para confirmar eliminación
+  const [deleteAction, setDeleteAction] = useState(null); // Acción de eliminación (RF, RNF, HU, EP)
   const [editTasksData, setEditTasksData] = useState([]); // Estado para editar tareas
 
   const tabs = [
@@ -50,18 +53,17 @@ function RevisionIA() {
             data: item.data,
 
             tasks: Array.isArray(item.tasks) ? item.tasks : [], // <-- preservar o inicializar
-
           }))
         : [];
     };
 
     return {
       nombreProyecto:
-      data.projectName || data.nombreProyecto || "Proyecto sin nombre",
+        data.projectName || data.nombreProyecto || "Proyecto sin nombre",
       descripcion: data.description || data.descripcion || "Sin descripción",
       estatus: data.estatus || "Abierto",
       fechaCreacion:
-      data.fechaCreacion || new Date().toISOString().split("T")[0],
+        data.fechaCreacion || new Date().toISOString().split("T")[0],
       sprintNumber: data.sprintNumber || 0,
       EP: parseSection(data.EP || data.epics),
       RF: parseSection(data.RF || data.functionalRequirements),
@@ -125,11 +127,6 @@ function RevisionIA() {
 
         if (sessionData) {
           setProjectData(JSON.parse(sessionData));
-
-          const sessionRatings = sessionStorage.getItem("projectRatings");
-          if (sessionRatings) {
-            setRatings(JSON.parse(sessionRatings));
-          }
         } else if (location.state?.generatedText) {
           let jsonData = location.state.generatedText
             .replace(/```json|```/g, "")
@@ -219,7 +216,6 @@ function RevisionIA() {
 
     const handlePopState = () => {
       sessionStorage.removeItem("projectData");
-      sessionStorage.removeItem("projectRatings");
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -236,13 +232,14 @@ function RevisionIA() {
   };
 
   const handleDeleteItem = (tabId, id) => {
-    if (!projectData) return;
+    setDeleteAction({ tabId, id });
+    setShowDeleteConfirm(true);
+  };
 
-    if (
-      !window.confirm("¿Estás seguro de que quieres eliminar este elemento?")
-    ) {
-      return;
-    }
+  const confirmDelete = () => {
+    if (!deleteAction || !projectData) return;
+
+    const { tabId, id } = deleteAction;
 
     setProjectData((prev) => {
       const updatedData = {
@@ -253,14 +250,8 @@ function RevisionIA() {
       return updatedData;
     });
 
-    setRatings((prev) => {
-      const newRatings = { ...prev };
-      if (newRatings[tabId]?.[id]) {
-        delete newRatings[tabId][id];
-      }
-      sessionStorage.setItem("projectRatings", JSON.stringify(newRatings));
-      return newRatings;
-    });
+    setShowDeleteConfirm(false);
+    setDeleteAction(null);
   };
 
   const handleItemClick = (item) => {
@@ -351,10 +342,18 @@ function RevisionIA() {
     }
   };
 
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeleteAction(null);
+  };
+
   const handleCancelEdit = () => {
     setEditing(false);
     if (selectedItem) {
-      setEditData({ title: selectedItem.titulo, description: selectedItem.data });
+      setEditData({
+        title: selectedItem.titulo,
+        description: selectedItem.data,
+      });
       setEditTasksData(selectedItem.tasks || []);
     }
     setSaveStatus({ loading: false, error: null, success: false });
@@ -420,7 +419,6 @@ function RevisionIA() {
 
       setSuccessMessage("Proyecto guardado exitosamente."); // Muestra el popup de éxito
       sessionStorage.removeItem("projectData");
-      sessionStorage.removeItem("projectRatings");
     } catch (error) {
       console.error("Error al guardar el proyecto:", error);
       setError("Error al guardar el proyecto. Por favor, inténtalo de nuevo."); // Muestra el popup de error
@@ -488,7 +486,6 @@ function RevisionIA() {
 
   const confirmBack = () => {
     sessionStorage.removeItem("projectData");
-    sessionStorage.removeItem("projectRatings");
     setShowBackConfirm(false);
     navigate("/generate");
   };
@@ -744,7 +741,9 @@ function RevisionIA() {
 
               {activeTab === "HU" && (
                 <div className="tasks-section">
-                  <h4 className="label-title"><b>Tareas relacionadas:</b></h4>
+                  <h4 className="label-title">
+                    <b>Tareas relacionadas:</b>
+                  </h4>
                   {editTasksData.length > 0 ? (
                     <div className="tasks-table-container">
                       <table className="tasks-table">
@@ -759,15 +758,17 @@ function RevisionIA() {
                         <tbody>
                           {editTasksData.map((task, i) => (
                             <tr key={i}>
-                              <td>
-                                {task.id}
-                              </td>
+                              <td>{task.id}</td>
                               <td>
                                 {editing ? (
                                   <textarea
                                     value={task.titulo || task.title}
                                     onChange={(e) =>
-                                      handleTaskChange(i, "title", e.target.value)
+                                      handleTaskChange(
+                                        i,
+                                        "title",
+                                        e.target.value
+                                      )
                                     }
                                     className="edit-textarea"
                                     rows={2} // Adjust rows as needed for better visibility
@@ -797,7 +798,9 @@ function RevisionIA() {
                               <td>
                                 {editing ? (
                                   <select
-                                    value={task.prioridad || task.priority || ""}
+                                    value={
+                                      task.prioridad || task.priority || ""
+                                    }
                                     onChange={(e) =>
                                       handleTaskChange(
                                         i,
@@ -820,9 +823,11 @@ function RevisionIA() {
                                     {(task.prioridad || task.priority || "")
                                       .charAt(0)
                                       .toUpperCase() +
-                                      (task.prioridad || task.priority || "").slice(
-                                        1
-                                      )}
+                                      (
+                                        task.prioridad ||
+                                        task.priority ||
+                                        ""
+                                      ).slice(1)}
                                   </span>
                                 )}
                               </td>
@@ -878,24 +883,27 @@ function RevisionIA() {
         </div>
       )}
 
-      {showBackConfirm && (
-        <div className="popup-overlay" onClick={cancelBack}>
-          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-            <h3 className="popup-title">¿Estás seguro que quieres volver?</h3>
-            <p>
-              Si vuelves, <b>se borrarán los datos actuales del proyecto.</b>
-            </p>
-            <div className="popup-footer">
-              <button className="popup-button secondary" onClick={cancelBack}>
-                Cancelar
-              </button>
-              <button className="popup-button primary" onClick={confirmBack}>
-                Sí, volver
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Confirmacion para navegar */}
+      <ConfirmationPopup
+        isVisible={showBackConfirm}
+        onClose={cancelBack}
+        onConfirm={confirmBack}
+        canUndo={true}
+        title="¿Estás seguro que quieres volver?"
+        message="Si vuelves, se borrarán los datos actuales del proyecto."
+        confirmText="Sí, volver"
+        cancelText="Cancelar"
+      />
+
+      {/* Confirmacion para borrar */}
+      <ConfirmationPopup
+        isVisible={showDeleteConfirm}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="¿Estás seguro que quieres eliminar este elemento?"
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
 
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />
