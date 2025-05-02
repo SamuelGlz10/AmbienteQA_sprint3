@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
-import "../css/Registro.css"; 
+import "../css/Registro.css";
 
 const Registro = () => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
   const navigate = useNavigate();
 
   const [usuario, setUsuario] = useState("");
@@ -28,7 +29,7 @@ const Registro = () => {
       return;
     }
 
-    const response = await fetch("http://localhost:5001/register", {
+    const response = await fetch(`${BACKEND_URL}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +47,9 @@ const Registro = () => {
       setSuccessMessage("¡Registro exitoso!"); // Muestra el popup de éxito
     } else {
       const errorData = await response.json();
-      setError(`Error al registrarse: ${errorData.message || "Error desconocido"}`); // Muestra el popup de error
+      setError(
+        `Error al registrarse: ${errorData.message || "Error desconocido"}`
+      ); // Muestra el popup de error
     }
   };
 
@@ -71,7 +74,11 @@ const Registro = () => {
             ¡Inicia Sesión!
           </span>
         </p>
-        <img src="/Login.png" alt="Login Illustration" className="illustration" />
+        <img
+          src="/Login.png"
+          alt="Login Illustration"
+          className="illustration"
+        />
       </div>
 
       <div className="registro-right">
@@ -129,6 +136,3 @@ const Registro = () => {
 };
 
 export default Registro;
-
-
-

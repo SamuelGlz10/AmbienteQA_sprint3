@@ -41,6 +41,8 @@ const RenderRequirementsTab = ({ ...props }) => {
     setNextTaskNumber,
   } = props;
 
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
+
   const requirementTabs = [
     { id: "EP", title: "EP", fullText: "Épicas" },
     { id: "RF", title: "RF", fullText: "Requerimientos funcionales" },
@@ -88,7 +90,7 @@ const RenderRequirementsTab = ({ ...props }) => {
       })),
     };
     try {
-      await fetch(`http://localhost:5001/projectsFB/${project.id}/tasks`, {
+      await fetch(`${BACKEND_URL}/projectsFB/${project.id}/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -166,7 +168,7 @@ const RenderRequirementsTab = ({ ...props }) => {
     };
 
     // persist to Firebase via new endpoint
-    fetch(`http://localhost:5001/projectsFB/${project.id}/tasks`, {
+    fetch(`${BACKEND_URL}/projectsFB/${project.id}/tasks`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -314,7 +316,7 @@ const RenderRequirementsTab = ({ ...props }) => {
                       </thead>
                       <tbody>
                         {tasks[selectedItem.id].map((task, index) => {
-                          if(!task) return null; // Evitar tareas nulas
+                          if (!task) return null; // Evitar tareas nulas
                           // Encontrar el miembro del equipo por email
                           const assignedMember = teamMembers.find(
                             (member) => member.email === task.assignee

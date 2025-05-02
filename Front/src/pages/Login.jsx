@@ -8,6 +8,7 @@ import SuccessPopup from "../components/SuccessPopup"; // Importamos el componen
 import "../css/Login.css";
 
 const Login = () => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
   const { setIsLogin } = useContext(AuthContext); // Usamos el contexto de autenticación
   const { setUserId, setRole } = React.useContext(UserContext); // Usamos el contexto de usuario
   const [email, setEmail] = useState("");
@@ -19,7 +20,7 @@ const Login = () => {
 
   const tryLogin = async (user) => {
     try {
-      const result = await fetch("http://localhost:5001/login", {
+      const result = await fetch(`${BACKEND_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user),
