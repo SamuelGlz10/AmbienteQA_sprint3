@@ -1,56 +1,84 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../css/Perfil.css"; 
 import TopAppBar from "../components/TopAppBar";
 import ErrorPopup from "../components/ErrorPopup"; // Importar el componente de error
 import SuccessPopup from "../components/SuccessPopup"; // Importar el componente de éxito
+import "../css/Perfil.css";
 
 function Perfil() {
   const navigate = useNavigate();
 
-  const [userData, setUserData] = useState({
-    firstName: "Andrés",
-    lastName: "Quintanar",
-    email: "a00836727@tec.mx",
-    phone: "8119797902", 
-    profilePicture: "/profile-picture.png", 
-  });
-
-  const [projects] = useState([
-    {
-      id: "proj01",
-      nombreProyecto: "Sistema Hotelero",
-      descripcion: "Descripción del Proyecto 1",
-      rol: "Scrum Master", // Rol del usuario en el proyecto
-    },
-    {
-      id: "proj02",
-      nombreProyecto: "Proyecto 2",
-      descripcion: "Descripción del Proyecto 2",
-      rol: "Scrum Team", // Rol del usuario en el proyecto
-    },
-    {
-      id: "proj03",
-      nombreProyecto: "Proyecto 3",
-      descripcion: "Descripción del Proyecto 3",
-      rol: "Product Owner", // Rol del usuario en el proyecto
-    },
-  ]);
-
+  const [userData, setUserData] = useState(null);
+  const [projects] = useState([]);
   const [isEditing, setIsEditing] = useState(false); // Estado para controlar el modo de edición
-  const [editData, setEditData] = useState({ ...userData });
-  const [previewImage, setPreviewImage] = useState(userData.profilePicture); // Previsualización de la imagen
-
+  const [editData, setEditData] = useState({});
+  const [previewImage, setPreviewImage] = useState(""); // Previsualización de la imagen
   const [showPasswordPopup, setShowPasswordPopup] = useState(false); // Estado para el popup de contraseña
-  const [passwordData, setPasswordData] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   const [errorMessage, setErrorMessage] = useState(""); // Estado para el mensaje de error
   const [successMessage, setSuccessMessage] = useState(""); // Estado para el mensaje de éxito
 
+  const userId = localStorage.getItem("userId"); // Obtener el ID del usuario del almacenamiento local
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Retrieve the token from localStorage
+
+        const [userResponse, projectsResponse] = await Promise.all([
+          fetch(`http://localhost:5001/users/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+            },
+          }),
+          fetch(`http://localhost:5001/projectsFB/?userId=${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+            },
+          }),
+        ]);
+
+        if (userResponse.status === 403 || projectsResponse.status === 403) {
+          setErrorMessage("No tienes permiso para acceder a estos datos.");
+          return;
+        }
+
+        const userData = await userResponse.json();
+        const projectsData = await projectsResponse.json();
+
+        if (userData.success) {
+          setUserData(userData.user); // Save user data
+          setEditData(userData.user); // Save user data for editing
+        }
+
+        if (projectsData.success) {
+          setProjects(projectsData.projects); // Save projects data
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setErrorMessage("Error al cargar los datos del usuario."); // Show error message
+      }
+    };
+
+    fetchUserData(); // Call the function to fetch user data
+  }, [userId]);
+
   // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "phone") {
+      const numericValue = value.replace(/\D/g, ""); // Remover caracteres no numéricos
+      if (numericValue.length > 10) return; // Prevenir que el número exceda 10 dígitos
+      setEditData((prev) => ({ ...prev, [name]: numericValue }));
+    } else {
+      setEditData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   // Manejar cambios en la imagen de perfil
@@ -66,14 +94,37 @@ function Perfil() {
   };
 
   // Guardar los cambios de información
-  const handleSaveChanges = () => {
-    if (!editData.firstName || !editData.lastName || !editData.email || !editData.phone) {
-      setErrorMessage("Todos los campos son obligatorios."); // Mostrar mensaje de error
+  const handleSaveChanges = async () => {
+    if (!editData.username || !editData.email || !editData.phone) {
+      setErrorMessage("Todos los campos son obligatorios.");
       return;
     }
-    setUserData({ ...editData, profilePicture: previewImage }); // Actualizar los datos del usuario
-    setIsEditing(false); // Salir del modo de edición
-    setSuccessMessage("¡Los datos se han actualizado con éxito!"); // Mostrar mensaje de éxito
+
+    try {
+      const response = await fetch(`http://localhost:5001/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(editData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setUserData(editData);
+        setIsEditing(false);
+        setSuccessMessage("¡Los datos se han actualizado con éxito!");
+      } else {
+        setErrorMessage(result.message || "Error al actualizar los datos.");
+      }
+    } catch (error) {
+      console.error("Error updating user data:", error);
+      setErrorMessage(
+        "Error al actualizar los datos. Por favor, intenta de nuevo."
+      );
+    }
   };
 
   // Manejar cambios en los campos del popup de contraseña
@@ -84,7 +135,11 @@ function Perfil() {
 
   // Guardar los cambios de contraseña
   const handleSavePassword = () => {
-    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+    if (
+      !passwordData.currentPassword ||
+      !passwordData.newPassword ||
+      !passwordData.confirmPassword
+    ) {
       setErrorMessage("Todos los campos de contraseña son obligatorios."); // Mostrar mensaje de error
       return;
     }
@@ -112,69 +167,71 @@ function Perfil() {
             {isEditing ? (
               <>
                 <label>
-                  Cambiar Foto de Perfil:
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
-                <label>
                   Nombre:
                   <input
+                    autoComplete="off"
                     type="text"
-                    name="firstName"
-                    value={editData.firstName}
+                    name="username"
+                    value={editData.username || ""}
                     onChange={handleInputChange}
                   />
                 </label>
                 <label>
                   Apellido:
                   <input
+                    autoComplete="off"
                     type="text"
-                    name="lastName"
-                    value={editData.lastName}
+                    name="lastname"
+                    value={editData.lastname || ""}
                     onChange={handleInputChange}
                   />
                 </label>
                 <label>
                   Correo:
                   <input
+                    autoComplete="off"
                     type="email"
                     name="email"
-                    value={editData.email}
+                    value={editData.email || ""}
                     onChange={handleInputChange}
                   />
                 </label>
                 <label>
                   Teléfono:
                   <input
+                    autoComplete="off"
                     type="text"
                     name="phone"
-                    value={editData.phone}
+                    value={editData.phone || ""}
                     onChange={handleInputChange}
                   />
                 </label>
                 <div className="edit-buttons">
-                  <button
-                    className="save-button"
-                    onClick={handleSaveChanges}
-                  >
+                  <button className="save-button" onClick={handleSaveChanges}>
                     Guardar Cambios
                   </button>
                   <button
                     className="cancel-button"
-                    onClick={() => setIsEditing(false)}
+                    onClick={() => {
+                      setEditData(userData); // Restablecer los datos a los originales
+                      setIsEditing(false);
+                    }}
                   >
                     Cancelar
                   </button>
                 </div>
               </>
-            ) : (
+            ) : userData ? ( // Verificar si userData no es nulo
               <>
-                <h2>{userData.firstName} {userData.lastName}</h2>
-                <p><strong>Correo:</strong> {userData.email}</p>
-                <p><strong>Teléfono:</strong> {userData.phone}</p>
+                <h2>
+                  {userData.username || "X"} {userData.lastname || ""}
+                </h2>
+                <p>
+                  <strong>Correo:</strong> {userData.email}
+                </p>
+                <p>
+                  <strong>Teléfono:</strong> {userData.phone}
+                </p>
                 <button
                   className="edit-info-button"
                   onClick={() => setIsEditing(true)}
@@ -182,6 +239,18 @@ function Perfil() {
                   Editar Información
                 </button>
               </>
+            ) : (
+              // Mostrar mensaje de carga si userData es nulo
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
+              >
+                <div className="spinner"></div>
+                <p>Cargando información del usuario...</p>
+              </div>
             )}
             <button
               className="change-password-button"
@@ -201,7 +270,10 @@ function Perfil() {
                 <div key={project.id} className="project-card">
                   <h3>{project.nombreProyecto}</h3>
                   <p>{project.descripcion}</p>
-                  <p><strong>Rol:</strong> {project.rol}</p> {/* Mostrar el rol del usuario */}
+                  <p>
+                    <strong>Rol:</strong> {project.rol}
+                  </p>{" "}
+                  {/* Mostrar el rol del usuario */}
                 </div>
               ))}
             </div>
@@ -213,7 +285,10 @@ function Perfil() {
 
       {/* Popup para cambiar contraseña */}
       {showPasswordPopup && (
-        <div className="popup-overlay" onClick={() => setShowPasswordPopup(false)}>
+        <div
+          className="popup-overlay"
+          onClick={() => setShowPasswordPopup(false)}
+        >
           <div
             className="popup-content"
             onClick={(e) => e.stopPropagation()} // Evitar cerrar el popup al hacer clic dentro
