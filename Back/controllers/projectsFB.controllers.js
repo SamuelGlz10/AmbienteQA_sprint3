@@ -496,3 +496,49 @@ export const getAllTasks = async (req, res) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+
+export const getProjectAndTitle = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+    console.log("User ID:", userId); // Log para verificar el userId recibido
+
+    if (!userId) {
+      return res.status(400).json({ error: "UserId is required" });
+    }
+
+    const pool = await sqlConnect();
+    const userProjects = await pool
+      .request()
+      .input("userId", sql.Int, userId)
+      .query(
+        "SELECT ProjectID, title FROM Users_Projects WHERE UserID = @userId"
+      );
+
+    const projectData = userProjects.recordset;
+
+    if (projectData.length === 0) {
+      return res.json([]); // Regresar un array vacío si no hay proyectos
+    }
+
+    const projects = [];
+    for (const { ProjectID, title } of projectData) {
+      const projectDoc = await db.collection("proyectos").doc(ProjectID).get();
+      if (projectDoc.exists) {
+        const { nombreProyecto, descripcion } = projectDoc.data(); // Extraer solo los campos necesarios
+        projects.push({
+          id: ProjectID,
+          nombreProyecto,
+          descripcion,
+          userTitle: title, // Incluir el título del usuario
+        });
+      }
+    }
+    res.status(200).json({
+      success: true,
+      projects,
+    });
+  } catch (err) {
+    console.error("Error fetching projects:", err);
+    res.status(500).json({ error: "Server Error" });
+  }
+};

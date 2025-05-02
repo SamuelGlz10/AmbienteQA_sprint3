@@ -9,11 +9,13 @@ function Perfil() {
   const navigate = useNavigate();
 
   const [userData, setUserData] = useState(null);
-  const [projects] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [isEditing, setIsEditing] = useState(false); // Estado para controlar el modo de edición
   const [editData, setEditData] = useState({});
   const [previewImage, setPreviewImage] = useState(""); // Previsualización de la imagen
   const [showPasswordPopup, setShowPasswordPopup] = useState(false); // Estado para el popup de contraseña
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -33,40 +35,54 @@ function Perfil() {
         const [userResponse, projectsResponse] = await Promise.all([
           fetch(`http://localhost:5001/users/${userId}`, {
             headers: {
-              Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+              Authorization: `Bearer ${token}`,
             },
           }),
-          fetch(`http://localhost:5001/projectsFB/?userId=${userId}`, {
+          fetch(`http://localhost:5001/projectsFB/${userId}/projectAndTitle`, {
             headers: {
-              Authorization: `Bearer ${token}`, // Add the token to the Authorization header
+              Authorization: `Bearer ${token}`,
             },
           }),
         ]);
 
         if (userResponse.status === 403 || projectsResponse.status === 403) {
           setErrorMessage("No tienes permiso para acceder a estos datos.");
+          setLoadingProjects(false);
           return;
         }
 
         const userData = await userResponse.json();
         const projectsData = await projectsResponse.json();
+        console.log("Projects Data:", projectsData);
 
         if (userData.success) {
-          setUserData(userData.user); // Save user data
-          setEditData(userData.user); // Save user data for editing
+          setUserData(userData.user);
+          setEditData(userData.user);
         }
 
         if (projectsData.success) {
-          setProjects(projectsData.projects); // Save projects data
+          setProjects(projectsData.projects);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        setErrorMessage("Error al cargar los datos del usuario."); // Show error message
+        setErrorMessage("Error al cargar los datos del usuario.");
+      } finally {
+        setLoadingProjects(false); // Cambiar el estado de carga a falso después de la solicitud
       }
     };
 
-    fetchUserData(); // Call the function to fetch user data
+    fetchUserData();
   }, [userId]);
+
+  // Filtrar proyectos según la búsqueda
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.nombreProyecto
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (project.userTitle &&
+        project.userTitle.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
@@ -264,21 +280,56 @@ function Perfil() {
         {/* Lado derecho: Proyectos */}
         <div className="perfil-right">
           <h2>Proyectos</h2>
-          {projects.length > 0 ? (
+          <div
+            className="search-bar-container"
+            style={{ marginBottom: "20px" }}
+          >
+            <input
+              type="text"
+              placeholder="Buscar proyectos por nombre o título..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-bar"
+            />
+            {searchQuery && (
+              <button
+                className="clear-search-button"
+                onClick={() => setSearchQuery("")}
+              >
+                ×
+              </button>
+            )}
+          </div>
+          {loadingProjects ? (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <div className="spinner"></div>
+              <p>Cargando proyectos...</p>
+            </div>
+          ) : filteredProjects.length > 0 ? (
             <div className="project-grid">
-              {projects.map((project) => (
-                <div key={project.id} className="project-card">
+              {filteredProjects.map((project) => (
+                <div
+                  key={project.id}
+                  className="project-card"
+                  onClick={() => navigate(`/project/${project.id}`)}
+                >
                   <h3>{project.nombreProyecto}</h3>
                   <p>{project.descripcion}</p>
                   <p>
-                    <strong>Rol:</strong> {project.rol}
-                  </p>{" "}
-                  {/* Mostrar el rol del usuario */}
+                    <strong>Rol:</strong>{" "}
+                    {project.userTitle || "Sin rol asignado."}
+                  </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p>No estás asignado a ningún proyecto.</p>
+            <p>Proyectos no encontrados.</p>
           )}
         </div>
       </div>

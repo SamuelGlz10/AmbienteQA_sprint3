@@ -4,6 +4,7 @@ import { TextField } from "@mui/material";
 import TopAppBar from "../components/TopAppBar";
 import ErrorPopup from "../components/ErrorPopup";
 import SuccessPopup from "../components/SuccessPopup";
+import ConfirmationPopup from "../components/ConfirmationPopup";
 import "../css/Generate.css";
 
 function Generate() {
@@ -24,6 +25,7 @@ function Generate() {
   const userID = localStorage.getItem("UserID");
 
   useEffect(() => {
+    // Cargar el historial del localStorage al iniciar
     if (!userID) return;
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
     const userHistory = allHistories[userID] || [];
@@ -31,6 +33,7 @@ function Generate() {
   }, [userID]);
 
   useEffect(() => {
+    // Guardar el historial en el localStorage cada vez que cambia
     if (!userID) return;
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
     allHistories[userID] = history;
@@ -144,29 +147,33 @@ function Generate() {
     }
   };
 
-  const handleCopy = async () => {
+  const handleCopy = async (e) => {
     await navigator.clipboard.writeText(prompt);
+    e.target.blur();
     setCopyButtonText("¡Texto copiado!");
     setTimeout(() => setCopyButtonText("Copiar"), 3000); // Reset after 3 seconds
   };
 
-  const handlePaste = async () => {
+  const handlePaste = async (e) => {
     try {
       const text = await navigator.clipboard.readText();
       setPrompt(prompt + text);
       setPasteButtonText("¡Texto pegado!");
+      e.target.blur();
       setTimeout(() => setPasteButtonText("Pegar"), 3000); // Reset after 3 seconds
     } catch (err) {
       setError("No se pudo acceder al portapapeles");
     }
   };
 
-  const handleErase = () => {
+  const handleErase = (e) => {
+    e.target.blur();
     setDeleteAction("prompt");
     setShowDeleteConfirmation(true);
   };
 
-  const handleDeleteHistory = () => {
+  const handleDeleteHistory = (e) => {
+    e.target.blur();
     setDeleteAction("history");
     setShowDeleteConfirmation(true);
   };
@@ -192,6 +199,25 @@ function Generate() {
     });
   };
 
+  useEffect(() => {
+    // Manejar el evento de teclado para cerrar el popup de confirmación
+    if (!showDeleteConfirmation) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowDeleteConfirmation(false); // Close the popup on Esc
+      } else if (e.key === "Enter") {
+        confirmDelete(); // Confirm delete on Enter
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown); // Clean up the listener
+    };
+  }, [showDeleteConfirmation, confirmDelete]);
+
   return (
     <div className="generate-container">
       <TopAppBar />
@@ -212,14 +238,14 @@ function Generate() {
                   <button
                     type="button"
                     className="action-button"
-                    onClick={handleCopy}
+                    onClick={(e) => handleCopy(e)}
                   >
                     {copyButtonText}
                   </button>
                   <button
                     type="button"
                     className="action-button"
-                    onClick={handlePaste}
+                    onClick={(e) => handlePaste(e)}
                   >
                     {pasteButtonText}
                   </button>
@@ -263,7 +289,7 @@ function Generate() {
                 <button
                   type="button"
                   className="delete-button"
-                  onClick={handleErase}
+                  onClick={(e) => handleErase(e)}
                   disabled={loading}
                 >
                   Eliminar
@@ -354,47 +380,21 @@ function Generate() {
         message={successMessage}
         onClose={() => setSuccessMessage(null)}
       />
-      {showDeleteConfirmation && (
-        <div
-          className="popup-overlay"
-          onClick={() => setShowDeleteConfirmation(false)}
-        >
-          <div
-            className="popup-content confirmation-popup"
-            onClick={(e) => e.stopPropagation()}
-            style={{ minWidth: "500px", textAlign: "center" }}
-          >
-            <button
-              className="popup-close"
-              onClick={() => setShowDeleteConfirmation(false)}
-            >
-              ×
-            </button>
-            <h3>Confirmar eliminación</h3>
-            <p>
-              {deleteAction === "prompt"
-                ? "¿Estás seguro que deseas limpiar el campo de descripción del proyecto?"
-                : "¿Estás seguro que deseas eliminar el historial de prompts?"}
-            </p>
-            <p>Esta acción no se puede deshacer.</p>
-            <div className="confirmation-actions">
-              <button
-                className="cancel-button"
-                onClick={() => setShowDeleteConfirmation(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="delete-button"
-                onClick={confirmDelete}
-                disabled={loading}
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
+      <ConfirmationPopup
+        isVisible={showDeleteConfirmation}
+        onClose={() => setShowDeleteConfirmation(false)}
+        onConfirm={confirmDelete}
+        title="Confirmar eliminación"
+        message={
+          deleteAction === "prompt"
+            ? "¿Estás seguro que deseas limpiar el campo de descripción del proyecto?"
+            : "¿Estás seguro que deseas eliminar el historial de prompts?"
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        loading={loading}
+      />
     </div>
   );
 }

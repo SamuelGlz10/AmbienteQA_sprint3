@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
+import ConfirmationPopup from "../components/ConfirmationPopup";
 import TopAppBar from "../components/TopAppBar";
 import EditMemberPopup from "../components/EditMemeberPopup";
 import RenderRequirementsTab from "../components/RenderRequirementsTab";
@@ -697,6 +698,19 @@ const Dashboard = () => {
     }
   };
 
+  const confirmDeleteTask = () => {
+    if (taskToDelete) {
+      handleDeleteTask(taskToDelete.id, taskToDelete.elementId);
+    }
+    setShowDeleteConfirmation(false);
+    setTaskToDelete(null);
+  };
+
+  const cancelDeleteTask = () => {
+    setShowDeleteConfirmation(false);
+    setTaskToDelete(null);
+  };
+
   // Modificar la función handleDeleteTask para desactivar el modo eliminación
   const handleDeleteTask = async (taskId, elementId) => {
     // 1. Actualizar estado local
@@ -887,6 +901,10 @@ const Dashboard = () => {
       sethShowProjectDeleteConfirmation(false);
       setProjectToDelete(null);
     }
+  };
+
+  const cancelDeleteProject = () => {
+    setShowProjectDeleteConfirmation(false);
   };
 
   if (loading) {
@@ -1148,80 +1166,31 @@ const Dashboard = () => {
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
 
       {/* Confirmación de eliminación de tarea */}
-      {showDeleteConfirmation && taskToDelete && (
-        <div
-          className="popup-overlay"
-          onClick={() => setShowDeleteConfirmation(false)}
-        >
-          <div
-            className="popup-content confirmation-popup"
-            onClick={(e) => e.stopPropagation()}
-            style={{ minWidth: "500px", textAlign: "center" }}
-          >
-            <button
-              className="popup-close"
-              onClick={() => setShowDeleteConfirmation(false)}
-            >
-              ×
-            </button>
-            <h3>Confirmar eliminación</h3>
-            <p>
-              ¿Estás seguro que deseas eliminar la tarea "{taskToDelete.title}"?
-            </p>
-            <p>Esta acción no se puede deshacer.</p>
-            <div className="confirmation-actions">
-              <button
-                className="cancel-button"
-                onClick={() => setShowDeleteConfirmation(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="delete-button"
-                onClick={() =>
-                  handleDeleteTask(taskToDelete.id, taskToDelete.elementId)
-                }
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {showProjectDeleteConfirmation && (
-        <div
-          className="popup-overlay"
-          onClick={() => setShowProjectDeleteConfirmation(false)}
-        >
-          <div
-            className="popup-content confirmation-popup"
-            onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "400px", textAlign: "center" }}
-          >
-            <h3>Confirmar eliminación</h3>
-            <p>
-              ¿Estás seguro que deseas eliminar el proyecto? Esta acción no se
-              puede deshacer.
-            </p>
-            <div className="confirmation-actions">
-              <button
-                className="cancel-button"
-                onClick={() => setShowProjectDeleteConfirmation(false)}
-              >
-                Cancelar
-              </button>
-              <button
-                className="delete-button"
-                id="project-delete-button"
-                disabled={countdown > 0}
-                onClick={confirmDeleteProject}
-              >
-                {countdown > 0 ? `Eliminar (${countdown})` : "Eliminar"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmationPopup
+        isVisible={showDeleteConfirmation}
+        onClose={cancelDeleteTask}
+        onConfirm={confirmDeleteTask}
+        title="Confirmar eliminación"
+        message={`¿Estás seguro que deseas eliminar la tarea "${taskToDelete?.title}"?`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
+
+      {/* Confirmación de eliminación de proyecto */}
+      <ConfirmationPopup
+        isVisible={showProjectDeleteConfirmation}
+        onClose={cancelDeleteProject}
+        onConfirm={confirmDeleteProject}
+        title="Confirmar eliminación del proyecto"
+        message="¿Estás seguro que deseas eliminar el proyecto?"
+        confirmText={countdown > 0 ? `Eliminar (${countdown})` : "Eliminar"}
+        cancelText="Cancelar"
+        loading={countdown > 0}
+        confirmButtonStyle={{
+          backgroundColor: countdown > 0 ? "black" : "",
+          cursor: countdown > 0 ? "not-allowed" : "pointer",
+        }}
+      />
 
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />

@@ -126,5 +126,6 @@ button.delete-icon:hover {
 }
 
 .clear-search-button:hover {
-  color: #333;
+  color: #929292;
+  background-color: transparent;
 }
