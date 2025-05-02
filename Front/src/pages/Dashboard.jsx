@@ -45,14 +45,14 @@ const Dashboard = () => {
         {
           title: "Implementar autenticación",
           description: "Crear sistema de login y registro",
-          status: "En progreso"
+          status: "En progreso",
         },
         {
           title: "Diseñar interfaz de usuario",
           description: "Crear wireframes y mockups",
-          status: "Completado"
-        }
-      ]
+          status: "Completado",
+        },
+      ],
     },
     {
       number: 2,
@@ -63,14 +63,14 @@ const Dashboard = () => {
         {
           title: "Desarrollar API",
           description: "Implementar endpoints principales",
-          status: "Pendiente"
+          status: "Pendiente",
         },
         {
           title: "Configurar base de datos",
           description: "Crear esquema y migraciones",
-          status: "Pendiente"
-        }
-      ]
+          status: "Pendiente",
+        },
+      ],
     },
     {
       number: 3,
@@ -81,10 +81,10 @@ const Dashboard = () => {
         {
           title: "Pruebas de integración",
           description: "Realizar pruebas de sistema completo",
-          status: "Pendiente"
-        }
-      ]
-    }
+          status: "Pendiente",
+        },
+      ],
+    },
   ]);
   const [selectedSprint, setSelectedSprint] = useState(null);
 
@@ -752,14 +752,18 @@ const Dashboard = () => {
     <div className="sprints-grid">
       {sprints.length > 0 ? (
         sprints.map((sprint, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="sprint-card"
             onClick={() => handleSprintClick(sprint)}
           >
             <h3 className="sprint-title">SPRINT {sprint.number}</h3>
             <div className="sprint-status-container">
-              <span className={`status-badge ${sprint.status.toLowerCase().replace(/\s+/g, '-')}`}>
+              <span
+                className={`status-badge ${sprint.status
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
+              >
                 {sprint.status}
               </span>
             </div>
@@ -767,14 +771,22 @@ const Dashboard = () => {
               <div className="date-item">
                 <span className="calendar-icon">📅</span>
                 <span className="date-text">
-                  {new Date(sprint.startDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  {new Date(sprint.startDate).toLocaleDateString("es-ES", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
               <div className="date-separator">→</div>
               <div className="date-item">
                 <span className="calendar-icon">📅</span>
                 <span className="date-text">
-                  {new Date(sprint.endDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  {new Date(sprint.endDate).toLocaleDateString("es-ES", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })}
                 </span>
               </div>
             </div>
@@ -783,7 +795,11 @@ const Dashboard = () => {
                 <div key={taskIndex} className="sprint-task">
                   <h4>{task.title}</h4>
                   <p>{task.description}</p>
-                  <span className={`task-status-badge ${task.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                  <span
+                    className={`task-status-badge ${task.status
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                  >
                     {task.status}
                   </span>
                 </div>
@@ -800,44 +816,44 @@ const Dashboard = () => {
   );
 
   const renderRequirementsTab = () => (
-              <RenderRequirementsTab
-                project={project}
-                activeRequirement={activeRequirement}
-                setActiveRequirement={setActiveRequirement}
-                handleItemClick={handleItemClick}
-                showPopup={showPopup}
-                selectedItem={selectedItem}
-                handleClosePopup={handleClosePopup}
-                tasks={tasks}
-                setTasks={setTasks}
-                teamMembers={teamMembers}
-                setTaskToDelete={setTaskToDelete}
-                deleteMode={deleteMode}
-                setDeleteMode={setDeleteMode}
-                handleDragStart={handleDragStart}
-                handleDragOver={handleDragOver}
-                handleDragEnter={handleDragEnter}
-                handleDragLeave={handleDragLeave}
-                handleDrop={handleDrop}
-                handleDragEnd={handleDragEnd}
-                showTaskForm={showTaskForm}
-                setShowTaskForm={setShowTaskForm}
-                taskFormData={taskFormData}
-                setTaskFormData={setTaskFormData}
-                setSuccessMessage={setSuccessMessage}
-                setShowDeleteConfirmation={setShowDeleteConfirmation}
-                role={role}
-                editing={editing}
-                setEditing={setEditing}
-                saveStatus={saveStatus}
-                setSaveStatus={setSaveStatus}
-                requirementEditData={requirementEditData}
-                setEditData={setEditData}
-                handleSaveEdit={handleSaveEdit}
-                handleInputChange={handleInputChange}
-                nextTaskNumber={nextTaskNumber}
-                setNextTaskNumber={setNextTaskNumber}
-              />
+    <RenderRequirementsTab
+      project={project}
+      activeRequirement={activeRequirement}
+      setActiveRequirement={setActiveRequirement}
+      handleItemClick={handleItemClick}
+      showPopup={showPopup}
+      selectedItem={selectedItem}
+      handleClosePopup={handleClosePopup}
+      tasks={tasks}
+      setTasks={setTasks}
+      teamMembers={teamMembers}
+      setTaskToDelete={setTaskToDelete}
+      deleteMode={deleteMode}
+      setDeleteMode={setDeleteMode}
+      handleDragStart={handleDragStart}
+      handleDragOver={handleDragOver}
+      handleDragEnter={handleDragEnter}
+      handleDragLeave={handleDragLeave}
+      handleDrop={handleDrop}
+      handleDragEnd={handleDragEnd}
+      showTaskForm={showTaskForm}
+      setShowTaskForm={setShowTaskForm}
+      taskFormData={taskFormData}
+      setTaskFormData={setTaskFormData}
+      setSuccessMessage={setSuccessMessage}
+      setShowDeleteConfirmation={setShowDeleteConfirmation}
+      role={role}
+      editing={editing}
+      setEditing={setEditing}
+      saveStatus={saveStatus}
+      setSaveStatus={setSaveStatus}
+      requirementEditData={requirementEditData}
+      setEditData={setEditData}
+      handleSaveEdit={handleSaveEdit}
+      handleInputChange={handleInputChange}
+      nextTaskNumber={nextTaskNumber}
+      setNextTaskNumber={setNextTaskNumber}
+    />
   );
 
   const handleDeleteProject = async (projectId) => {
@@ -1045,15 +1061,11 @@ const Dashboard = () => {
           </div>
 
           <div className="tab-content">
-            {activeTab === "overview" ? (
-              renderOverviewTab()
-            ) : activeTab === "requirements" ? (
-              renderRequirementsTab()
-            ) : (
-
-              renderSprintBacklogTab()
-
-            )}
+            {activeTab === "overview"
+              ? renderOverviewTab()
+              : activeTab === "requirements"
+              ? renderRequirementsTab()
+              : renderSprintBacklogTab()}
           </div>
         </div>
 
@@ -1123,9 +1135,9 @@ const Dashboard = () => {
       )}
 
       {selectedSprint && (
-        <SprintDetails 
-          sprint={selectedSprint} 
-          onClose={handleCloseSprintDetails} 
+        <SprintDetails
+          sprint={selectedSprint}
+          onClose={handleCloseSprintDetails}
         />
       )}
 
@@ -1134,7 +1146,6 @@ const Dashboard = () => {
 
       {/* Popup de éxito */}
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
-
 
       {/* Confirmación de eliminación de tarea */}
       {showDeleteConfirmation && taskToDelete && (
@@ -1145,7 +1156,7 @@ const Dashboard = () => {
           <div
             className="popup-content confirmation-popup"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: "400px", textAlign: "center" }}
+            style={{ minWidth: "500px", textAlign: "center" }}
           >
             <button
               className="popup-close"

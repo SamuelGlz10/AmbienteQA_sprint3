@@ -51,7 +51,7 @@ export const getUserById = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, lastname, phone, email, role } = req.body;
+    const { username, lastname, phone, email } = req.body;
 
     const pool = await sqlConnect();
     await pool
@@ -60,10 +60,9 @@ export const updateUser = async (req, res) => {
       .input("username", sql.VarChar, username)
       .input("lastname", sql.VarChar, lastname || null)
       .input("phone", sql.VarChar, phone || null)
-      .input("email", sql.VarChar, email || null)
-      .input("role", sql.VarChar, role || null).query(`
+      .input("email", sql.VarChar, email || null).query(`
         UPDATE dbo.Users
-        SET username = @username, lastname = @lastname, phone = @phone, email = @email, role = @role
+        SET username = @username, lastname = @lastname, phone = @phone, email = @email
         WHERE UserID = @id
       `);
 

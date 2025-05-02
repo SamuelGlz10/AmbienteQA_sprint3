@@ -2,6 +2,14 @@ body {
   background-color: #f8f9fa;
 }
 
+#confirmation-popup {
+  max-width: 400px;
+}
+
+.popup-overlay .popup-content.confirmation-popup {
+  max-width: 400px !important;
+}
+
 .project-dashboard {
   padding: 20px;
   font-family: "Poppins", sans-serif;
@@ -487,7 +495,7 @@ td {
 
 .popup-content {
   background-color: white;
-  min-width: 800px;
+  min-width: 45%;
   border-radius: 12px;
   padding: 2rem;
   position: relative;
