@@ -9,6 +9,7 @@ import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de
 import ConfirmationPopup from "../components/ConfirmationPopup";
 
 function RevisionIA() {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("RNF");
@@ -369,7 +370,7 @@ function RevisionIA() {
       }
 
       // Hacer Post al proyecto
-      const response = await fetch("http://localhost:5001/projectsFB/", {
+      const response = await fetch(`${BACKEND_URL}/projectsFB/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -393,7 +394,7 @@ function RevisionIA() {
 
       // Linkear el proyecto al usuario
       const linkResponse = await fetch(
-        "http://localhost:5001/projectsFB/linkUserToProject",
+        `${BACKEND_URL}/projectsFB/linkUserToProject`,
         {
           method: "POST",
           headers: {

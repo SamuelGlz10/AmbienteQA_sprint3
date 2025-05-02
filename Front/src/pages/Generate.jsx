@@ -8,6 +8,7 @@ import ConfirmationPopup from "../components/ConfirmationPopup";
 import "../css/Generate.css";
 
 function Generate() {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [selectedOption, setSelectedOption] = useState("MIN"); // Estado para controlar la opción seleccionada
@@ -123,7 +124,7 @@ function Generate() {
     }
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5001/generateEpic", {
+      const response = await fetch(`${BACKEND_URL}/generateEpic`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, rules: promptRules, sprints, limit }),

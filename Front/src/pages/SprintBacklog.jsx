@@ -10,6 +10,7 @@ import "../css/SprintBacklog.css";
 const statuses = ["To-Do", "In Progress", "Done"];
 
 const SprintBacklog = () => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { userId } = useContext(UserContext);
@@ -28,14 +29,14 @@ const SprintBacklog = () => {
         {
           title: "Implementar autenticación",
           description: "Crear sistema de login y registro",
-          status: "En progreso"
+          status: "En progreso",
         },
         {
           title: "Diseñar interfaz de usuario",
           description: "Crear wireframes y mockups",
-          status: "Completado"
-        }
-      ]
+          status: "Completado",
+        },
+      ],
     },
     {
       number: 2,
@@ -46,14 +47,14 @@ const SprintBacklog = () => {
         {
           title: "Desarrollar API",
           description: "Implementar endpoints principales",
-          status: "Pendiente"
+          status: "Pendiente",
         },
         {
           title: "Configurar base de datos",
           description: "Crear esquema y migraciones",
-          status: "Pendiente"
-        }
-      ]
+          status: "Pendiente",
+        },
+      ],
     },
     {
       number: 3,
@@ -64,26 +65,23 @@ const SprintBacklog = () => {
         {
           title: "Pruebas de integración",
           description: "Realizar pruebas de sistema completo",
-          status: "Pendiente"
-        }
-      ]
-    }
+          status: "Pendiente",
+        },
+      ],
+    },
   ]);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(
-          `http://localhost:5001/projectsFB/${projectId}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         if (!response.ok) throw new Error("Failed to fetch project");
         const data = await response.json();
         console.log("Project data:", data);
@@ -154,21 +152,28 @@ const SprintBacklog = () => {
       </div>
       <div className="dashboard-content">
         <div className="main-dashboard-content">
-          <button className="back-button" onClick={() => navigate(`/project/${projectId}`)}>
+          <button
+            className="back-button"
+            onClick={() => navigate(`/project/${projectId}`)}
+          >
             ←
           </button>
-          
+
           <div className="sprints-grid">
             {sprints.length > 0 ? (
               sprints.map((sprint, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="sprint-card"
                   onClick={() => handleSprintClick(sprint)}
                 >
                   <h3 className="sprint-title">SPRINT {sprint.number}</h3>
                   <div className="sprint-status-container">
-                    <span className={`status-badge ${sprint.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <span
+                      className={`status-badge ${sprint.status
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                    >
                       {sprint.status}
                     </span>
                   </div>
@@ -176,14 +181,21 @@ const SprintBacklog = () => {
                     <div className="date-item">
                       <span className="calendar-icon">📅</span>
                       <span className="date-text">
-                        {new Date(sprint.startDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        {new Date(sprint.startDate).toLocaleDateString(
+                          "es-ES",
+                          { day: "2-digit", month: "2-digit", year: "numeric" }
+                        )}
                       </span>
                     </div>
                     <div className="date-separator">→</div>
                     <div className="date-item">
                       <span className="calendar-icon">📅</span>
                       <span className="date-text">
-                        {new Date(sprint.endDate).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                        {new Date(sprint.endDate).toLocaleDateString("es-ES", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })}
                       </span>
                     </div>
                   </div>
@@ -192,7 +204,11 @@ const SprintBacklog = () => {
                       <div key={taskIndex} className="sprint-task">
                         <h4>{task.title}</h4>
                         <p>{task.description}</p>
-                        <span className={`task-status-badge ${task.status.toLowerCase().replace(/\s+/g, '-')}`}>
+                        <span
+                          className={`task-status-badge ${task.status
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")}`}
+                        >
                           {task.status}
                         </span>
                       </div>
@@ -210,16 +226,19 @@ const SprintBacklog = () => {
       </div>
 
       {selectedSprint && (
-        <SprintDetails 
-          sprint={selectedSprint} 
-          onClose={handleCloseSprintDetails} 
+        <SprintDetails
+          sprint={selectedSprint}
+          onClose={handleCloseSprintDetails}
         />
       )}
 
       <ErrorPopup message={error} onClose={() => setError(null)} />
-      <SuccessPopup message={successMessage} onClose={() => setSuccessMessage(null)} />
+      <SuccessPopup
+        message={successMessage}
+        onClose={() => setSuccessMessage(null)}
+      />
     </div>
   );
 };
 
-export default SprintBacklog; 
+export default SprintBacklog;

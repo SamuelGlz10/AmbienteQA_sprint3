@@ -6,6 +6,7 @@ import SuccessPopup from "../components/SuccessPopup"; // Importar el componente
 import "../css/Perfil.css";
 
 function Perfil() {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
   const navigate = useNavigate();
 
   const [userData, setUserData] = useState(null);
@@ -33,12 +34,12 @@ function Perfil() {
         const token = localStorage.getItem("token"); // Retrieve the token from localStorage
 
         const [userResponse, projectsResponse] = await Promise.all([
-          fetch(`http://localhost:5001/users/${userId}`, {
+          fetch(`${BACKEND_URL}/users/${userId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          fetch(`http://localhost:5001/projectsFB/${userId}/projectAndTitle`, {
+          fetch(`${BACKEND_URL}/projectsFB/${userId}/projectAndTitle`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -117,7 +118,7 @@ function Perfil() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/users/${userId}`, {
+      const response = await fetch(`${BACKEND_URL}/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
