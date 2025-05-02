@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { UserContext } from "../components/UserContext";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
-import ConfirmationPopup from "../components/ConfirmationPopup";
 import TopAppBar from "../components/TopAppBar";
 import EditMemberPopup from "../components/EditMemeberPopup";
 import RenderRequirementsTab from "../components/RenderRequirementsTab";
@@ -88,6 +87,7 @@ const Dashboard = () => {
       ],
     },
   ]);
+  const [tasks, setTasks] = useState([]); // Todas las tareas del proyecto
   const [selectedSprint, setSelectedSprint] = useState(null);
 
   const [teamMembers, setTeamMembers] = useState([]);
@@ -115,7 +115,6 @@ const Dashboard = () => {
     priority: "",
     assignee: "",
   });
-  const [tasks, setTasks] = useState({});
 
   // Agregar estos nuevos estados para el manejo de la eliminación de tareas
   const [taskToDelete, setTaskToDelete] = useState(null);
@@ -185,6 +184,41 @@ const Dashboard = () => {
       setError("Error al cargar el proyecto. Por favor, inténtalo de nuevo.");
       console.error("Error fetching project:", error);
     }
+  };
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5001/projectsFB/${projectId}/all-tasks`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error("Error al cargar las tareas");
+
+        const { tasks: dbTasks } = await response.json();
+        setTasks(dbTasks); // Guardar todas las tareas en el estado
+      } catch (error) {
+        console.error("Error al cargar las tareas:", error);
+        setError("No se pudieron cargar las tareas del proyecto.");
+      }
+    };
+
+    fetchTasks();
+  }, [projectId]);
+
+  const handleSprintClick = (sprint) => {
+    setSelectedSprint(sprint);
+  };
+
+  const handleCloseSprintDetails = () => {
+    setSelectedSprint(null);
   };
 
   const fetchAvailableUsers = async (projectMembers) => {
@@ -690,19 +724,6 @@ const Dashboard = () => {
     }
   };
 
-  const confirmDeleteTask = () => {
-    if (taskToDelete) {
-      handleDeleteTask(taskToDelete.id, taskToDelete.elementId);
-    }
-    setShowDeleteConfirmation(false);
-    setTaskToDelete(null);
-  };
-
-  const cancelDeleteTask = () => {
-    setShowDeleteConfirmation(false);
-    setTaskToDelete(null);
-  };
-
   // Modificar la función handleDeleteTask para desactivar el modo eliminación
   const handleDeleteTask = async (taskId, elementId) => {
     // 1. Actualizar estado local
@@ -744,14 +765,6 @@ const Dashboard = () => {
       console.error("Error al eliminar tarea en servidor:", err);
       setError("Error al eliminar la tarea en el servidor.");
     }
-  };
-
-  const handleSprintClick = (sprint) => {
-    setSelectedSprint(sprint);
-  };
-
-  const handleCloseSprintDetails = () => {
-    setSelectedSprint(null);
   };
 
   const renderSprintBacklogTab = () => (
@@ -796,21 +809,6 @@ const Dashboard = () => {
                 </span>
               </div>
             </div>
-            <div className="sprint-tasks">
-              {sprint.tasks?.map((task, taskIndex) => (
-                <div key={taskIndex} className="sprint-task">
-                  <h4>{task.title}</h4>
-                  <p>{task.description}</p>
-                  <span
-                    className={`task-status-badge ${task.status
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                  >
-                    {task.status}
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         ))
       ) : (
@@ -820,6 +818,8 @@ const Dashboard = () => {
       )}
     </div>
   );
+
+  
 
   const renderRequirementsTab = () => (
     <RenderRequirementsTab
@@ -890,10 +890,6 @@ const Dashboard = () => {
       sethShowProjectDeleteConfirmation(false);
       setProjectToDelete(null);
     }
-  };
-
-  const cancelDeleteProject = () => {
-    setShowProjectDeleteConfirmation(false);
   };
 
   if (loading) {
@@ -1144,6 +1140,8 @@ const Dashboard = () => {
       {selectedSprint && (
         <SprintDetails
           sprint={selectedSprint}
+          tasks={tasks.filter((task) => task.sprint === selectedSprint.number)} // Filtrar tareas por sprint
+          setTasks={setTasks}
           onClose={handleCloseSprintDetails}
         />
       )}
@@ -1155,31 +1153,80 @@ const Dashboard = () => {
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
 
       {/* Confirmación de eliminación de tarea */}
-      <ConfirmationPopup
-        isVisible={showDeleteConfirmation}
-        onClose={cancelDeleteTask}
-        onConfirm={confirmDeleteTask}
-        title="Confirmar eliminación"
-        message={`¿Estás seguro que deseas eliminar la tarea "${taskToDelete?.title}"?`}
-        confirmText="Eliminar"
-        cancelText="Cancelar"
-      />
-
-      {/* Confirmación de eliminación de proyecto */}
-      <ConfirmationPopup
-        isVisible={showProjectDeleteConfirmation}
-        onClose={cancelDeleteProject}
-        onConfirm={confirmDeleteProject}
-        title="Confirmar eliminación del proyecto"
-        message="¿Estás seguro que deseas eliminar el proyecto?"
-        confirmText={countdown > 0 ? `Eliminar (${countdown})` : "Eliminar"}
-        cancelText="Cancelar"
-        loading={countdown > 0}
-        confirmButtonStyle={{
-          backgroundColor: countdown > 0 ? "black" : "",
-          cursor: countdown > 0 ? "not-allowed" : "pointer",
-        }}
-      />
+      {showDeleteConfirmation && taskToDelete && (
+        <div
+          className="popup-overlay"
+          onClick={() => setShowDeleteConfirmation(false)}
+        >
+          <div
+            className="popup-content confirmation-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={{ minWidth: "500px", textAlign: "center" }}
+          >
+            <button
+              className="popup-close"
+              onClick={() => setShowDeleteConfirmation(false)}
+            >
+              ×
+            </button>
+            <h3>Confirmar eliminación</h3>
+            <p>
+              ¿Estás seguro que deseas eliminar la tarea "{taskToDelete.title}"?
+            </p>
+            <p>Esta acción no se puede deshacer.</p>
+            <div className="confirmation-actions">
+              <button
+                className="cancel-button"
+                onClick={() => setShowDeleteConfirmation(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="delete-button"
+                onClick={() =>
+                  handleDeleteTask(taskToDelete.id, taskToDelete.elementId)
+                }
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showProjectDeleteConfirmation && (
+        <div
+          className="popup-overlay"
+          onClick={() => setShowProjectDeleteConfirmation(false)}
+        >
+          <div
+            className="popup-content confirmation-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "400px", textAlign: "center" }}
+          >
+            <h3>Confirmar eliminación</h3>
+            <p>
+              ¿Estás seguro que deseas eliminar el proyecto? Esta acción no se
+              puede deshacer.
+            </p>
+            <div className="confirmation-actions">
+              <button
+                className="cancel-button"
+                onClick={() => setShowProjectDeleteConfirmation(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="delete-button"
+                id="project-delete-button"
+                disabled={countdown > 0}
+                onClick={confirmDeleteProject}
+              >
+                {countdown > 0 ? `Eliminar (${countdown})` : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Popup de error */}
       <ErrorPopup message={error} onClose={closeErrorPopup} />

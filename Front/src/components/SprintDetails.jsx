@@ -1,47 +1,54 @@
 import React, { useState } from 'react';
 import '../css/SprintDetails.css';
 
-const SprintDetails = ({ sprint, onClose }) => {
-  const [tasks, setTasks] = useState(sprint.tasks || []);
+const SprintDetails = ({ sprint, tasks, onClose }) => {
   const [draggedTask, setDraggedTask] = useState(null);
 
+  // Manejar el inicio del arrastre de una tarea
   const handleDragStart = (e, task) => {
     setDraggedTask(task);
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e, status) => {
+  // Permitir que una tarea se arrastre sobre una columna
+  const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
 
+  // Manejar el soltar de una tarea en una nueva columna
   const handleDrop = (e, newStatus) => {
     e.preventDefault();
     if (draggedTask) {
-      const updatedTasks = tasks.map(task => 
-        task.title === draggedTask.title 
-          ? { ...task, status: newStatus }
-          : task
-      );
-      setTasks(updatedTasks);
+      // Actualizar el estado de la tarea arrastrada
+      const updatedTask = { ...draggedTask, status: newStatus };
+
+      // Aquí podrías sincronizar los cambios con Firebase o el estado global
+      console.log('Tarea actualizada:', updatedTask);
+
       setDraggedTask(null);
     }
   };
 
+  // Filtrar las tareas por estado
   const getTasksByStatus = (status) => {
-    return tasks.filter(task => task.status === status);
+    return tasks.filter((task) => task.status === status);
   };
 
+  // Calcular el progreso del sprint
   const calculateProgress = () => {
-    const completedTasks = tasks.filter(task => task.status === 'Completado').length;
-    return (completedTasks / tasks.length) * 100;
+    const completedTasks = tasks.filter((task) => task.status === 'Completado').length;
+    return tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
   };
 
   return (
     <div className="sprint-details-overlay" onClick={onClose}>
-      <div className="sprint-details-content" onClick={e => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>×</button>
-        
+      <div className="sprint-details-content" onClick={(e) => e.stopPropagation()}>
+        <button className="close-button" onClick={onClose}>
+          ×
+        </button>
+
+        {/* Encabezado del sprint */}
         <div className="sprint-header">
           <h2>Sprint {sprint.number}</h2>
           <div className="sprint-dates">
@@ -51,29 +58,32 @@ const SprintDetails = ({ sprint, onClose }) => {
           </div>
         </div>
 
+        {/* Barra de progreso */}
         <div className="progress-container">
           <div className="progress-bar">
-            <div 
-              className="progress-fill" 
+            <div
+              className="progress-fill"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
           <span className="progress-text">{Math.round(calculateProgress())}% Completado</span>
         </div>
 
+        {/* Tablero Kanban */}
         <div className="kanban-board">
-          <div 
+          {/* Columna de tareas pendientes */}
+          <div
             className="kanban-column"
-            onDragOver={e => handleDragOver(e, 'Pendiente')}
-            onDrop={e => handleDrop(e, 'Pendiente')}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'Pendiente')}
           >
             <h3>Pendiente</h3>
-            {getTasksByStatus('Pendiente').map((task, index) => (
+            {getTasksByStatus('Pendiente').map((task) => (
               <div
-                key={index}
+                key={task.id}
                 className="task-card"
                 draggable
-                onDragStart={e => handleDragStart(e, task)}
+                onDragStart={(e) => handleDragStart(e, task)}
               >
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
@@ -81,18 +91,19 @@ const SprintDetails = ({ sprint, onClose }) => {
             ))}
           </div>
 
-          <div 
+          {/* Columna de tareas en progreso */}
+          <div
             className="kanban-column"
-            onDragOver={e => handleDragOver(e, 'En progreso')}
-            onDrop={e => handleDrop(e, 'En progreso')}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'En progreso')}
           >
             <h3>En Progreso</h3>
-            {getTasksByStatus('En progreso').map((task, index) => (
+            {getTasksByStatus('En progreso').map((task) => (
               <div
-                key={index}
+                key={task.id}
                 className="task-card"
                 draggable
-                onDragStart={e => handleDragStart(e, task)}
+                onDragStart={(e) => handleDragStart(e, task)}
               >
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
@@ -100,18 +111,19 @@ const SprintDetails = ({ sprint, onClose }) => {
             ))}
           </div>
 
-          <div 
+          {/* Columna de tareas completadas */}
+          <div
             className="kanban-column"
-            onDragOver={e => handleDragOver(e, 'Completado')}
-            onDrop={e => handleDrop(e, 'Completado')}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'Completado')}
           >
             <h3>Completado</h3>
-            {getTasksByStatus('Completado').map((task, index) => (
+            {getTasksByStatus('Completado').map((task) => (
               <div
-                key={index}
+                key={task.id}
                 className="task-card"
                 draggable
-                onDragStart={e => handleDragStart(e, task)}
+                onDragStart={(e) => handleDragStart(e, task)}
               >
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
@@ -124,4 +136,4 @@ const SprintDetails = ({ sprint, onClose }) => {
   );
 };
 
-export default SprintDetails; 
+export default SprintDetails;
