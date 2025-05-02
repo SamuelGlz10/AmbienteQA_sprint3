@@ -14,6 +14,12 @@ const allowedOrigins = [
   "https://soft-edge-two.vercel.app",
 ];
 
+// Middleware para eliminar barras diagonales dobles en la URL
+app.use((req, res, next) => {
+  req.url = req.url.replace(/\/+/g, "/");
+  next();
+});
+
 // Middleware
 app.use(
   cors({
