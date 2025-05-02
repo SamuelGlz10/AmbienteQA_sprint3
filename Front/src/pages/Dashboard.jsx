@@ -13,6 +13,7 @@ import SprintDetails from "../components/SprintDetails";
 import "../css/Dashboard.css";
 
 const Dashboard = () => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const role = localStorage.getItem("role");
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -166,16 +167,13 @@ const Dashboard = () => {
 
   const fetchProject = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}`,
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!response.ok) throw new Error("Failed to fetch project");
       const data = await response.json();
       setProject(data);
@@ -191,7 +189,7 @@ const Dashboard = () => {
 
   const fetchAvailableUsers = async (projectMembers) => {
     try {
-      const response = await fetch("http://localhost:5001/users", {
+      const response = await fetch(`${BACKEND_URL}/users`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -234,7 +232,7 @@ const Dashboard = () => {
   const fetchTeamMembers = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/team`,
+        `${BACKEND_URL}/projectsFB/${projectId}/team`,
         {
           method: "GET",
           headers: {
@@ -276,7 +274,7 @@ const Dashboard = () => {
   const fetchAllTasks = async () => {
     try {
       const resp = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/all-tasks`,
+        `${BACKEND_URL}/projectsFB/${projectId}/all-tasks`,
         {
           method: "GET",
           headers: {
@@ -302,17 +300,14 @@ const Dashboard = () => {
 
   const handleSave = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(editData),
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(editData),
+      });
 
       if (!response.ok) throw new Error("Failed to update project");
 
@@ -358,22 +353,19 @@ const Dashboard = () => {
         data: requirementEditData.description,
       }));
 
-      const response = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            ...updatedProject,
-            nombreProyecto: updatedProject.nombreProyecto,
-            descripcion: updatedProject.descripcion,
-            [activeRequirement]: updatedProject[activeRequirement],
-          }),
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          ...updatedProject,
+          nombreProyecto: updatedProject.nombreProyecto,
+          descripcion: updatedProject.descripcion,
+          [activeRequirement]: updatedProject[activeRequirement],
+        }),
+      });
 
       if (!response.ok) throw new Error("Error al guardar en el servidor");
 
@@ -436,7 +428,7 @@ const Dashboard = () => {
     // Fetch tasks for this element
     try {
       const resp = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}/tasks?requirementType=${activeRequirement}&elementId=${item.id}`,
+        `${BACKEND_URL}/projectsFB/${projectId}/tasks?requirementType=${activeRequirement}&elementId=${item.id}`,
         {
           method: "GET",
           headers: {
@@ -490,7 +482,7 @@ const Dashboard = () => {
       // 1) Vincular los nuevos
       await Promise.all(
         addedMembers.map((m) =>
-          fetch("http://localhost:5001/projectsFB/linkUserToProject", {
+          fetch(`${BACKEND_URL}/projectsFB/linkUserToProject`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -504,7 +496,7 @@ const Dashboard = () => {
       // 2) Desvincular los eliminados
       await Promise.all(
         removedMembers.map((m) =>
-          fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+          fetch(`${BACKEND_URL}/projectsFB/unlinkUserFromProject`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -559,7 +551,7 @@ const Dashboard = () => {
   const handleRemoveMember = async (member) => {
     try {
       // Hacer la llamada a la API para desvincular el usuario del proyecto
-      await fetch("http://localhost:5001/projectsFB/unlinkUserFromProject", {
+      await fetch(`${BACKEND_URL}/projectsFB/unlinkUserFromProject`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -684,7 +676,7 @@ const Dashboard = () => {
             teamMembers.find((m) => m.email === task.assignee)?.id || null,
         })),
       };
-      await fetch(`http://localhost:5001/projectsFB/${projectId}/tasks`, {
+      await fetch(`${BACKEND_URL}/projectsFB/${projectId}/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -740,7 +732,7 @@ const Dashboard = () => {
             teamMembers.find((m) => m.email === task.assignee)?.id || null,
         })),
       };
-      await fetch(`http://localhost:5001/projectsFB/${projectId}/tasks`, {
+      await fetch(`${BACKEND_URL}/projectsFB/${projectId}/tasks`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -877,16 +869,13 @@ const Dashboard = () => {
 
   const confirmDeleteProject = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:5001/projectsFB/${projectId}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       if (!response.ok) throw new Error("Failed to delete project");
 

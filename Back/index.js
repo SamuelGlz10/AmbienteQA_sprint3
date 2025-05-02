@@ -35,9 +35,11 @@ app.use(projectsFBRouters);
 app.use(aiRoutes);
 
 // Development only: (comentar para produccion)
-const PORT = process.env.BACK_PORT || 5001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.BACK_PORT || 5001;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
 export default app;

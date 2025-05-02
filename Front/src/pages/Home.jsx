@@ -9,6 +9,7 @@ import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de
 import "../css/Home.css";
 
 const Home = () => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const [projects, setProjects] = useState([]);
   const [displayCount, setDisplayCount] = useState(18);
   const [sortType, setSortType] = useState("Por Defecto");
@@ -45,7 +46,7 @@ const Home = () => {
 
     try {
       const result = await fetch(
-        `http://localhost:5001/projectsFB/?userId=${userId}`,
+        `${BACKEND_URL}/projectsFB/?userId=${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

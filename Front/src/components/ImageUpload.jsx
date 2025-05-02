@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 const ImageUpload = ({ projectId }) => {
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
 
@@ -19,7 +20,7 @@ const ImageUpload = ({ projectId }) => {
     formData.append("file", file); // Pasar el archivo seleccionado
 
     try {
-      const response = await fetch("http://localhost:5001/projectsFB/uploadImage", {
+      const response = await fetch(`${BACKEND_URL}/projectsFB/uploadImage`, {
         method: "POST",
         body: formData,
       });
