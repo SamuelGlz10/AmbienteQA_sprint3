@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import '../css/SprintDetails.css';
 
-const SprintDetails = ({ sprint, onClose }) => {
-  const [tasks, setTasks] = useState(sprint.tasks || []);
+const SprintDetails = ({ sprint, tasks, onClose }) => {
   const [draggedTask, setDraggedTask] = useState(null);
 
   const handleDragStart = (e, task) => {
@@ -10,7 +9,7 @@ const SprintDetails = ({ sprint, onClose }) => {
     e.dataTransfer.effectAllowed = 'move';
   };
 
-  const handleDragOver = (e, status) => {
+  const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
   };
@@ -18,30 +17,32 @@ const SprintDetails = ({ sprint, onClose }) => {
   const handleDrop = (e, newStatus) => {
     e.preventDefault();
     if (draggedTask) {
-      const updatedTasks = tasks.map(task => 
-        task.title === draggedTask.title 
-          ? { ...task, status: newStatus }
-          : task
-      );
-      setTasks(updatedTasks);
+      // Actualizar el estado de la tarea arrastrada
+      const updatedTask = { ...draggedTask, status: newStatus };
+
+      // Aquí podrías sincronizar los cambios con Firebase o el estado global
+      console.log('Tarea actualizada:', updatedTask);
+
       setDraggedTask(null);
     }
   };
 
   const getTasksByStatus = (status) => {
-    return tasks.filter(task => task.status === status);
+    return tasks.filter((task) => task.status === status);
   };
 
   const calculateProgress = () => {
-    const completedTasks = tasks.filter(task => task.status === 'Completado').length;
-    return (completedTasks / tasks.length) * 100;
+    const completedTasks = tasks.filter((task) => task.status === 'Completado').length;
+    return tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
   };
 
   return (
     <div className="sprint-details-overlay" onClick={onClose}>
-      <div className="sprint-details-content" onClick={e => e.stopPropagation()}>
-        <button className="close-button" onClick={onClose}>×</button>
-        
+      <div className="sprint-details-content" onClick={(e) => e.stopPropagation()}>
+        <button className="close-button" onClick={onClose}>
+          ×
+        </button>
+
         <div className="sprint-header">
           <h2>Sprint {sprint.number}</h2>
           <div className="sprint-dates">
@@ -53,8 +54,8 @@ const SprintDetails = ({ sprint, onClose }) => {
 
         <div className="progress-container">
           <div className="progress-bar">
-            <div 
-              className="progress-fill" 
+            <div
+              className="progress-fill"
               style={{ width: `${calculateProgress()}%` }}
             ></div>
           </div>
@@ -62,18 +63,18 @@ const SprintDetails = ({ sprint, onClose }) => {
         </div>
 
         <div className="kanban-board">
-          <div 
+          <div
             className="kanban-column"
-            onDragOver={e => handleDragOver(e, 'Pendiente')}
-            onDrop={e => handleDrop(e, 'Pendiente')}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'Pendiente')}
           >
             <h3>Pendiente</h3>
-            {getTasksByStatus('Pendiente').map((task, index) => (
+            {getTasksByStatus('Pendiente').map((task) => (
               <div
-                key={index}
+                key={task.id}
                 className="task-card"
                 draggable
-                onDragStart={e => handleDragStart(e, task)}
+                onDragStart={(e) => handleDragStart(e, task)}
               >
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
@@ -81,18 +82,18 @@ const SprintDetails = ({ sprint, onClose }) => {
             ))}
           </div>
 
-          <div 
+          <div
             className="kanban-column"
-            onDragOver={e => handleDragOver(e, 'En progreso')}
-            onDrop={e => handleDrop(e, 'En progreso')}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'En progreso')}
           >
             <h3>En Progreso</h3>
-            {getTasksByStatus('En progreso').map((task, index) => (
+            {getTasksByStatus('En progreso').map((task) => (
               <div
-                key={index}
+                key={task.id}
                 className="task-card"
                 draggable
-                onDragStart={e => handleDragStart(e, task)}
+                onDragStart={(e) => handleDragStart(e, task)}
               >
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
@@ -100,18 +101,18 @@ const SprintDetails = ({ sprint, onClose }) => {
             ))}
           </div>
 
-          <div 
+          <div
             className="kanban-column"
-            onDragOver={e => handleDragOver(e, 'Completado')}
-            onDrop={e => handleDrop(e, 'Completado')}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, 'Completado')}
           >
             <h3>Completado</h3>
-            {getTasksByStatus('Completado').map((task, index) => (
+            {getTasksByStatus('Completado').map((task) => (
               <div
-                key={index}
+                key={task.id}
                 className="task-card"
                 draggable
-                onDragStart={e => handleDragStart(e, task)}
+                onDragStart={(e) => handleDragStart(e, task)}
               >
                 <h4>{task.title}</h4>
                 <p>{task.description}</p>
@@ -124,4 +125,4 @@ const SprintDetails = ({ sprint, onClose }) => {
   );
 };
 
-export default SprintDetails; 
+export default SprintDetails;
