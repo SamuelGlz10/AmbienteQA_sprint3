@@ -18,6 +18,8 @@ const Home = () => {
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
 
+  const [searchQuery, setSearchQuery] = useState(""); // Estado para manejar la búsqueda
+
   const navigate = useNavigate();
 
   const { userId, role, userLoading } = useContext(UserContext); // Obtener variables del contexto de usuario
@@ -86,14 +88,22 @@ const Home = () => {
     }
   }, [userLoading, isLogin, role, error]);
 
+  const filteredProjects = projects.filter(
+    (project) =>
+      project.nombreProyecto
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      project.descripcion?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const sortedProjects = React.useMemo(() => {
     if (sortType === "Nombre") {
-      return [...projects].sort((a, b) =>
+      return [...filteredProjects].sort((a, b) =>
         (a.nombreProyecto || a.id).localeCompare(b.nombreProyecto || b.id)
       );
     }
-    return projects;
-  }, [projects, sortType]);
+    return filteredProjects;
+  }, [filteredProjects, sortType]);
 
   return (
     <div className="home-container">
@@ -105,8 +115,26 @@ const Home = () => {
 
       <div className="controls-container">
         <div className="pagination-info">
-          Mostrando 1 - {Math.min(displayCount, projects.length)} de{" "}
-          {projects.length}
+          Mostrando 1 - {Math.min(displayCount, sortedProjects.length)} de{" "}
+          {sortedProjects.length}
+        </div>
+
+        <div className="search-bar-container" style={{ maxWidth: "500px" }}>
+          <input
+            type="text"
+            placeholder="Buscar proyectos por nombre o descripción..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-bar"
+          />
+          {searchQuery && (
+            <button
+              className="clear-search-button"
+              onClick={() => setSearchQuery("")}
+            >
+              ×
+            </button>
+          )}
         </div>
 
         <div className="sort-control">
@@ -120,6 +148,8 @@ const Home = () => {
             <option>Nombre</option>
           </select>
         </div>
+
+        {/* Search Bar */}
       </div>
 
       <div className="projects-grid">
