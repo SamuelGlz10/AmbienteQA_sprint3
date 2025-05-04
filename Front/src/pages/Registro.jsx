@@ -29,27 +29,30 @@ const Registro = () => {
       return;
     }
 
-    const response = await fetch(`${BACKEND_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: usuario,
-        lastname: appellido,
-        email: correo,
-        phone: telefono,
-        password: contrasena,
-      }),
-    });
+    try {
+      const response = await fetch(`${BACKEND_URL}/registro`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: usuario,
+          lastname: appellido,
+          email: correo,
+          phone: telefono,
+          password: contrasena,
+        }),
+      });
 
-    if (response.ok) {
-      setSuccessMessage("¡Registro exitoso!"); // Muestra el popup de éxito
-    } else {
-      const errorData = await response.json();
-      setError(
-        `Error al registrarse: ${errorData.message || "Error desconocido"}`
-      ); // Muestra el popup de error
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccessMessage("¡Registro exitoso! Redirigiendo al inicio de sesión..."); // Muestra el popup de éxito
+      } else {
+        setError(data.message || "Error al registrarse"); // Muestra el popup de error
+      }
+    } catch (error) {
+      setError("Error al conectar con el servidor"); // Muestra el popup de error
     }
   };
 
