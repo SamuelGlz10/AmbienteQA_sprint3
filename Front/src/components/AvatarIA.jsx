@@ -4,6 +4,7 @@ import siteInfo from "../data/siteContext.json"; // <— nuevo import
 
 const AvatarIA = () => {
   const [showPopup, setShowPopup] = useState(false);
+  const [popupAnimation, setPopupAnimation] = useState(""); // nueva variable para animación
   const [showChat, setShowChat] = useState(false);
   const [messages, setMessages] = useState([
     { text: "¿En qué te puedo ayudar?", sender: "other" },
@@ -30,8 +31,16 @@ const AvatarIA = () => {
   }, [showChat]);
 
   const handleTogglePopup = () => {
-    setShowPopup(!showPopup);
-    setShowChat(false); // Cerrar el chat si el popup se cierra
+    if (!showPopup) {
+      setShowPopup(true);
+      setPopupAnimation("slideIn");
+    } else {
+      setPopupAnimation("slideOut");
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 300); // duración de la animación
+      setShowChat(false); // Cerrar el chat si el popup se cierra
+    }
   };
 
   // cargar contexto de proyecto y tareas al abrir chat
@@ -140,7 +149,7 @@ Responde siempre en 2–3 frases máximo, no uses palabras tecnicas y no pongas 
       </button>
       {showPopup && (
         <div className="ia-popup-overlay" onClick={handleTogglePopup}>
-          <div className="ia-popup-sidebar" onClick={(e) => e.stopPropagation()}>
+          <div className={`ia-popup-sidebar ${popupAnimation}`} onClick={(e) => e.stopPropagation()}>
             {!showChat ? (
               <>
                 <h2>¿En qué te puedo ayudar?</h2>
@@ -159,7 +168,6 @@ Responde siempre en 2–3 frases máximo, no uses palabras tecnicas y no pongas 
             ) : (
               <div className="chat-container">
                 <h2>Chat</h2>
-                {/* contenedor de mensajes con ref */}
                 <div className="chat-messages" ref={messagesRef}>
                   {messages.map((msg, index) => (
                     <p
@@ -171,6 +179,13 @@ Responde siempre en 2–3 frases máximo, no uses palabras tecnicas y no pongas 
                       {msg.text}
                     </p>
                   ))}
+                  {isLoading && (
+                    <p className="chat-message other-message thinking-message">
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                      <span className="dot"></span>
+                    </p>
+                  )}
                 </div>
                 <div className="chat-input-container">
                   <input

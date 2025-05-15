@@ -199,3 +199,71 @@
 .chat-send-button .material-icons {
   font-size: 24px; /* Tamaño del ícono */
 }
+
+/* Animaciones para el popup */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.ia-popup-sidebar.slideIn {
+  animation: slideIn 0.25s forwards;
+}
+
+.ia-popup-sidebar.slideOut {
+  animation: slideOut 0.25s forwards;
+}
+
+.chat-message.thinking-message {
+  background-color: #f0f0f0; /* similar al mensaje recibido */
+  color: #333;
+  min-height: 40px;
+  min-width: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #7a5a96;
+  margin: 0 4px;
+  animation: blink 1.5s infinite;
+  animation-fill-mode: both;          /* asegura que el estado inicial sea consistente */
+  animation-timing-function: ease-in-out;  /* transición suave */
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
