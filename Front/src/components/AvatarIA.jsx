@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../css/AvatarIA.css";
+import siteInfo from "../data/siteContext.json"; // <— nuevo import
 
 const AvatarIA = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -8,6 +9,7 @@ const AvatarIA = () => {
     { text: "¿En qué te puedo ayudar?", sender: "other" },
   ]);
   const [currentMessage, setCurrentMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   // ref para el contenedor de mensajes
@@ -19,6 +21,13 @@ const AvatarIA = () => {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // nuevo efecto: al abrir el chat, desplazar hasta abajo
+  useEffect(() => {
+    if (showChat && messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+  }, [showChat]);
 
   const handleTogglePopup = () => {
     setShowPopup(!showPopup);
@@ -62,7 +71,8 @@ const AvatarIA = () => {
 
   const handleSendMessage = async () => {
     const text = currentMessage.trim();
-    if (!text) return;
+    if (!text || isLoading) return;
+    setIsLoading(true);
     // mostrar mensaje del usuario
     setMessages((prev) => [...prev, { text, sender: "user" }]);
     setCurrentMessage("");
@@ -73,9 +83,15 @@ const AvatarIA = () => {
     );
     const sprints = projectContext.sprintNumber || 1;
     const limit = 1;
-    // actualizar instrucciones de la IA
-    const rules = `Eres el asistente virtual de SoftEdge. Tienes acceso a la información de los proyectos del usuario (projectContext) y a la página actual (currentUrl). Responde preguntas sobre sus proyectos, características del sistema y uso de la plataforma segun te lo pregunten. Ofrece respuestas claras y concisas, sin exceder lo necesario para entender la respuesta. Si dispones de datos en projectContext, ÚSALOS SIEMPRE para responder con precisión sobre el proyecto y las tareas.`;
     const token = localStorage.getItem("token");
+
+    // reglas mejoradas
+    const rules = `Eres el asistente virtual de SoftEdge. Tienes acceso a:
+- projectContext (datos del proyecto actual),
+- siteInfo (estructura completa de la app),
+- currentUrl (ruta actual).
+Responde siempre en 2–3 frases máximo, no uses palabras tecnicas y no pongas nada asi en tus mensajes "(/home)", usa viñetas solo si es imprescindible, y entrega únicamente lo esencial sobre la página actual (${window.location.pathname}).`; 
+
     try {
       const response = await fetch(`${BACKEND_URL}/generateEpic`, {
         method: "POST",
@@ -88,8 +104,9 @@ const AvatarIA = () => {
           rules,
           sprints,
           limit,
-          context: projectContext, // añadir contexto
-          currentUrl: window.location.pathname, // añadir URL
+          context: projectContext,
+          siteInfo, // <— nuevo campo
+          currentUrl: window.location.pathname,
         }),
       });
 
@@ -105,6 +122,8 @@ const AvatarIA = () => {
         ...prev,
         { text: "Error al comunicarse con la IA.", sender: "other" },
       ]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -161,9 +180,16 @@ const AvatarIA = () => {
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
+                    disabled={isLoading}
                   />
-                  <button className="chat-send-button" onClick={handleSendMessage}>
-                    <span className="material-icons">arrow_upward</span>
+                  <button
+                    className="chat-send-button"
+                    onClick={handleSendMessage}
+                    disabled={isLoading}
+                  >
+                    <span className="material-icons">
+                      {isLoading ? "hourglass_empty" : "arrow_upward"}
+                    </span>
                   </button>
                 </div>
                 <button
