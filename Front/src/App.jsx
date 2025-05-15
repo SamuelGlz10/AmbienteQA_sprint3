@@ -12,42 +12,44 @@ import RevisionIA from "./pages/RevisionIA";
 import Dashboard from "./pages/Dashboard";
 import SprintBacklog from "./pages/SprintBacklog.jsx";
 import Perfil from "./pages/Perfil.jsx";
+import AvatarIA from "./components/AvatarIA";
 
 function App() {
   const { isLogin } = useContext(AuthContext);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/"
-          element={isLogin ? <Navigate to="/home" /> : <Navigate to="/login" />}
-        />
-        <Route path="/login" element={<Login />} />
-        <Route path="/registro" element={<Registro />} />
-        <Route
-          path="/home"
-          element={isLogin ? <Home /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/generate"
-          element={isLogin ? <Generate /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/revisionIA"
-          element={isLogin ? <RevisionIA /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/project/:projectId"
-          element={isLogin ? <Dashboard /> : <Navigate to="/login" />}
-        />
-        <Route 
-          path="/perfil" element={<Perfil />}
-        />
-               
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={isLogin ? <Navigate to="/home" /> : <Navigate to="/login" />}
+          />
+          <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
+          <Route
+            path="/home"
+            element={isLogin ? <Home /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/generate"
+            element={isLogin ? <Generate /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/revisionIA"
+            element={isLogin ? <RevisionIA /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/project/:projectId"
+            element={isLogin ? <Dashboard /> : <Navigate to="/login" />}
+          />
+          <Route path="/perfil" element={<Perfil />} />
+
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
+      <AvatarIA />
+    </>
   );
 }
 
