@@ -1,0 +1,66 @@
+{
+  "pages": [
+    {
+      "path": "/login",
+      "name": "Login",
+      "description": "Pantalla de inicio de sesión."
+    },
+    {
+      "path": "/registro",
+      "name": "Registro",
+      "description": "Formulario para crear una cuenta nueva."
+    },
+    {
+      "path": "/home",
+      "name": "Home",
+      "description": "Listado de proyectos y controles tras iniciar sesión."
+    },
+    {
+      "path": "/generate",
+      "name": "Generate",
+      "description": "Genera historias de usuario y tareas con IA."
+    },
+    {
+      "path": "/revisionIA",
+      "name": "RevisionIA",
+      "description": "Revisa y edita la salida generada por la IA."
+    },
+    {
+      "path": "/project/:projectId",
+      "name": "Dashboard",
+      "description": "Panel de proyecto con pestañas de vista general, elementos, sprint backlog,y una opcion para agregar personal al proyecto."
+    },
+    {
+      "path": "/perfil",
+      "name": "Perfil",
+      "description": "Edición de datos personales del usuario y cambio de contraseña."
+    }
+  ],
+  "components": [
+    {
+      "name": "NavBar",
+      "description": "Barra superior con navegación principal y acceso a perfil."
+    },
+    {
+      "name": "SideMenu",
+      "description": "Menú lateral con enlaces a secciones clave de la aplicación."
+    },
+    {
+      "name": "Header",
+      "description": "Encabezado de sección con título y acciones contextuales."
+    },
+    {
+      "name": "AvatarIA",
+      "description": "Chatbot IA para asistencia contextual según proyecto y vista actual."
+    }
+
+  ],
+  "features": [
+    "Arrastrar y soltar tareas en Kanban",
+    "Actualizaciones en tiempo real vía WebSocket",
+    "Búsqueda y filtrado de proyectos y tareas",
+    "Notificaciones push e email",
+    "Control de accesos y roles por proyecto",
+    "Exportación de reportes en PDF y CSV"
+  ]
+}

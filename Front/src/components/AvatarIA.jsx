@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../css/AvatarIA.css";
+import siteInfo from "../data/siteContext.json"; // <— nuevo import
 
 const AvatarIA = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -20,6 +21,13 @@ const AvatarIA = () => {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // nuevo efecto: al abrir el chat, desplazar hasta abajo
+  useEffect(() => {
+    if (showChat && messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    }
+  }, [showChat]);
 
   const handleTogglePopup = () => {
     setShowPopup(!showPopup);
@@ -75,9 +83,15 @@ const AvatarIA = () => {
     );
     const sprints = projectContext.sprintNumber || 1;
     const limit = 1;
-    // actualizar instrucciones de la IA
-    const rules = `Eres el asistente virtual de SoftEdge. Tienes acceso a la información de los proyectos del usuario y a la página actual. Responde preguntas sobre sus proyectos, características del sistema y uso de la plataforma segun te lo pregunten. Ofrece respuestas claras y entre mas cortas mejores, sin exceder lo necesario para entender la respuesta. Si dispones de datos en projectContext, ÚSALOS SIEMPRE para responder con precisión sobre el proyecto y las tareas.`;
     const token = localStorage.getItem("token");
+
+    // reglas mejoradas
+    const rules = `Eres el asistente virtual de SoftEdge. Tienes acceso a:
+- projectContext (datos del proyecto actual),
+- siteInfo (estructura completa de la app),
+- currentUrl (ruta actual).
+Responde siempre en 2–3 frases máximo, no uses palabras tecnicas y no pongas nada asi en tus mensajes "(/home)", usa viñetas solo si es imprescindible, y entrega únicamente lo esencial sobre la página actual (${window.location.pathname}).`; 
+
     try {
       const response = await fetch(`${BACKEND_URL}/generateEpic`, {
         method: "POST",
@@ -90,8 +104,9 @@ const AvatarIA = () => {
           rules,
           sprints,
           limit,
-          context: projectContext, // añadir contexto
-          currentUrl: window.location.pathname, // añadir URL
+          context: projectContext,
+          siteInfo, // <— nuevo campo
+          currentUrl: window.location.pathname,
         }),
       });
 
