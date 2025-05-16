@@ -1,4 +1,4 @@
-import db from "../utils/firebase.js";
+import { db } from "../utils/firebase.js";
 import { sqlConnect, sql } from "../utils/sql.js";
 import { getStorage } from "firebase-admin/storage";
 import { v4 as uuidv4 } from "uuid";
