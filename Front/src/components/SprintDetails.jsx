@@ -44,6 +44,7 @@ const handleDrop = (e, newStatus) => {
   const getTasksByStatus = (status) => {
     return sprintTasks.filter((task) => task.estado === status);
   };
+  
   // Calcular el progreso del sprint
   const calculateProgress = () => {
     const completedTasks = sprintTasks.filter(
