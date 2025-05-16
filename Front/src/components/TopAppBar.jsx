@@ -10,6 +10,7 @@ const TopAppBar = () => {
   const tabs = [
     { name: "Perfil", icon: "person" },
     { name: "Configuraciones", icon: "settings" },
+    { name: "Biométricos", icon: "favorite" },
     { name: "Cerrar Sesión", icon: "logout" }
   ];
 
@@ -31,6 +32,9 @@ const TopAppBar = () => {
         break;
       case "Configuraciones":
         navigate("/settings");
+        break;
+      case "Datos Biométricos":
+        navigate("/biometricos");
         break;
       case "Cerrar Sesión":
         handleLogout();

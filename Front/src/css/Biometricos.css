@@ -1,0 +1,366 @@
+.biometricos-container {
+  padding: 40px 32px 32px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.biometricos-header h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  margin-bottom: 0 em;
+}
+
+.biometricos-header p {
+  color: #6b6b6b;
+  font-size: 1.15rem;
+  margin-bottom: 2em;
+}
+
+.biometricos-main-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.biometricos-card {
+  background: #faf7fd;
+  border-radius: 18px;
+  box-shadow: 0 4px 18px 0 rgba(158, 114, 190, 0.10), 0 1.5px 6px 0 rgba(158, 114, 190, 0.07);
+  border: 1.5px solid #e3d6f2;
+  padding: 36px 24px 30px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  min-height: 170px;
+  transition: box-shadow 0.18s, transform 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+
+.biometricos-card:hover {
+  box-shadow: 0 8px 32px 0 rgba(158, 114, 190, 0.18), 0 2px 8px 0 rgba(158, 114, 190, 0.10);
+  transform: translateY(-2px) scale(1.025);
+  border-color: #d1bde6;
+}
+
+.biometricos-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.biometricos-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #ede3f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.biometricos-card-icon.heart::before {
+  content: '\2665'; /* emoji corazón */
+  color: #9e72be;
+  font-size: 1rem;
+}
+
+.biometricos-card-icon.stress::before {
+  content: '\1F625';
+  color: #e57373;
+  font-size: 1rem;
+}
+
+.biometricos-card-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0 0 0.2em 0;
+}
+
+.biometricos-card-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #9e72be;
+}
+
+.bpm {
+  font-size: 1rem;
+  color: #6b6b6b;
+  font-weight: 400;
+}
+
+.biometricos-graph-card {
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 160px;
+}
+
+.biometricos-graph-title {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.5em;
+  text-align: center;
+  width: 100%;
+}
+
+.biometricos-graph {
+  width: 100%;
+  height: 60px;
+  margin-top: 0.5em;
+}
+
+.biometricos-report-card {
+  justify-content: center;
+  align-items: center;
+}
+
+.biometricos-report-btn {
+  background: #9e72be;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 32px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.biometricos-report-btn:hover {
+  background: #b481d8;
+}
+
+.biometricos-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(158, 114, 190, 0.07);
+  padding: 28px 24px;
+  margin-top: 18px;
+}
+
+.biometricos-section h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1em;
+}
+
+.main-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #5d3a7f;
+  margin-bottom: 0.2em;
+}
+
+.admin-only {
+  margin-bottom: 32px;
+  border-bottom: 2px solid #ede3f6;
+  padding-bottom: 18px;
+}
+
+.biometricos-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.biometricos-center-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.biometricos-title {
+  text-transform: uppercase;
+  color: #5d3a7f;
+  font-weight: 900;
+  font-size: 1.35rem;
+  text-align: center;
+  margin-bottom: 0.7em;
+  letter-spacing: 1px;
+}
+
+.biometricos-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.biometricos-emoji {
+  font-size: 2.1rem;
+  line-height: 1;
+  margin-bottom: 0;
+  filter: drop-shadow(0 1px 0 #e3d6f2);
+}
+
+.biometricos-value {
+  color: #b481d8;
+  font-size: 1.08rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+.bpm {
+  color: #bba6d6;
+  font-size: 0.92em;
+  font-weight: 400;
+  margin-left: 2px;
+  letter-spacing: 0.1px;
+}
+
+.biometricos-card .biometricos-value + .biometricos-value {
+  margin-top: 0.18em;
+  font-size: 0.98rem;
+  color: #bba6d6;
+  font-weight: 500;
+}
+
+.biometricos-row-center {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  text-align: center;
+}
+
+.biometricos-value-secondary {
+  font-size: 0.88rem !important;
+  color: #bba6d6 !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.1px;
+}
+
+.dark-graph-card {
+  background: #7a5a96 !important;
+  border: 1.5px solid #5d3a7f !important;
+  box-shadow: 0 4px 18px 0 rgba(93, 58, 127, 0.13);
+}
+
+.dark-graph-title {
+  color: #fff !important;
+  font-weight: 800;
+  font-size: 1.18rem;
+  letter-spacing: 0.7px;
+  text-align: center;
+}
+
+.biometricos-graph {
+  display: block;
+  margin: 0 auto;
+}
+
+.biometricos-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 32px;
+  margin-bottom: 36px;
+}
+
+.biometricos-dashboard-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 8px rgba(158, 114, 190, 0.07);
+  border: 1.5px solid #ece6f6;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  min-height: 140px;
+  position: relative;
+  overflow: hidden;
+}
+
+.biometricos-dashboard-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px auto;
+}
+
+.biometricos-dashboard-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+}
+
+.biometricos-dashboard-title {
+  color: #222;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+  letter-spacing: 0.1px;
+  text-align: center;
+}
+
+.biometricos-dashboard-value {
+  color: #7a5a96;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.biometricos-dashboard-value span {
+  font-size: 1rem;
+  color: #bba6d6;
+  font-weight: 300;
+  margin-left: 4px;
+  margin-top: 10px;
+  display: block;
+  text-align: center;
+}
+
+/* Para valores secundarios debajo del principal */
+.biometricos-dashboard-info .biometricos-dashboard-value + .biometricos-dashboard-value {
+  font-size: 1rem;
+  color: #bba6d6;
+  font-weight: 300;
+  margin-top: 12px;
+  text-align: center;
+}
+
+.biometricos-dashboard-graph {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-width: 260px;
+  min-height: 120px;
+  padding: 0;
+}
+
+.biometricos-dashboard-graph-title {
+  color: #222;
+  font-size: 1.08rem;
+  font-weight: 600;
+  margin-bottom: 0.7em;
+  letter-spacing: 0.1px;
+}
+
+.biometricos-dashboard-svg {
+  width: 100%;
+  height: 80px;
+  display: block;
+  margin: 0 auto;
+} 

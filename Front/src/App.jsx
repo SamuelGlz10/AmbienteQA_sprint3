@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import SprintBacklog from "./pages/SprintBacklog.jsx";
 import Perfil from "./pages/Perfil.jsx";
 import AvatarIA from "./components/AvatarIA";
+import Biometricos from "./pages/biometricos";
 
 function App() {
   const { isLogin } = useContext(AuthContext);
@@ -44,6 +45,10 @@ function App() {
             element={isLogin ? <Dashboard /> : <Navigate to="/login" />}
           />
           <Route path="/perfil" element={<Perfil />} />
+          <Route
+            path="/biometricos"
+            element={isLogin ? <Biometricos /> : <Navigate to="/login" />}
+          />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
