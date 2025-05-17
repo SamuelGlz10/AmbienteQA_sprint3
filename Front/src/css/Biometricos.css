@@ -1,6 +1,6 @@
 .biometricos-container {
   padding: 40px 32px 32px 32px;
-  max-width: 1200px;
+  max-width: 1380px;
   margin: 0 auto;
 }
 
@@ -39,11 +39,6 @@
   overflow: hidden;
 }
 
-.biometricos-card:hover {
-  box-shadow: 0 8px 32px 0 rgba(158, 114, 190, 0.18), 0 2px 8px 0 rgba(158, 114, 190, 0.10);
-  transform: translateY(-2px) scale(1.025);
-  border-color: #d1bde6;
-}
 
 .biometricos-row {
   display: flex;
@@ -363,4 +358,110 @@
   height: 80px;
   display: block;
   margin: 0 auto;
-} 
+}
+
+.biometricos-dashboard-card:hover {
+  background: #7a5a96;
+  color: #fff;
+  border-color: #5d3a7f;
+  box-shadow: 0 8px 32px 0 rgba(93, 58, 127, 0.18), 0 2px 8px 0 rgba(93, 58, 127, 0.10);
+  transform: translateY(-2px) scale(1.025);
+}
+
+/* hovers que invierte colores*/
+.biometricos-dashboard-card:hover .biometricos-dashboard-title,
+.biometricos-dashboard-card:hover .biometricos-dashboard-value,
+.biometricos-dashboard-card:hover .biometricos-dashboard-value span {
+  color: #fff;
+}
+
+/* 
+icono se hace blanco hover
+.biometricos-dashboard-card:hover .biometricos-dashboard-icon .material-icons {
+  color: #fff !important;
+}
+
+*/
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 600px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.popup-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #7a5a96;
+  padding: 5px;
+  line-height: 1;
+}
+
+.popup-content h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.graph-container {
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.popup-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 20px;
+  padding: 15px;
+  background: #fafafa;
+  border-radius: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: bold;
+  color: #7a5a96;
+}
+
+.grid-lines line {
+  stroke-dasharray: 4;
+}
+
