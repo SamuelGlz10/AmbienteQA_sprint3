@@ -33,7 +33,7 @@ const TopAppBar = () => {
       case "Configuraciones":
         navigate("/settings");
         break;
-      case "Datos Biométricos":
+      case "Biométricos":
         navigate("/biometricos");
         break;
       case "Cerrar Sesión":

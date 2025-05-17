@@ -307,6 +307,14 @@
   letter-spacing: 0.1px;
   text-align: center;
 }
+.biometricos-dashboard-resumen-semanal {
+  color: #755393;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
 
 .biometricos-dashboard-value {
   color: #7a5a96;

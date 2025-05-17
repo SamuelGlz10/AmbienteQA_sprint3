@@ -187,7 +187,7 @@ const ResumenSemanal = () => {
     <>
       <TopAppBar />
       <div className="main-title" style={{marginBottom: 30}}>
-        <h1>RESUMEN SEMANAL DE BIOMÉTRICOS</h1>
+        <h1>Resumen Semanal de Biométricos</h1>
       </div>
       <div className="biometricos-container" style={{maxWidth: 900, margin: '0 auto'}}>
         <div className="biometricos-main-grid" style={{gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px'}}>
@@ -257,7 +257,7 @@ const ResumenSemanal = () => {
             </svg>
           </div>
         </div>
-        <button className="main-button" style={{margin: '30px auto 0 auto', display: 'block'}} onClick={() => navigate('/biometricos')}>Volver a mis biométricos</button>
+        <button className="main-button" style={{margin: '30px auto 0 auto', display: 'block'}} onClick={() => navigate('/biometricos')}>REGRESAR</button>
       </div>
       {renderPopup()}
     </>

@@ -27,7 +27,7 @@ const Biometricos = () => {
     <>
       <TopAppBar />
       <div className="main-title">
-        <h1>REGISTRO DE BIOMÉTRICOS</h1>
+        <h1>Registro dee Biométricos</h1>
       </div>
       <div className="biometricos-container">
         <div className="biometricos-section">
@@ -85,30 +85,13 @@ const Biometricos = () => {
               </div>
             </div>
             {/* Resumen Semanal */}
-            <div className="biometricos-dashboard-card" style={{cursor: 'pointer'}} onClick={() => navigate('/biometricos/resumen')}>
+            <div className="biometricos-dashboard-card" style={{cursor: 'pointer'}} onClick={() => navigate('/resumen-semanal')}>
               <div className="biometricos-dashboard-icon" style={{background: '#f4f0fa'}}>
-                <span className="material-icons" style={{color: '#7a5a96', fontSize: '2.2rem'}}>insights</span>
+                <span className="material-icons" style={{color: '#7a5a96', fontSize: '2.2rem'}}>bar_chart</span>
               </div>
               <div className="biometricos-dashboard-info">
                 <div className="biometricos-dashboard-title">RESUMEN SEMANAL</div>
-                <svg viewBox="0 0 160 80" className="biometricos-dashboard-svg" style={{width: '100%', height: '80px', marginTop: '10px'}}>
-                  <defs>
-                    <linearGradient id="biometricosGraphGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#bba6d6" stopOpacity="0.18" />
-                      <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-                  <rect x="0" y="0" width="160" height="80" fill="url(#biometricosGraphGradient)" />
-                  <polyline fill="none" stroke="#7a5a96" strokeWidth="3" points="10,60 35,40 60,45 85,30 110,45 135,20 150,10" />
-                  <line x1="10" y1="70" x2="150" y2="70" stroke="#ece6f6" strokeWidth="2" />
-                  <text x="10" y="78" fontSize="10" fill="#bba6d6">L</text>
-                  <text x="35" y="78" fontSize="10" fill="#bba6d6">M</text>
-                  <text x="60" y="78" fontSize="10" fill="#bba6d6">M</text>
-                  <text x="85" y="78" fontSize="10" fill="#bba6d6">J</text>
-                  <text x="110" y="78" fontSize="10" fill="#bba6d6">V</text>
-                  <text x="135" y="78" fontSize="10" fill="#bba6d6">S</text>
-                  <text x="150" y="78" fontSize="10" fill="#bba6d6">D</text>
-                </svg>
+                <div className="biometricos-dashboard-resumen-semanal">VER GRÁFICOS</div>
               </div>
             </div>
           </div>
