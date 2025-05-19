@@ -26,7 +26,7 @@
   
   .color-picker-button {
     position: absolute;
-    top: 0px; /* Mueve el botón hacia arriba */
+    top: 10px; /* Mueve el botón hacia arriba */
     right: 8px;
     background: none;
     border: none;
@@ -66,16 +66,21 @@
     padding: 16px;
     text-align: center;
     margin-top: 8px; /* Asegura que el contenido no se superponga con la barra */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Alinea los elementos al inicio */
   }
   
   .project-info h3 {
     margin: 0;
     font-size: 18px;
     font-weight: bold;
+    height: 24px; /* Altura fija para el título */
+    line-height: 24px; /* Asegura que el texto esté centrado verticalmente */
   }
   
   .project-info p {
-    margin: 8px 0 0;
+    margin: 20px 0 0;
     font-size: 14px;
     color: #555;
   }
