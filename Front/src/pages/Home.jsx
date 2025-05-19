@@ -5,6 +5,7 @@ import { AuthContext } from "../components/AuthContext"; // Importar el contexto
 import TopAppBar from "../components/TopAppBar";
 import ErrorPopup from "../components/ErrorPopup"; // Importamos el popup de error
 import SuccessPopup from "../components/SuccessPopup"; // Importamos el popup de éxito
+import ProjectCard from "../components/ProjectCard"; // Importa el componente ProjectCard
 
 import "../css/Home.css";
 
@@ -18,6 +19,7 @@ const Home = () => {
   const [isEditor, setIsEditor] = useState(false); // Estado para verificar si el usuario es editor
   const [error, setError] = useState(null); // Estado para manejar el mensaje de error
   const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
+ 
 
   const [searchQuery, setSearchQuery] = useState(""); // Estado para manejar la búsqueda
 
@@ -177,25 +179,7 @@ const Home = () => {
           </div>
         ) : (
           sortedProjects.slice(0, displayCount).map((project) => (
-            <div
-              key={project.id}
-              className="project-card"
-              onClick={() => navigate(`/project/${project.id}`)}
-            >
-              <div
-                className="project-image"
-                style={{
-                  backgroundImage: project.imagen
-                    ? `url(${project.imagen})`
-                    : "none",
-                  backgroundColor: project.imagen ? "transparent" : "#f0e6ff",
-                }}
-              />
-              <div className="project-info">
-                <h3>{project.nombreProyecto || project.id}</h3>
-                <p>{project.descripcion || "Sin descripción"}</p>
-              </div>
-            </div>
+            <ProjectCard key={project.id} project={project} />
           ))
         )}
       </div>
