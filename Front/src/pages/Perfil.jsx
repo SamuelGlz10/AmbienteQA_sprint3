@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TopAppBar from "../components/TopAppBar";
-import ErrorPopup from "../components/ErrorPopup"; // Importar el componente de error
-import SuccessPopup from "../components/SuccessPopup"; // Importar el componente de éxito
+import ErrorPopup from "../components/ErrorPopup"; 
+import SuccessPopup from "../components/SuccessPopup"; 
 import "../css/Perfil.css";
 
 function Perfil() {
@@ -11,7 +11,7 @@ function Perfil() {
 
   const [userData, setUserData] = useState(null);
   const [projects, setProjects] = useState([]);
-  const [isEditing, setIsEditing] = useState(false); // Estado para controlar el modo de edición
+  const [isEditing, setIsEditing] = useState(false); 
   const [editData, setEditData] = useState({});
   const [previewImage, setPreviewImage] = useState(""); // Previsualización de la imagen
   const [showPasswordPopup, setShowPasswordPopup] = useState(false); // Estado para el popup de contraseña
@@ -23,8 +23,8 @@ function Perfil() {
     confirmPassword: "",
   });
 
-  const [errorMessage, setErrorMessage] = useState(""); // Estado para el mensaje de error
-  const [successMessage, setSuccessMessage] = useState(""); // Estado para el mensaje de éxito
+  const [errorMessage, setErrorMessage] = useState(""); 
+  const [successMessage, setSuccessMessage] = useState(""); 
 
   const userId = localStorage.getItem("userId"); // Obtener el ID del usuario del almacenamiento local
 
@@ -90,8 +90,8 @@ function Perfil() {
     const { name, value } = e.target;
 
     if (name === "phone") {
-      const numericValue = value.replace(/\D/g, ""); // Remover caracteres no numéricos
-      if (numericValue.length > 10) return; // Prevenir que el número exceda 10 dígitos
+      const numericValue = value.replace(/\D/g, ""); 
+      if (numericValue.length > 10) return; 
       setEditData((prev) => ({ ...prev, [name]: numericValue }));
     } else {
       setEditData((prev) => ({ ...prev, [name]: value }));
@@ -104,7 +104,7 @@ function Perfil() {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setPreviewImage(reader.result); // Actualizar la previsualización
+        setPreviewImage(reader.result); 
       };
       reader.readAsDataURL(file);
     }
@@ -157,16 +157,16 @@ function Perfil() {
       !passwordData.newPassword ||
       !passwordData.confirmPassword
     ) {
-      setErrorMessage("Todos los campos de contraseña son obligatorios."); // Mostrar mensaje de error
+      setErrorMessage("Todos los campos de contraseña son obligatorios."); 
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setErrorMessage("Las contraseñas no coinciden."); // Mostrar mensaje de error
+      setErrorMessage("Las contraseñas no coinciden."); 
       return;
     }
     console.log("Contraseña cambiada:", passwordData);
-    setShowPasswordPopup(false); // Cerrar el popup
-    setSuccessMessage("¡La contraseña se ha cambiado con éxito!"); // Mostrar mensaje de éxito
+    setShowPasswordPopup(false); 
+    setSuccessMessage("¡La contraseña se ha cambiado con éxito!"); 
   };
 
   return (
@@ -230,7 +230,7 @@ function Perfil() {
                   <button
                     className="cancel-button"
                     onClick={() => {
-                      setEditData(userData); // Restablecer los datos a los originales
+                      setEditData(userData); 
                       setIsEditing(false);
                     }}
                   >

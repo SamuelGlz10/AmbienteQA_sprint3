@@ -1,0 +1,118 @@
+.project-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Asegura que los elementos internos se posicionen correctamente */
+  }
+  
+  .project-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  .color-bar {
+    height: 8px; /* Hace que la barra sea delgada */
+    width: 100%;
+    position: absolute; /* Posiciona la barra en la parte superior */
+    top: 0; /* Asegura que esté en la parte superior */
+    left: 0; /* Alinea la barra al borde izquierdo */
+    background-color: #7a5a96; /* Color predeterminado */
+    z-index: 1; /* Asegura que la barra esté por encima de otros elementos */
+  }
+  
+  .color-picker-button {
+    position: absolute;
+    top: 10px; /* Mueve el botón hacia arriba */
+    right: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: gray;
+    z-index: 10;
+  }
+  
+  .color-picker-button:hover {
+    color: darkgray;
+  }
+  
+  .color-options {
+    position: absolute;
+    top: 12px;
+    right: 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 20;
+  }
+  
+  .color-option {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  
+  .color-option:hover {
+    transform: scale(1.2);
+  }
+  
+  .project-info {
+    padding: 16px;
+    text-align: center;
+    margin-top: 8px; /* Asegura que el contenido no se superponga con la barra */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Alinea los elementos al inicio */
+  }
+  
+  .project-info h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: bold;
+    height: 24px; /* Altura fija para el título */
+    line-height: 24px; /* Asegura que el texto esté centrado verticalmente */
+  }
+  
+  .project-info p {
+    margin: 20px 0 0;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .project-info .see-more {
+    font-weight: bold;
+    text-decoration: underline;
+    color: #7a5a96;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+  
+  .project-info .see-more:hover {
+    color: #5d3a7f;
+  }
+  
+  /* Responsividad para pantallas más pequeñas */
+  @media (max-width: 768px) {
+    .project-card {
+      height: auto;
+      padding: 12px;
+    }
+  
+    .color-bar {
+      height: 6px; /* Reduce la altura de la barra en pantallas pequeñas */
+    }
+  
+    .project-info h3 {
+      font-size: 16px;
+    }
+  
+    .project-info p {
+      font-size: 12px;
+    }
+  }
