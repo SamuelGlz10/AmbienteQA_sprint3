@@ -57,9 +57,9 @@ const Login = () => {
     }
     setIsLoading(true);
     const isLogin = await tryLogin({ email, password });
-
+  
     if (isLogin) {
-      setSuccessMessage("¡Inicio de sesión exitoso!"); // Muestra el popup de éxito
+      navigate("/home"); // Redirige directamente a la página principal
     }
     setIsLoading(false);
   };
@@ -77,8 +77,14 @@ const Login = () => {
     <div className="login-container">
       <div className="login-left">
         <img src="/softedge_logo.png" alt="Logo Softedge" className="logo" />
-        <h1 className="title">Inicia Sesión</h1>
-        <h2 className="subtitle">FRIDA Product Planner</h2>
+        <h1 className="title">StratEdge</h1>
+        <h2 className="subtitle">Por: SoftEdge</h2>
+        <p className="login-text">
+          StratEdge es una plataforma inteligente para planear y gestionar proyectos ágiles. 
+          A partir de un prompt, genera automáticamente requerimientos funcionales, historias 
+          de usuario y épicas usando inteligencia artificial, facilitando la organización y el 
+          trabajo colaborativo.
+        </p>
         <p className="login-text">
           Si todavía no tienes una cuenta,
           <br /> <br />
@@ -110,7 +116,7 @@ const Login = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
           <button type="submit" className="main-button">
-            Iniciar Sesión
+            Ingresar
           </button>
         </form>
       </div>
