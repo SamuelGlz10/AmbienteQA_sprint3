@@ -10,5 +10,5 @@ npm run dev
 
 ### T2:
 cd Back\
-npm i cors dotenv express firebase-admin mongoose morgan mssql nodemon swagger-ui-express yamljs multer @vercel/node jsonwebtoken\
+npm i cors dotenv express firebase-admin mongoose morgan mssql nodemon swagger-ui-express yamljs multer @vercel/node jsonwebtoken dialogflow-fulfillment ngrok\
 npm start
