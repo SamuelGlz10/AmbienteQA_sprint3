@@ -28,29 +28,27 @@ const Registro = () => {
       setError("Las contraseñas no coinciden."); // Muestra el popup de error
       return;
     }
-
     try {
       const response = await fetch(`${BACKEND_URL}/registro`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: usuario,
-          lastname: appellido,
-          email: correo,
-          phone: telefono,
-          password: contrasena,
-        }),
-      });
-
-      const data = await response.json();
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: usuario,
+        lastname: appellido,
+        email: correo,
+        phone: telefono,
+        password: contrasena,
+      }),
+    });
 
       if (response.ok) {
         setSuccessMessage("¡Registro exitoso! Redirigiendo al inicio de sesión..."); // Muestra el popup de éxito
       } else {
+        const data = await response.json();
         setError(data.message || "Error al registrarse"); // Muestra el popup de error
-      }
+      };
     } catch (error) {
       setError("Error al conectar con el servidor"); // Muestra el popup de error
     }
@@ -136,6 +134,6 @@ const Registro = () => {
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
     </div>
   );
-};
+}
 
 export default Registro;
