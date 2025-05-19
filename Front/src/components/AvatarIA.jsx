@@ -3,9 +3,18 @@ import "../css/AvatarIA.css";
 
 const AvatarIA = () => {
   const [showPopup, setShowPopup] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
 
   const handleTogglePopup = () => {
-    setShowPopup((prev) => !prev);
+    if (showPopup) {
+      setIsClosing(true);
+      setTimeout(() => {
+        setShowPopup(false);
+        setIsClosing(false);
+      }, 500); // Match the duration of the closing animation
+    } else {
+      setShowPopup(true);
+    }
   };
 
   return (
@@ -16,7 +25,7 @@ const AvatarIA = () => {
         </button>
       )}
       {showPopup && (
-        <div className="ia-popup-small">
+        <div className={`ia-popup-small ${isClosing ? "closing" : ""}`}>
           <h2>Chat con IA</h2>
           <div className="iframe-container">
             <iframe
