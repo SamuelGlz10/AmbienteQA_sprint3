@@ -104,6 +104,8 @@ const Home = () => {
       return [...filteredProjects].sort((a, b) =>
         (a.nombreProyecto || a.id).localeCompare(b.nombreProyecto || b.id)
       );
+    } else if (sortType === "Por Defecto") {
+      return filteredProjects; // Sin orden específico
     }
     return filteredProjects;
   }, [filteredProjects, sortType]);

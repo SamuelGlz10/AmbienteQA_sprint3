@@ -337,268 +337,270 @@ const RenderRequirementsTab = ({ ...props }) => {
                 )}
               </div>
 
-              <div className="tasks-section">
-                <h4>Tareas relacionadas:</h4>
-                {tasks[selectedItem.id] && tasks[selectedItem.id].length > 0 ? (
-                  <div className="tasks-table-container">
-                    <table className="tasks-table">
-                      <thead>
-                        <tr>
-                          <th></th>
-                          <th>ID</th>
-                          <th>Título</th>
-                          <th>Descripción</th>
-                          <th>Prioridad</th>
-                          <th>Asignado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tasks[selectedItem.id].map((task, index) => {
-                          if (!task) return null;
-                          const assignedMember = teamMembers.find(
-                            (member) => member.email === task.assignee
-                          );
+              {activeRequirement === "HU" && (
+                <div className="tasks-section">
+                  <h4>Tareas relacionadas:</h4>
+                  {tasks[selectedItem.id] && tasks[selectedItem.id].length > 0 ? (
+                    <div className="tasks-table-container">
+                      <table className="tasks-table">
+                        <thead>
+                          <tr>
+                            <th></th>
+                            <th>ID</th>
+                            <th>Título</th>
+                            <th>Descripción</th>
+                            <th>Prioridad</th>
+                            <th>Asignado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tasks[selectedItem.id].map((task, index) => {
+                            if (!task) return null;
+                            const assignedMember = teamMembers.find(
+                              (member) => member.email === task.assignee
+                            );
 
-                          return (
-                            <tr
-                              style={{ cursor: editingTasks ? "default" : undefined }}
-                              key={task.id}
-                              draggable={!deleteMode && !editingTasks}
-                              onDragStart={
-                                !deleteMode && !editingTasks
-                                  ? (e) => handleDragStart(e, task.id, index)
-                                  : null
-                              }
-                              onDragOver={
-                                !deleteMode && !editingTasks
-                                  ? handleDragOver
-                                  : null
-                              }
-                              onDragEnter={
-                                !deleteMode && !editingTasks
-                                  ? handleDragEnter
-                                  : null
-                              }
-                              onDragLeave={
-                                !deleteMode && !editingTasks
-                                  ? handleDragLeave
-                                  : null
-                              }
-                              onDrop={
-                                !deleteMode && !editingTasks
-                                  ? (e) => handleDrop(e, index, selectedItem.id)
-                                  : null
-                              }
-                              onDragEnd={
-                                !deleteMode && !editingTasks
-                                  ? handleDragEnd
-                                  : null
-                              }
-                              className={`draggable-task-row ${
-                                deleteMode ? "delete-mode" : ""
-                              }`}
-                            >
-                              <td
-                                className="drag-handle"
-                                style={{
-                                  width: "40px",
-                                  minWidth: "40px",
-                                  maxWidth: "40px",
-                                  height: "40px",
-                                  textAlign: "center",
-                                  cursor: editingTasks
-                                    ? "default"
-                                    : deleteMode
-                                    ? "pointer"
-                                    : "grab",
-                                  position: "relative",
-                                  overflow: "visible",
-                                }}
-                                onClick={
-                                  deleteMode
-                                    ? () => {
-                                        setTaskToDelete({
-                                          id: task.id,
-                                          title: task.title,
-                                          elementId: selectedItem.id,
-                                        });
-                                        setShowDeleteConfirmation(true);
-                                      }
-                                    : undefined
+                            return (
+                              <tr
+                                style={{ cursor: editingTasks ? "default" : undefined }}
+                                key={task.id}
+                                draggable={!deleteMode && !editingTasks}
+                                onDragStart={
+                                  !deleteMode && !editingTasks
+                                    ? (e) => handleDragStart(e, task.id, index)
+                                    : null
                                 }
-                                onMouseEnter={
-                                  deleteMode
-                                    ? (e) => {
-                                        const deleteIcon =
-                                          e.currentTarget.querySelector(
-                                            ".delete-mode-icon"
-                                          );
-                                        if (deleteIcon) {
-                                          deleteIcon.style.transform =
-                                            "scale(1.3)";
-                                        }
-                                      }
-                                    : undefined
+                                onDragOver={
+                                  !deleteMode && !editingTasks
+                                    ? handleDragOver
+                                    : null
                                 }
-                                onMouseLeave={
-                                  deleteMode
-                                    ? (e) => {
-                                        const deleteIcon =
-                                          e.currentTarget.querySelector(
-                                            ".delete-mode-icon"
-                                          );
-                                        if (deleteIcon) {
-                                          deleteIcon.style.transform =
-                                            "scale(1)";
-                                        }
-                                      }
-                                    : undefined
+                                onDragEnter={
+                                  !deleteMode && !editingTasks
+                                    ? handleDragEnter
+                                    : null
                                 }
+                                onDragLeave={
+                                  !deleteMode && !editingTasks
+                                    ? handleDragLeave
+                                    : null
+                                }
+                                onDrop={
+                                  !deleteMode && !editingTasks
+                                    ? (e) => handleDrop(e, index, selectedItem.id)
+                                    : null
+                                }
+                                onDragEnd={
+                                  !deleteMode && !editingTasks
+                                    ? handleDragEnd
+                                    : null
+                                }
+                                className={`draggable-task-row ${
+                                  deleteMode ? "delete-mode" : ""
+                                }`}
                               >
-                                {!deleteMode ? (
-                                  <span className="drag-icon">≡</span>
-                                ) : (
-                                  <div
-                                    style={{
-                                      position: "absolute",
-                                      width: "100%",
-                                      height: "100%",
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      top: 0,
-                                      left: 0,
-                                    }}
-                                  >
-                                    <span
-                                      className="delete-mode-icon"
+                                <td
+                                  className="drag-handle"
+                                  style={{
+                                    width: "40px",
+                                    minWidth: "40px",
+                                    maxWidth: "40px",
+                                    height: "40px",
+                                    textAlign: "center",
+                                    cursor: editingTasks
+                                      ? "default"
+                                      : deleteMode
+                                      ? "pointer"
+                                      : "grab",
+                                    position: "relative",
+                                    overflow: "visible",
+                                  }}
+                                  onClick={
+                                    deleteMode
+                                      ? () => {
+                                          setTaskToDelete({
+                                            id: task.id,
+                                            title: task.title,
+                                            elementId: selectedItem.id,
+                                          });
+                                          setShowDeleteConfirmation(true);
+                                        }
+                                      : undefined
+                                  }
+                                  onMouseEnter={
+                                    deleteMode
+                                      ? (e) => {
+                                          const deleteIcon =
+                                            e.currentTarget.querySelector(
+                                              ".delete-mode-icon"
+                                            );
+                                          if (deleteIcon) {
+                                            deleteIcon.style.transform =
+                                              "scale(1.3)";
+                                          }
+                                        }
+                                      : undefined
+                                  }
+                                  onMouseLeave={
+                                    deleteMode
+                                      ? (e) => {
+                                          const deleteIcon =
+                                            e.currentTarget.querySelector(
+                                              ".delete-mode-icon"
+                                            );
+                                          if (deleteIcon) {
+                                            deleteIcon.style.transform =
+                                              "scale(1)";
+                                          }
+                                        }
+                                      : undefined
+                                  }
+                                >
+                                  {!deleteMode ? (
+                                    <span className="drag-icon">≡</span>
+                                  ) : (
+                                    <div
                                       style={{
-                                        fontSize: "20px",
-                                        transition: "transform 0.15s ease",
+                                        position: "absolute",
+                                        width: "100%",
+                                        height: "100%",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        top: 0,
+                                        left: 0,
                                       }}
                                     >
-                                      ×
-                                    </span>
-                                  </div>
-                                )}
-                              </td>
-                              <td>{task.id}</td>
-                              {editingTasks ? (
-                                <td>
-                                  <textarea
-                                    className="edit-textarea"
-                                    rows={2}
-                                    value={task.title}
-                                    onChange={(e) =>
-                                      handleTaskEditChange(
-                                        task.id,
-                                        "title",
-                                        e.target.value
-                                      )
-                                    }
-                                  />
-                                </td>
-                              ) : (
-                                <td>{task.title}</td>
-                              )}
-                              {editingTasks ? (
-                                <td>
-                                  <textarea
-                                    className="edit-textarea"
-                                    rows={3}
-                                    value={task.description}
-                                    onChange={(e) =>
-                                      handleTaskEditChange(
-                                        task.id,
-                                        "description",
-                                        e.target.value
-                                      )
-                                    }
-                                  />
-                                </td>
-                              ) : (
-                                <td>{task.description}</td>
-                              )}
-                              <td>
-                                {editingTasks ? (
-                                  <select
-                                    className="assignee-dropdown-button"
-                                    value={task.priority}
-                                    onChange={(e) =>
-                                      handleTaskEditChange(
-                                        task.id,
-                                        "priority",
-                                        e.target.value
-                                      )
-                                    }
-                                  >
-                                    <option value="alta">Alta</option>
-                                    <option value="media">Media</option>
-                                    <option value="baja">Baja</option>
-                                  </select>
-                                ) : (
-                                  <span
-                                    className={`priority-badge ${task.priority}`}
-                                  >
-                                    {task.priority.charAt(0).toUpperCase() +
-                                      task.priority.slice(1)}
-                                  </span>
-                                )}
-                              </td>
-                              <td>
-                                {editingTasks ? (
-                                  <select
-                                    className="assignee-dropdown-button"
-                                    value={task.assignee}
-                                    onChange={(e) =>
-                                      handleTaskEditChange(
-                                        task.id,
-                                        "assignee",
-                                        e.target.value
-                                      )
-                                    }
-                                  >
-                                    <option value="">Seleccionar</option>
-                                    {teamMembers.map((m) => (
-                                      <option key={m.email} value={m.email}>
-                                        {m.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                ) : assignedMember ? (
-                                  assignedMember.name
-                                ) : (
-                                  <select
-                                    className="assignee-dropdown-button"
-                                    value={task.assignee}
-                                    onChange={(e) =>
-                                      handleAssignee(task.id, e.target.value)
-                                    }
-                                  >
-                                    <option value="">Asignar</option>
-                                    {teamMembers.map((member) => (
-                                      <option
-                                        key={member.email}
-                                        value={member.email}
+                                      <span
+                                        className="delete-mode-icon"
+                                        style={{
+                                          fontSize: "20px",
+                                          transition: "transform 0.15s ease",
+                                        }}
                                       >
-                                        {member.name}
-                                      </option>
-                                    ))}
-                                  </select>
+                                        ×
+                                      </span>
+                                    </div>
+                                  )}
+                                </td>
+                                <td>{task.id}</td>
+                                {editingTasks ? (
+                                  <td>
+                                    <textarea
+                                      className="edit-textarea"
+                                      rows={2}
+                                      value={task.title}
+                                      onChange={(e) =>
+                                        handleTaskEditChange(
+                                          task.id,
+                                          "title",
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                ) : (
+                                  <td>{task.title}</td>
                                 )}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <p className="no-tasks-message">
-                    No hay tareas registradas para este elemento.
-                  </p>
-                )}
-              </div>
+                                {editingTasks ? (
+                                  <td>
+                                    <textarea
+                                      className="edit-textarea"
+                                      rows={3}
+                                      value={task.description}
+                                      onChange={(e) =>
+                                        handleTaskEditChange(
+                                          task.id,
+                                          "description",
+                                          e.target.value
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                ) : (
+                                  <td>{task.description}</td>
+                                )}
+                                <td>
+                                  {editingTasks ? (
+                                    <select
+                                      className="assignee-dropdown-button"
+                                      value={task.priority}
+                                      onChange={(e) =>
+                                        handleTaskEditChange(
+                                          task.id,
+                                          "priority",
+                                          e.target.value
+                                        )
+                                      }
+                                    >
+                                      <option value="alta">Alta</option>
+                                      <option value="media">Media</option>
+                                      <option value="baja">Baja</option>
+                                    </select>
+                                  ) : (
+                                    <span
+                                      className={`priority-badge ${task.priority}`}
+                                    >
+                                      {task.priority.charAt(0).toUpperCase() +
+                                        task.priority.slice(1)}
+                                    </span>
+                                  )}
+                                </td>
+                                <td>
+                                  {editingTasks ? (
+                                    <select
+                                      className="assignee-dropdown-button"
+                                      value={task.assignee}
+                                      onChange={(e) =>
+                                        handleTaskEditChange(
+                                          task.id,
+                                          "assignee",
+                                          e.target.value
+                                        )
+                                      }
+                                    >
+                                      <option value="">Seleccionar</option>
+                                      {teamMembers.map((m) => (
+                                        <option key={m.email} value={m.email}>
+                                          {m.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  ) : assignedMember ? (
+                                    assignedMember.name
+                                  ) : (
+                                    <select
+                                      className="assignee-dropdown-button"
+                                      value={task.assignee}
+                                      onChange={(e) =>
+                                        handleAssignee(task.id, e.target.value)
+                                      }
+                                    >
+                                      <option value="">Asignar</option>
+                                      {teamMembers.map((member) => (
+                                        <option
+                                          key={member.email}
+                                          value={member.email}
+                                        >
+                                          {member.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="no-tasks-message">
+                      No hay tareas registradas para este elemento.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {!showTaskForm ? (
@@ -632,23 +634,26 @@ const RenderRequirementsTab = ({ ...props }) => {
                     {!editingTasks &&
                       (role === "admin" || role === "editor") && (
                         <>
-                          <button
-                            className="edit-team-button"
-                            style={{
-                              position: "static",
-                              transform: "none",
-                              margin: "5px 0",
-                              marginRight: "auto",
-                              left: "auto",
-                              maxWidth: "200px",
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setShowTaskForm(true);
-                            }}
-                          >
-                            Nueva Tarea
-                          </button>
+                          {/* Mostrar el botón "Nueva Tarea" solo si activeRequirement es "HU" */}
+                          {activeRequirement === "HU" && (
+                            <button
+                              className="edit-team-button"
+                              style={{
+                                position: "static",
+                                transform: "none",
+                                margin: "5px 0",
+                                marginRight: "auto",
+                                left: "auto",
+                                maxWidth: "200px",
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowTaskForm(true);
+                              }}
+                            >
+                              Nueva Tarea
+                            </button>
+                          )}
                           {tasks[selectedItem.id] &&
                             tasks[selectedItem.id].length > 0 && (
                               <>

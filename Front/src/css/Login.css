@@ -23,6 +23,7 @@
   align-items: flex-start;
   background-color: white;
   padding-left: 10%;
+  margin-top: 100px;
 }
 
 .logo {
@@ -73,7 +74,8 @@
 .login-text {
   font-size: 1rem;
   color: #555;
-  margin-bottom: 2rem;
+  max-width: 85%; /* Limita el ancho máximo del texto */
+  text-align: left; /* Asegura que el texto esté alineado a la izquierda */
 }
 
 .login-link {

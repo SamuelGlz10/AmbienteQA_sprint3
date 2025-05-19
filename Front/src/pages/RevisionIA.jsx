@@ -295,7 +295,7 @@ function RevisionIA() {
     try {
       setSaveStatus({ loading: true, error: null, success: false });
 
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      await new Promise((resolve) => setTimeout(resolve, 800)); // Simula un retraso
 
       setProjectData((prev) => {
         const updatedTab = [...prev[activeTab]];
@@ -330,10 +330,9 @@ function RevisionIA() {
 
       setSaveStatus({ loading: false, error: null, success: true });
 
-      setTimeout(() => {
-        setShowPopup(false);
-        setEditing(false);
-      }, 1000);
+      // Mostrar el SuccessPopup y cerrar el popup de edición
+      setShowPopup(false); // Cierra el popup de edición
+      setSuccessMessage("¡Cambios guardados exitosamente!"); // Muestra el popup de éxito
     } catch (error) {
       setSaveStatus({
         loading: false,
@@ -432,16 +431,13 @@ function RevisionIA() {
 
   const closeSuccessPopup = () => {
     setSuccessMessage(null); // Cierra el popup de éxito
-    navigate("/home"); // Redirige al usuario a la página de inicio
   };
 
   const handleSaveProjectChanges = async () => {
     try {
       setSaveStatus({ loading: true, error: null, success: false });
 
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      setSaveStatus({ loading: false, error: null, success: true });
+      await new Promise((resolve) => setTimeout(resolve, 800)); // Simula un retraso
 
       setProjectData((prev) => {
         const updatedData = {
@@ -460,10 +456,13 @@ function RevisionIA() {
         return updatedData;
       });
 
-      setTimeout(() => {
-        setSaveStatus({ loading: false, error: null, success: false });
-        setEditingProject(false);
-      }, 2000);
+      setSaveStatus({ loading: false, error: null, success: true });
+
+      // Mostrar el SuccessPopup
+      setSuccessMessage("¡Cambios guardados exitosamente!"); // Muestra el popup de éxito
+
+      // Desactivar el modo de edición inmediatamente
+      setEditingProject(false);
     } catch (error) {
       setSaveStatus({
         loading: false,
@@ -592,7 +591,10 @@ function RevisionIA() {
           </button>
         </div>
         {saveStatus.success && (
-          <div className="save-success">¡Cambios guardados!</div>
+          <SuccessPopup
+          message={successMessage}
+          onClose={closeSuccessPopup}
+          />
         )}
         {saveStatus.error && (
           <div className="save-error">{saveStatus.error}</div>
@@ -659,7 +661,7 @@ function RevisionIA() {
                           onClick={() => handleDeleteItem(activeTab, item.id)}
                           aria-label="Eliminar"
                         >
-                          ×
+                          X
                         </button>
                       </td>
                     )}
