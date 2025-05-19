@@ -6,12 +6,14 @@ import authRoutes from "./routes/auth.routes.js";
 import projectsFBRouters from "./routes/projectsFB.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import dialogflowRoutes from "./routes/dialogflow.routes.js";
 
 const app = express();
 
 const allowedOrigins = [
-  `http://localhost:5173`,
-  "https://soft-edge-two.vercel.app",
+  `http://localhost:5173`, 
+  "https://soft-edge-two.vercel.app", // Frontend de Soft Edge
+  "https://dialogflow.cloud.google.com/", // API de Dialogflow
 ];
 
 // Middleware para eliminar barras diagonales dobles en la URL
@@ -39,6 +41,7 @@ app.use(authRoutes);
 app.use(userRoutes); // Agregar la ruta de usuarios
 app.use(projectsFBRouters);
 app.use(aiRoutes);
+app.use(dialogflowRoutes);
 
 // Development only: (comentar para produccion)
 if (process.env.NODE_ENV !== "production") {
