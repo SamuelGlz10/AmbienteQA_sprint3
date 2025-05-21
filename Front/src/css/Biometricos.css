@@ -473,3 +473,234 @@ icono se hace blanco hover
   stroke-dasharray: 4;
 }
 
+/* --- General Layout --- */
+.biometricos-main-title {
+  margin-bottom: 0;
+  background: #ede3f6;
+  padding: 18px 0;
+}
+.biometricos-main-title h1 {
+  color: #7a5a96;
+  font-weight: 700;
+  margin: 0;
+}
+.biometricos-tabs {
+  color: #bba6d6;
+  font-size: 18px;
+  margin-top: 4px;
+}
+.biometricos-tabs button {
+  background: #ede3f6;
+  color: #7a5a96;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.biometricos-tabs button.active {
+  background: #7a5a96;
+  color: #fff;
+}
+
+.biometricos-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* --- Loading/Error --- */
+.biometricos-loading {
+  text-align: center;
+  margin-top: 60px;
+}
+.biometricos-error {
+  text-align: center;
+  margin-top: 60px;
+  color: red;
+}
+
+/* --- Day Cards Layout --- */
+.biometricos-day-cards {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  margin: 40px 0 30px 0;
+  align-items: flex-start;
+}
+.biometricos-day-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --- Main Card --- */
+.biometricos-main-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 30px 40px;
+  box-shadow: 0 2px 16px #ede3f6;
+  text-align: center;
+  min-width: 220px;
+  cursor: default;
+  position: relative;
+  border: none;
+  margin-bottom: 18px;
+  transition: box-shadow 0.2s;
+}
+.biometricos-main-card.clickable {
+  cursor: pointer;
+  box-shadow: 0 4px 24px #d1c1e6;
+}
+.biometricos-main-label {
+  font-size: 22px;
+  color: #bba6d6;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.biometricos-main-desc {
+  color: #bba6d6;
+  font-size: 16px;
+  margin-top: 8px;
+}
+
+/* --- Metric Card --- */
+.biometricos-metric-card {
+  background: #f4f0fa;
+  border-radius: 16px;
+  padding: 18px 24px;
+  min-width: 120px;
+  text-align: center;
+  box-shadow: 0 1px 6px #ede3f6;
+  margin-bottom: 14px;
+}
+.biometricos-metric-label {
+  font-weight: 600;
+  color: #7a5a96;
+  font-size: 18px;
+}
+.biometricos-metric-value {
+  font-size: 28px;
+  color: #7a5a96;
+  font-weight: 700;
+  margin: 6px 0;
+}
+.biometricos-metric-unit {
+  color: #bba6d6;
+  font-size: 15px;
+}
+
+/* --- Weekly Bar Chart --- */
+.biometricos-week-summary {
+  margin-top: 40px;
+}
+.biometricos-week-summary h2 {
+  color: #7a5a96;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.biometricos-weekly-bar-chart {
+  margin-bottom: 30px;
+}
+.biometricos-weekly-bar-title {
+  font-weight: 600;
+  color: #7a5a96;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+.biometricos-weekly-bar-svg {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px #ede3f6;
+}
+
+/* --- Popups --- */
+.biometricos-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.biometricos-popup-content {
+  background: #23272b;
+  border-radius: 18px;
+  padding: 32px;
+  min-width: 340px;
+  max-width: 420px;
+  box-shadow: 0 2px 16px #ede3f6;
+  position: relative;
+  color: #fff;
+}
+.biometricos-popup-content.recovery { border: 1px solid #FFD600; }
+.biometricos-popup-content.sleep { border: 1px solid #7a5a96; }
+.biometricos-popup-content.strain { border: 1px solid #00BFFF; }
+
+.biometricos-popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 22px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.biometricos-popup-close.recovery { color: #FFD600; }
+.biometricos-popup-close.sleep { color: #7a5a96; }
+.biometricos-popup-close.strain { color: #00BFFF; }
+
+.biometricos-popup-title.recovery { color: #FFD600; margin-bottom: 18px; }
+.biometricos-popup-title.sleep { color: #7a5a96; margin-bottom: 18px; }
+.biometricos-popup-title.strain { color: #00BFFF; margin-bottom: 18px; }
+
+.biometricos-popup-value {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.biometricos-popup-metrics {
+  margin-bottom: 18px;
+}
+.biometricos-popup-interpret {
+  background: #23272b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 10px;
+  font-size: 15px;
+  border: 1px solid #bba6d6;
+}
+.biometricos-popup-interpret.recovery { border-color: #FFD600; }
+.biometricos-popup-interpret.sleep { border-color: #7a5a96; }
+.biometricos-popup-interpret.strain { border-color: #00BFFF; }
+.biometricos-popup-interpret span {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* --- Metric Row in Popups --- */
+.biometricos-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+  font-size: 18px;
+}
+.biometricos-metric-row-label {
+  color: #bba6d6;
+}
+.biometricos-metric-row-value {
+  font-weight: 600;
+  color: #fff;
+}
+.biometricos-metric-row-unit {
+  font-size: 15px;
+  color: #bba6d6;
+}
+

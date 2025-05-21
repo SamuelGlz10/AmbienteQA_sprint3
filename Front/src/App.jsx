@@ -15,6 +15,8 @@ import Perfil from "./pages/Perfil.jsx";
 import AvatarIA from "./components/AvatarIA";
 import Biometricos from "./pages/biometricos";
 import ResumenSemanal from "./pages/ResumenSemanal";
+import LoginWhoop from './pages/LoginWhoop';
+import CallbackWhoop from './pages/CallbackWhoop';
 
 function App() {
   const { isLogin } = useContext(AuthContext);
@@ -54,6 +56,8 @@ function App() {
             path="/resumen-semanal"
             element={isLogin ? <ResumenSemanal /> : <Navigate to="/login" />}
           />
+          <Route path="/whoop-login" element={<LoginWhoop />} />
+          <Route path="/whoop-callback" element={<CallbackWhoop />} />
 
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
