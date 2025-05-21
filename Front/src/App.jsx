@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "./components/AuthContext";
 
@@ -22,7 +22,6 @@ function App() {
   const { isLogin } = useContext(AuthContext);
 
   return (
-    <>
       <BrowserRouter>
         <Routes>
           <Route
@@ -59,12 +58,18 @@ function App() {
           <Route path="/whoop-login" element={<LoginWhoop />} />
           <Route path="/whoop-callback" element={<CallbackWhoop />} />
 
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </BrowserRouter>
-      <AvatarIA />
-    </>
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      <LocationBasedAvatar />
+    </BrowserRouter>
   );
+}
+
+// New component to conditionally render AvatarIA on route change
+function LocationBasedAvatar() {
+  const { pathname } = useLocation();
+  if (pathname === "/login" || pathname === "/registro") return null;
+  return <AvatarIA />;
 }
 
 export default App;

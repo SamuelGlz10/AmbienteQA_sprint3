@@ -224,25 +224,6 @@ tr:last-child td {
   padding: 18px 0;
 }
 
-/* Estrellas de valoración */
-.stars-container {
-  display: flex;
-  gap: 5px;
-}
-
-.stars-container.interactive .star {
-  cursor: pointer;
-}
-
-.star {
-  font-size: 20px;
-  color: #ddd;
-  transition: color 0.2s;
-}
-
-.star.filled {
-  color: #ffc107;
-}
 
 /* Botones */
 .buttons-container {
@@ -250,6 +231,7 @@ tr:last-child td {
   justify-content: center;
   gap: 16px;
   margin-top: 18px;
+  flex-direction: row-reverse;
 }
 
 .confirm-button,
@@ -687,7 +669,7 @@ tr:last-child td {
   transition: background 0.15s;
   position: absolute;
   left: 20px;
-  top: 20px;
+  top: 10px; /* Cambia este valor para mover el botón más arriba */
   z-index: 10;
 }
 

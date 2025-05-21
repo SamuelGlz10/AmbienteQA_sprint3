@@ -146,6 +146,16 @@ const Dashboard = () => {
     fetchData();
   }, [projectId]);
 
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000); // 3 segundos
+      
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
+
   // UseEffect para manejar el temporizador de cuenta regresiva
   useEffect(() => {
     if (showProjectDeleteConfirmation) {
@@ -365,13 +375,13 @@ const Dashboard = () => {
 
   const handleSaveEdit = async () => {
     if (!selectedItem || !project) return;
-
+  
     try {
       setSaveStatus({ loading: true, error: null, success: false });
-
+  
       const updatedProject = {
         ...project,
-        [activeRequirement]: project[activeRequirement].map((item) =>
+        [activeRequirement]: project[activeRequirement].map(item =>
           item.id === selectedItem.id
             ? {
                 ...item,
@@ -381,15 +391,7 @@ const Dashboard = () => {
             : item
         ),
       };
-      setProject(updatedProject);
-
-      // Actualizar el estado local de selectedItem
-      setSelectedItem((prev) => ({
-        ...prev,
-        titulo: requirementEditData.title,
-        data: requirementEditData.description,
-      }));
-
+  
       const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
         method: "PUT",
         headers: {
@@ -397,35 +399,33 @@ const Dashboard = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-          ...updatedProject,
           nombreProyecto: updatedProject.nombreProyecto,
           descripcion: updatedProject.descripcion,
           [activeRequirement]: updatedProject[activeRequirement],
         }),
       });
-
-      if (!response.ok) throw new Error("Error al guardar en el servidor");
-
-      const data = await response.json();
-
+  
+      const responseData = await response.json(); // Asegurarse de parsear la respuesta
+      
+      if (!response.ok) {
+        throw new Error(responseData.message || "Error al guardar en el servidor");
+      }
+  
+      
+  
+      setProject(updatedProject);
       setSaveStatus({ loading: false, error: null, success: true });
       setSuccessMessage("Cambios guardados exitosamente");
-
-      setEditing(false);
-
-      setTimeout(() => {
-        setSaveStatus({ loading: false, error: null, success: false });
-      }, 3000);
+      setShowPopup(false);
+  
     } catch (error) {
       console.error("Error al guardar:", error);
       setSaveStatus({
         loading: false,
-        error: "Error al guardar los cambios",
+        error: error.message,
         success: false,
       });
-      setError(
-        "No se pudieron guardar los cambios. Por favor, inténtalo de nuevo."
-      );
+      setError(error.message);
     }
   };
 
@@ -968,17 +968,19 @@ const Dashboard = () => {
             {(role === "admin" || role === "editor") && (
               <div className="button-container">
                 <button
-                  className="popup-button primary"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Editar Proyecto
-                </button>
-                <button
                   className="popup-button delete"
                   onClick={() => handleDeleteProject(projectId)}
                 >
                   Eliminar Proyecto
                 </button>
+                
+                <button
+                  className="popup-button primary"
+                  onClick={() => setIsEditing(true)}
+                >
+                  Editar Proyecto
+                </button>
+                
               </div>
             )}
           </>

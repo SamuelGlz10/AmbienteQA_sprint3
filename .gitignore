@@ -24,6 +24,8 @@ dist-ssr
 *.sw?
 .env
 .env.local
+package-lock.json
+package.json
 
 # Misc
 firebase_key.json
