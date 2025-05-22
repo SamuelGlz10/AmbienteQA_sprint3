@@ -5,10 +5,10 @@ En la gestión de proyectos, se pueden enfrentar retos relacionados con la organ
 ### En terminal dividida:
 ### T1:
 cd Front\
-npm i @mui/material @emotion/styled react react-dom react-router-dom cypress\
+npm i @mui/material @emotion/styled react react-dom react-router-dom cypress axios\
 npm run dev
 
 ### T2:
 cd Back\
-npm i cors dotenv express firebase-admin mongoose morgan mssql nodemon swagger-ui-express yamljs multer @vercel/node jsonwebtoken dialogflow-fulfillment ngrok\
+npm i cors dotenv express firebase-admin mongoose morgan mssql nodemon swagger-ui-express yamljs multer @vercel/node jsonwebtoken dialogflow-fulfillment ngrok axios qs\
 npm start
