@@ -1,5 +1,18 @@
 import { WebhookClient } from "dialogflow-fulfillment";
 import { DialogflowService } from "../utils/dialogflow.js";
+import { SessionsClient } from "@google-cloud/dialogflow";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const projectId = "stratedge-qkie";
+const keyFilename = path.join(__dirname, "../utils/dialogflow-key.json");
+
+const client = new SessionsClient({ keyFilename });
+
+
 
 export const handleWebhook = async (req, res) => {
   try {
@@ -159,3 +172,4 @@ export const handleWebhook = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
