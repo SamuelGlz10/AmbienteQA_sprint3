@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import ErrorPopup from "../components/ErrorPopup";
+import ErrorPopup from "./ErrorPopup";
 
 import "../css/Dashboard.css";
 

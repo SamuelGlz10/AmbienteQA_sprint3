@@ -4,7 +4,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@vercel/node": "^5.1.16",
+    "@vercel/node": "^5.1.15",
     "axios": "^1.9.0",
     "cors": "^2.8.5",
     "dialogflow-fulfillment": "^0.6.1",

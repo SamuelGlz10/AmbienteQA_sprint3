@@ -1,7 +1,11 @@
 .biometricos-container {
-  padding: 40px 32px 32px 32px;
-  max-width: 1380px;
+  padding: 20px 32px 32px 32px;
+  max-width: 1800px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
 .biometricos-header h1 {
@@ -27,7 +31,7 @@
   background: #faf7fd;
   border-radius: 18px;
   box-shadow: 0 4px 18px 0 rgba(158, 114, 190, 0.10), 0 1.5px 6px 0 rgba(158, 114, 190, 0.07);
-  border: 1.5px solid #e3d6f2;
+  border: 1.5px solid #f4f2f6;
   padding: 36px 24px 30px 24px;
   display: flex;
   flex-direction: column;
@@ -174,7 +178,7 @@
 
 .biometricos-title {
   text-transform: uppercase;
-  color: #5d3a7f;
+  color: #302041;
   font-weight: 900;
   font-size: 1.35rem;
   text-align: center;
@@ -471,5 +475,405 @@ icono se hace blanco hover
 
 .grid-lines line {
   stroke-dasharray: 4;
+}
+
+/* --- General Layout --- */
+.biometricos-main-title {
+  margin-bottom: 0;
+  background: #ede3f6;
+  padding: 18px 0;
+}
+.biometricos-main-title h1 {
+  color: #7a5a96;
+  font-weight: 700;
+  margin: 0;
+}
+.biometricos-tabs {
+  color: #bba6d6;
+  font-size: 18px;
+  margin-top: 4px;
+}
+.biometricos-tabs button {
+  background: #ede3f6;
+  color: #7a5a96;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 18px;
+  margin-right: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background 0.2s, color 0.2s;
+}
+.biometricos-tabs button.active {
+  background: #7a5a96;
+  color: #fff;
+}
+
+.biometricos-content {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --- Loading/Error --- */
+.biometricos-loading {
+  text-align: center;
+  margin-top: 60px;
+}
+.biometricos-error {
+  text-align: center;
+  margin-top: 60px;
+  color: red;
+}
+
+/* --- Day Cards Layout --- */
+.biometricos-day-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  margin: 40px 0 30px 0;
+  width: 100%;
+  max-width: 1800px;
+  padding: 0 24px;
+  justify-content: center;
+}
+
+.biometricos-day-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-width: 280px;
+  max-width: 450px;
+}
+
+/* --- Main Card --- */
+.biometricos-main-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 40px;
+  box-shadow: 0 2px 16px #ede3f6;
+  text-align: center;
+  width: 100%;
+  height: 320px;
+  cursor: default;
+  position: relative;
+  border: none;
+  margin-bottom: 18px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.biometricos-main-label {
+  font-size: 18px;
+  color: #302041;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.biometricos-main-card svg {
+  width: 120px;
+  height: 120px;
+  margin: 10px 0;
+}
+
+.biometricos-main-desc {
+  color: #bba6d6;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.biometricos-metric-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px 32px;
+  box-shadow: 0 2px 16px #ede3f6;
+  text-align: center;
+  width: 100%;
+  height: 160px;
+  cursor: default;
+  position: relative;
+  border: none;
+  margin-bottom: 18px;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.biometricos-metric-card.expanded {
+  height: auto;
+  min-height: 160px;
+  padding-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.biometricos-metric-card .material-icons {
+  font-size: 1.8rem;
+  color: #7a5a96;
+  margin-bottom: 4px;
+}
+
+.biometricos-metric-label {
+  font-size: 16px;
+  color: #302041;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.biometricos-metric-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #302041;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.biometricos-metric-unit {
+  font-size: 16px;
+  color: #bba6d6;
+  font-weight: 400;
+}
+
+.biometricos-metric-card.expanded .biometricos-metric-desc {
+  margin-top: 10px;
+  color: #7a5a96;
+  font-size: 0.98rem;
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+.biometricos-main-card:hover,
+.biometricos-metric-card:hover {
+  box-shadow: 0 4px 24px #d1c1e6;
+  transform: translateY(-2px);
+}
+
+.biometricos-main-card.clickable {
+  cursor: pointer;
+}
+
+/* --- Weekly Bar Chart --- */
+.biometricos-week-summary {
+  margin-top: 40px;
+}
+
+.biometricos-week-summary h2 {
+  color: #7a5a96;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.biometricos-weekly-bar-chart {
+  margin-bottom: 30px;
+}
+
+.biometricos-weekly-bar-title {
+  font-weight: 600;
+  color: #7a5a96;
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.biometricos-weekly-bar-svg {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px #ede3f6;
+}
+
+/* --- Popups --- */
+.biometricos-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.biometricos-popup-content {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 40px;
+  min-width: 340px;
+  max-width: 540px;
+  box-shadow: 0 4px 24px rgba(158, 114, 190, 0.15);
+  position: relative;
+  color: #302041;
+}
+
+.biometricos-popup-close {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #bba6d6;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.biometricos-popup-close:hover {
+  color: #7a5a96;
+}
+
+.biometricos-popup-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  color: #302041;
+}
+
+.biometricos-popup-value {
+  font-size: 48px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.biometricos-popup-metrics {
+  margin-bottom: 24px;
+  background: #faf7fd;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1.5px solid #f4f2f6;
+  font-size: 0.98rem;
+}
+
+.biometricos-metric-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+  font-size: 15px;
+  gap: 10px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.biometricos-metric-row-label {
+  color: #302041;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.biometricos-metric-row-value {
+  font-weight: 600;
+  color: #7a5a96;
+}
+
+.biometricos-metric-row-unit {
+  font-size: 14px;
+  color: #bba6d6;
+  margin-left: 4px;
+}
+
+.biometricos-popup-interpret {
+  background: #faf7fd;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 16px;
+  font-size: 15px;
+  border: 1.5px solid #f4f2f6;
+  color: #302041;
+}
+
+.biometricos-popup-interpret span {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 8px;
+  color: #7a5a96;
+}
+
+@media (max-width: 1800px) {
+  .biometricos-day-cards {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .biometricos-day-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .biometricos-day-cards {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+.biometricos-toggle-metrics {
+  background: #fff;
+  border: 1.5px solid #f4f2f6;
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: #302041;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(158, 114, 190, 0.07);
+}
+
+.biometricos-toggle-metrics:hover {
+  background: #faf7fd;
+  border-color: #e3d6f2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(158, 114, 190, 0.12);
+}
+
+.biometricos-toggle-metrics:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(158, 114, 190, 0.07);
+}
+
+.main-button {
+  background-color: #9e72be;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  font-family: "Poppins", sans-serif;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.main-button:hover {
+  background-color: #78529a;
+  transform: translateY(-2px);
 }
 

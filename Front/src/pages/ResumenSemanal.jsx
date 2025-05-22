@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TopAppBar from '../components/TopAppBar';
 import '../css/Biometricos.css';
+import WeeklyBarChart from './biometricos.jsx';
 
 const dias = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
@@ -189,72 +190,22 @@ const ResumenSemanal = () => {
       <div className="main-title" style={{marginBottom: 30}}>
         <h1>Resumen Semanal de Biométricos</h1>
       </div>
-      <div className="biometricos-container" style={{maxWidth: 900, margin: '0 auto'}}>
-        <div className="biometricos-main-grid" style={{gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px'}}>
-          {/* Ritmo Cardíaco */}
-          <div className="biometricos-section" style={{cursor: 'pointer'}} onClick={() => setPopup('ritmo')}>
-            <h2 className="biometricos-dashboard-title" style={{color: '#7a5a96'}}>Ritmo Cardíaco (bpm)</h2>
-            <svg width="100%" height="80" viewBox="0 0 350 80">
-              <polyline fill="none" stroke="#7a5a96" strokeWidth="3" points={data.ritmo.map((v,i)=>`${i*58},${80-(v-65)*7}`).join(' ')} />
-              {data.ritmo.map((v, i) => (
-                <circle key={i} cx={i*58} cy={80-(v-65)*7} r="4" fill="#bba6d6" />
-              ))}
-              {dias.map((d, i) => (
-                <text key={d+i} x={i*58} y={78} fontSize="12" fill="#bba6d6">{d}</text>
-              ))}
-            </svg>
+      <div className="biometricos-container" style={{maxWidth: 1200, margin: '0 auto'}}>
+        <div className="biometricos-day-cards">
+          <div className="biometricos-section">
+            <WeeklyBarChart title="Ritmo Cardíaco" data={data.ritmo} color="#7a5a96" weekDays={dias} unit="bpm" />
           </div>
-          {/* Estrés */}
-          <div className="biometricos-section" style={{cursor: 'pointer'}} onClick={() => setPopup('estres')}>
-            <h2 className="biometricos-dashboard-title" style={{color: '#7a5a96'}}>Estrés (1-5)</h2>
-            <svg width="100%" height="80" viewBox="0 0 350 80">
-              <polyline fill="none" stroke="#7a5a96" strokeWidth="3" points={data.estres.map((v,i)=>`${i*58},${80-(v*15)}`).join(' ')} />
-              {data.estres.map((v, i) => (
-                <circle key={i} cx={i*58} cy={80-(v*15)} r="4" fill="#bba6d6" />
-              ))}
-              {dias.map((d, i) => (
-                <text key={d+i} x={i*58} y={78} fontSize="12" fill="#bba6d6">{d}</text>
-              ))}
-            </svg>
+          <div className="biometricos-section">
+            <WeeklyBarChart title="Estrés" data={data.estres} color="#7a5a96" weekDays={dias} unit="" />
           </div>
-          {/* Energía */}
-          <div className="biometricos-section" style={{cursor: 'pointer'}} onClick={() => setPopup('energia')}>
-            <h2 className="biometricos-dashboard-title" style={{color: '#7a5a96'}}>Nivel de Energía (%)</h2>
-            <svg width="100%" height="80" viewBox="0 0 350 80">
-              <polyline fill="none" stroke="#7a5a96" strokeWidth="3" points={data.energia.map((v,i)=>`${i*58},${80-v*0.7}`).join(' ')} />
-              {data.energia.map((v, i) => (
-                <rect key={i} x={i*58-10} y={80-v*0.7} width="20" height={v*0.7} fill="#bba6d6" />
-              ))}
-              {dias.map((d, i) => (
-                <text key={d+i} x={i*58} y={78} fontSize="12" fill="#bba6d6">{d}</text>
-              ))}
-            </svg>
+          <div className="biometricos-section">
+            <WeeklyBarChart title="Nivel de Energía" data={data.energia} color="#7a5a96" weekDays={dias} unit="%" />
           </div>
-          {/* Actividad Física */}
-          <div className="biometricos-section" style={{cursor: 'pointer'}} onClick={() => setPopup('pasos')}>
-            <h2 className="biometricos-dashboard-title" style={{color: '#7a5a96'}}>Pasos</h2>
-            <svg width="100%" height="80" viewBox="0 0 350 80">
-              <polyline fill="none" stroke="#7a5a96" strokeWidth="3" points={data.pasos.map((v,i)=>`${i*58},${80-(v-6500)*0.01}`).join(' ')} />
-              {data.pasos.map((v, i) => (
-                <rect key={i} x={i*58-10} y={80-(v-6500)*0.01} width="20" height={(v-6500)*0.01} fill="#bba6d6" />
-              ))}
-              {dias.map((d, i) => (
-                <text key={d+i} x={i*58} y={78} fontSize="12" fill="#bba6d6">{d}</text>
-              ))}
-            </svg>
+          <div className="biometricos-section">
+            <WeeklyBarChart title="Pasos" data={data.pasos} color="#7a5a96" weekDays={dias} unit="" />
           </div>
-          {/* Sueño */}
-          <div className="biometricos-section" style={{cursor: 'pointer'}} onClick={() => setPopup('sueno')}>
-            <h2 className="biometricos-dashboard-title" style={{color: '#7a5a96'}}>Sueño Profundo (h)</h2>
-            <svg width="100%" height="80" viewBox="0 0 350 80">
-              <polyline fill="none" stroke="#7a5a96" strokeWidth="3" points={data.sueno.map((v,i)=>`${i*58},${80-v*10}`).join(' ')} />
-              {data.sueno.map((v, i) => (
-                <rect key={i} x={i*58-10} y={80-v*10} width="20" height={v*10} fill="#bba6d6" />
-              ))}
-              {dias.map((d, i) => (
-                <text key={d+i} x={i*58} y={78} fontSize="12" fill="#bba6d6">{d}</text>
-              ))}
-            </svg>
+          <div className="biometricos-section">
+            <WeeklyBarChart title="Sueño Profundo" data={data.sueno} color="#7a5a96" weekDays={dias} unit="h" />
           </div>
         </div>
         <button className="main-button" style={{margin: '30px auto 0 auto', display: 'block'}} onClick={() => navigate('/biometricos')}>REGRESAR</button>
