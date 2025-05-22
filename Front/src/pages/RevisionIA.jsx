@@ -591,10 +591,7 @@ function RevisionIA() {
           </button>
         </div>
         {saveStatus.success && (
-          <SuccessPopup
-          message={successMessage}
-          onClose={closeSuccessPopup}
-          />
+          <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
         )}
         {saveStatus.error && (
           <div className="save-error">{saveStatus.error}</div>
