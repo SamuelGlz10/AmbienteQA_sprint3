@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 import { sqlConnect, sql } from "../utils/sql.js";
+import axios from 'axios';
+import qs from 'qs';
 
 export const login = async (req, res) => {
   try {
@@ -93,6 +95,105 @@ export const registro = async (req, res) => {
       success: false,
       message: "Error de servidor",
       error: err.message,
+    });
+  }
+};
+
+export const exchangeWhoopToken = async (req, res) => {
+  const { code } = req.body;
+  try {
+    console.log('Exchanging WHOOP authorization code for tokens');
+    const response = await axios.post(
+      'https://api.prod.whoop.com/oauth/oauth2/token',
+      qs.stringify({
+        client_id: '4a7cd98e-1a62-45c4-ad24-59011db56b9f',
+        client_secret: 'a315fb94189d174a4ef205b479199c28e496d9fa575bed088d70911f0de0fb35',
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: 'http://localhost:5173/whoop-callback'
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    console.log('WHOOP full token response:', response.data);
+
+    if (!response.data.access_token) {
+      throw new Error('No access token received from WHOOP');
+    }
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error exchanging WHOOP token:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
+    if (error.response?.status === 400) {
+      return res.status(400).json({ 
+        error: 'Invalid authorization code',
+        details: error.response.data
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Error al obtener el token de Whoop', 
+      details: error.response?.data || error.message 
+    });
+  }
+};
+
+export const refreshWhoopToken = async (req, res) => {
+  const { refresh_token } = req.body;
+  try {
+    if (!refresh_token) {
+      return res.status(400).json({ error: 'No refresh token provided' });
+    }
+
+    console.log('Refreshing WHOOP access token');
+    const response = await axios.post(
+      'https://api.prod.whoop.com/oauth/oauth2/token',
+      qs.stringify({
+        client_id: '4a7cd98e-1a62-45c4-ad24-59011db56b9f',
+        client_secret: 'a315fb94189d174a4ef205b479199c28e496d9fa575bed088d70911f0de0fb35',
+        grant_type: 'refresh_token',
+        refresh_token
+      }),
+      {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      }
+    );
+
+    console.log('WHOOP full token response:', response.data);
+
+    if (!response.data.access_token) {
+      throw new Error('No access token received from WHOOP refresh');
+    }
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('Error refreshing WHOOP token:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    
+    if (error.response?.status === 400) {
+      return res.status(400).json({ 
+        error: 'Invalid refresh token',
+        details: error.response.data
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Error al actualizar el token de Whoop', 
+      details: error.response?.data || error.message 
     });
   }
 };
