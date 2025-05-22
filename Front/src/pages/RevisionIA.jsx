@@ -431,6 +431,7 @@ function RevisionIA() {
 
   const closeSuccessPopup = () => {
     setSuccessMessage(null); // Cierra el popup de éxito
+    navigate("/home");
   };
 
   const handleSaveProjectChanges = async () => {
