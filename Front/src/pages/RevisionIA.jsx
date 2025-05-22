@@ -431,6 +431,7 @@ function RevisionIA() {
 
   const closeSuccessPopup = () => {
     setSuccessMessage(null); // Cierra el popup de éxito
+    navigate("/home");
   };
 
   const handleSaveProjectChanges = async () => {
@@ -591,10 +592,7 @@ function RevisionIA() {
           </button>
         </div>
         {saveStatus.success && (
-          <SuccessPopup
-          message={successMessage}
-          onClose={closeSuccessPopup}
-          />
+          <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
         )}
         {saveStatus.error && (
           <div className="save-error">{saveStatus.error}</div>
