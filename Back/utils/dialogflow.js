@@ -13,7 +13,6 @@ export class DialogflowService {
     const snapshot = await db
       .collection("proyectos")
       .where("estatus", "==", "Abierto")
-      .limit(5)
       .get();
     return snapshot.docs.map((doc) => doc.data());
   }
