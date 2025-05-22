@@ -4,6 +4,7 @@ import '../css/Biometricos.css';
 import TopAppBar from '../components/TopAppBar';
 import whoopService from '../services/whoopService';
 import DownloadIcon from '@mui/icons-material/Download';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -678,27 +679,55 @@ const Biometricos = () => {
           <button onClick={()=>setTab('day')} className={tab==='day' ? 'active' : ''}>Ayer</button>
           <button onClick={()=>setTab('week')} className={tab==='week' ? 'active' : ''}>Semana</button>
         </div>
-        <button 
-          className="download-button" 
-          onClick={generatePDF}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '10px 22px',
-            background: '#7a5a96',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 600,
-            boxShadow: '0 2px 8px #ede3f6',
-            letterSpacing: '0.5px'
-          }}
-        >
-          <DownloadIcon /> Descargar PDF
-        </button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button 
+            className="download-button" 
+            onClick={generatePDF}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 22px',
+              background: '#7a5a96',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              fontWeight: 600,
+              boxShadow: '0 2px 8px #ede3f6',
+              letterSpacing: '0.5px'
+            }}
+          >
+            <DownloadIcon /> Descargar PDF
+          </button>
+          {localStorage.getItem('role') === 'admin' && (
+            <button 
+              className="logout-button" 
+              onClick={() => {
+                whoopService.logout();
+                navigate('/whoop-login');
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '10px 22px',
+                background: '#e17055',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontSize: '16px',
+                fontWeight: 600,
+                boxShadow: '0 2px 8px rgba(225, 112, 85, 0.2)',
+                letterSpacing: '0.5px'
+              }}
+            >
+              <LogoutIcon /> Cerrar Sesión
+            </button>
+          )}
+        </div>
       </div>
       <div className="biometricos-container biometricos-content">
         {tab==='day' && (
