@@ -12,6 +12,7 @@ const statuses = ["To-Do", "In Progress", "Done"];
 const SprintBacklog = () => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
   const { projectId } = useParams();
+  console.log("Project ID desde useParams:", projectId);
   const navigate = useNavigate();
   const { userId } = useContext(UserContext);
   const [project, setProject] = useState(null);
@@ -99,6 +100,7 @@ const SprintBacklog = () => {
   }, [projectId]);
 
   const handleSprintClick = (sprint) => {
+    console.log("Sprint seleccionado:", sprint);
     setSelectedSprint(sprint);
   };
 
@@ -224,11 +226,17 @@ const SprintBacklog = () => {
           </div>
         </div>
       </div>
+      console.log("Valor de selectedSprint:", selectedSprint);
 
       {selectedSprint && (
+        console.log("Project ID en SprintBacklog:", projectId),
+
         <SprintDetails
           sprint={selectedSprint}
+          sprintTasks={selectedSprint?.tasks || []}
           onClose={handleCloseSprintDetails}
+          setAllTasks={setSprints}
+          projectId={projectId} // Pasa el projectId aquí
         />
       )}
 
