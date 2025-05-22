@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import "../css/SprintDetails.css";
 
-const SprintDetails = ({ sprint, sprintTasks, onClose, setAllTasks }) => {
+const SprintDetails = ({ sprint, sprintTasks, onClose, setAllTasks, projectId }) => {
+  console.log("Props recibidas en SprintDetails:", { sprint, sprintTasks, projectId });
   const [draggedTask, setDraggedTask] = useState(null);
 
   // Manejar el inicio del arrastre de una tarea
@@ -17,28 +18,57 @@ const SprintDetails = ({ sprint, sprintTasks, onClose, setAllTasks }) => {
   };
 
   // Manejar el soltar de una tarea en una nueva columna
-const handleDrop = (e, newStatus) => {
-  e.preventDefault();
-  if (draggedTask) {
-    // Actualizar el estado de la tarea arrastrada
-    const updatedTask = { ...draggedTask, estado: newStatus };
-
-    // Actualizar la tarea en el estado local del sprint
-    const updatedSprintTasks = sprintTasks.map((task) =>
-      task.id === draggedTask.id ? updatedTask : task
-    );
-
-    // Actualizar el estado de las tareas en el componente padre
-    setAllTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === draggedTask.id ? updatedTask : task))
-    );
-
-    // Actualizar la tarea en el back (por hacer)
-
-    // Actualizar el estado local del sprint
-    setDraggedTask(null);
-  }
-};
+  const handleDrop = async (e, newStatus) => {
+    e.preventDefault();
+    if (draggedTask) {
+      if (!projectId) {
+        console.error("El ID del proyecto no está definido");
+        return;
+      }
+  
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found. Please log in.");
+        return;
+      }
+  
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/projectsFB/${projectId}/tasks`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              taskId: draggedTask.id,
+              estado: newStatus,
+            }),
+          }
+        );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error al actualizar la tarea en Firestore:", errorData);
+          return;
+        }
+  
+        // Actualizar el estado local después de una solicitud exitosa
+        setAllTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === draggedTask.id ? { ...task, estado: newStatus } : task
+          )
+        );
+  
+        console.log("Tarea actualizada correctamente en el frontend");
+      } catch (error) {
+        console.error("Error al conectar con Firestore:", error);
+      }
+  
+      setDraggedTask(null);
+    }
+  };
 
   // Filtrar las tareas por estado
   const getTasksByStatus = (status) => {

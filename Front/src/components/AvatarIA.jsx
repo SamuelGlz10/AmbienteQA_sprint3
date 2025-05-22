@@ -3,6 +3,14 @@ import "../css/AvatarIA.css";
 import siteInfo from "../data/siteContext.json"; // <— nuevo import
 
 const AvatarIA = () => {
+  const [sessionId] = useState(() => {
+    let id = localStorage.getItem("df-session-id");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("df-session-id", id);
+    }
+    return id;
+  });
   const [showPopup, setShowPopup] = useState(false);
   const [popupAnimation, setPopupAnimation] = useState(""); // nueva variable para animación
   const [showChat, setShowChat] = useState(false);
@@ -90,18 +98,15 @@ const AvatarIA = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          queryInput: {
-            text: {
-              text,
-              languageCode: "es",
-            },
-          },
-          sessionId: localStorage.getItem("token") || "default-session",
+          message: text,
         }),
       });
 
       const { fulfillmentText } = await response.json();
-      setMessages((prev) => [...prev, { text: fulfillmentText, sender: "other" }]);
+      setMessages((prev) => [
+        ...prev,
+        { text: fulfillmentText, sender: "other" },
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -125,7 +130,10 @@ const AvatarIA = () => {
       </button>
       {showPopup && (
         <div className="ia-popup-overlay" onClick={handleTogglePopup}>
-          <div className={`ia-popup-sidebar ${popupAnimation}`} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={`ia-popup-sidebar ${popupAnimation}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             {!showChat ? (
               <>
                 <h2>¿En qué te puedo ayudar?</h2>

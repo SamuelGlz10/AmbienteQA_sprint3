@@ -406,27 +406,53 @@ export const uploadProjectImage = async (req, res) => {
 };
 
 export const updateTasks = async (req, res) => {
+  const { id } = req.params; // ID del proyecto
+  const { taskId, estado } = req.body; // ID de la tarea y nuevo estado
+
   try {
-    const { requirementType, elementId, tasks } = req.body;
-    const projectId = req.params.id;
-    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectRef = db.collection("proyectos").doc(id);
     const projectDoc = await projectRef.get();
+
     if (!projectDoc.exists) {
-      return res.status(404).json({ error: "Project not found" });
+      return res.status(404).json({ message: "Proyecto no encontrado" });
     }
-    const data = projectDoc.data();
-    const section = data[requirementType];
-    if (!Array.isArray(section)) {
-      return res.status(400).json({ error: "Invalid requirementType" });
+
+    const projectData = projectDoc.data();
+
+    // Busca la tarea en las secciones del proyecto
+    const sections = ["EP", "RF", "RNF", "HU"];
+    let taskFound = false;
+
+    for (const section of sections) {
+      if (Array.isArray(projectData[section])) {
+        const elementIndex = projectData[section].findIndex((item) =>
+          item.tasks.some((task) => task.id === taskId)
+        );
+
+        if (elementIndex !== -1) {
+          const taskIndex = projectData[section][elementIndex].tasks.findIndex(
+            (task) => task.id === taskId
+          );
+
+          // Actualiza el estado de la tarea
+          projectData[section][elementIndex].tasks[taskIndex].estado = estado;
+          taskFound = true;
+          break;
+        }
+      }
     }
-    const updatedSection = section.map((item) =>
-      item.id === elementId ? { ...item, tasks } : item
-    );
-    await projectRef.update({ [requirementType]: updatedSection });
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error("Error updating tasks:", err);
-    res.status(500).json({ error: "Server Error" });
+
+    if (!taskFound) {
+      return res.status(404).json({ message: "Tarea no encontrada" });
+    }
+
+    // Actualiza el proyecto en Firestore
+    await projectRef.update(projectData);
+
+    res.status(200).json({ message: "Estado de la tarea actualizado correctamente" });
+  } catch (error) {
+    console.error("Error al actualizar la tarea:", error);
+    res.status(500).json({ message: "Error al actualizar la tarea" });
   }
 };
 
@@ -540,5 +566,63 @@ export const getProjectAndTitle = async (req, res) => {
   } catch (err) {
     console.error("Error fetching projects:", err);
     res.status(500).json({ error: "Server Error" });
+  }
+};
+
+export const updateTaskStatus = async (req, res) => {
+  const { projectId, requirementType, elementId, taskId, estado } = req.body;
+
+  // Validar que todos los datos necesarios estén presentes
+  if (!projectId || !requirementType || !elementId || !taskId || !estado) {
+    return res.status(400).json({
+      message: "projectId, requirementType, elementId, taskId y estado son requeridos",
+    });
+  }
+
+  try {
+    // Referencia al proyecto en Firestore
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+
+    if (!projectDoc.exists) {
+      return res.status(404).json({ message: "Proyecto no encontrado" });
+    }
+
+    const projectData = projectDoc.data();
+
+    // Obtener la sección correspondiente (EP, RF, RNF, HU)
+    const section = projectData[requirementType];
+    if (!Array.isArray(section)) {
+      return res.status(400).json({ message: "Tipo de requerimiento inválido" });
+    }
+
+    // Encontrar el elemento dentro de la sección
+    const elementIndex = section.findIndex((item) => item.id === elementId);
+    if (elementIndex === -1) {
+      return res.status(404).json({ message: "Elemento no encontrado" });
+    }
+
+    const element = section[elementIndex];
+
+    // Encontrar la tarea dentro del elemento
+    const taskIndex = element.tasks.findIndex((task) => task.id === taskId);
+    if (taskIndex === -1) {
+      return res.status(404).json({ message: "Tarea no encontrada" });
+    }
+
+    // Actualizar el estado de la tarea
+    element.tasks[taskIndex].estado = estado;
+
+    // Actualizar el proyecto en Firestore
+    section[elementIndex] = element;
+    await projectRef.update({ [requirementType]: section });
+
+    res.status(200).json({
+      success: true,
+      message: "Estado de la tarea actualizado correctamente",
+    });
+  } catch (error) {
+    console.error("Error al actualizar el estado de la tarea:", error);
+    res.status(500).json({ message: "Error al actualizar el estado de la tarea" });
   }
 };

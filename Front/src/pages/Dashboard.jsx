@@ -176,12 +176,18 @@ const Dashboard = () => {
   }, [showProjectDeleteConfirmation]);
 
   const fetchProject = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("No se encontró un token de autenticación. Por favor, inicia sesión.");
+      return;
+    }
+  
     try {
       const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
       if (!response.ok) throw new Error("Failed to fetch project");
@@ -681,49 +687,48 @@ const Dashboard = () => {
     e.currentTarget.classList.remove("drag-over");
   };
 
-  const handleDrop = async (e, targetIndex, elementId) => {
+  const handleDrop = async (e, newStatus) => {
     e.preventDefault();
-    e.currentTarget.classList.remove("drag-over");
-    document
-      .querySelectorAll(".dragging")
-      .forEach((el) => el.classList.remove("dragging"));
-
-    const sourceIndex = parseInt(e.dataTransfer.getData("index"));
-    if (sourceIndex === targetIndex) return;
-
-    const tasksCopy = { ...tasks };
-    const currentTasks = [...(tasksCopy[elementId] || [])];
-    const draggedTask = currentTasks[sourceIndex];
-    currentTasks.splice(sourceIndex, 1);
-    currentTasks.splice(targetIndex, 0, draggedTask);
-    tasksCopy[elementId] = currentTasks;
-    setTasks(tasksCopy);
-
-    // Persistir el nuevo orden en la base de datos
-    try {
-      const payload = {
-        requirementType: activeRequirement,
-        elementId,
-        tasks: tasksCopy[elementId].map((task) => ({
-          id: task.id.toString(),
-          titulo: task.title,
-          descripcion: task.description,
-          prioridad: task.priority,
-          asignados:
-            teamMembers.find((m) => m.email === task.assignee)?.id || null,
-        })),
-      };
-      await fetch(`${BACKEND_URL}/projectsFB/${projectId}/tasks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-    } catch (err) {
-      console.error("Error al actualizar el orden de tareas:", err);
-      setError("Error al actualizar el orden de las tareas en el servidor.");
+    if (draggedTask) {
+      if (!projectId) {
+        console.error("El ID del proyecto no está definido");
+        return;
+      }
+  
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found. Please log in.");
+        setError("No se encontró un token de autenticación. Por favor, inicia sesión.");
+        return;
+      }
+  
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/projectsFB/${projectId}/tasks`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`, // Incluye el token aquí
+            },
+            body: JSON.stringify({
+              taskId: draggedTask.id,
+              estado: newStatus,
+            }),
+          }
+        );
+  
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Error al actualizar la tarea en Firestore:", errorData);
+          setError(errorData.message || "Error al actualizar la tarea.");
+        }
+      } catch (error) {
+        console.error("Error al conectar con Firestore:", error);
+        setError("Error al conectar con el servidor.");
+      }
+  
+      setDraggedTask(null);
     }
   };
 
@@ -1148,6 +1153,7 @@ const Dashboard = () => {
           })}
           setAllTasks={setAllTasks}
           onClose={handleCloseSprintDetails}
+          projectId={projectId} 
         />
       )}
 
