@@ -11,7 +11,7 @@ import dialogflowRoutes from "./routes/dialogflow.routes.js";
 const app = express();
 
 const allowedOrigins = [
-  `http://localhost:5173`, 
+  `http://localhost:5173`,
   "https://soft-edge-two.vercel.app", // Frontend de Soft Edge
   "https://dialogflow.cloud.google.com/", // API de Dialogflow
 ];
