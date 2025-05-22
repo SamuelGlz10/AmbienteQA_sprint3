@@ -17,9 +17,25 @@ const WHOOP_CONFIG = {
 
 class WhoopService {
     accessToken = null;
+    refreshToken = null;
+    tokenExpiry = null;
 
     constructor() {
-        this.accessToken = localStorage.getItem('whoop_access_token');
+        try {
+            this.accessToken = localStorage.getItem('whoop_access_token');
+            this.refreshToken = localStorage.getItem('whoop_refresh_token');
+            this.tokenExpiry = localStorage.getItem('whoop_token_expiry');
+            
+            // Log token state on initialization
+            console.log('Token state on initialization:', {
+                hasAccessToken: !!this.accessToken,
+                hasRefreshToken: !!this.refreshToken,
+                tokenExpiry: this.tokenExpiry ? new Date(parseInt(this.tokenExpiry)).toISOString() : null
+            });
+        } catch (error) {
+            console.error('Error initializing WhoopService:', error);
+            this.logout(); // Clear any potentially corrupted state
+        }
     }
 
     getAuthUrl() {
@@ -37,39 +53,159 @@ class WhoopService {
 
     async handleAuthCallback(code) {
         try {
+            console.log('Starting token exchange with code:', code);
             const response = await axios.post('http://localhost:5001/whoop/token', { code });
-            const accessToken = response.data.access_token;
-            if (typeof accessToken === 'string') {
-                this.accessToken = accessToken;
-                localStorage.setItem('whoop_access_token', accessToken);
-            } else {
-                throw new Error('No se recibió el token de acceso');
+            console.log('Token exchange response:', response.data);
+            
+            const { access_token, refresh_token, expires_in } = response.data;
+            
+            if (!access_token) {
+                throw new Error('No access token received in response');
+            }
+            
+            if (!refresh_token) {
+                console.warn('No refresh token received in response');
+            }
+            
+            if (!expires_in) {
+                console.warn('No expiration time received in response');
+            }
+            
+            this.accessToken = access_token;
+            this.refreshToken = refresh_token;
+            this.tokenExpiry = Date.now() + ((expires_in || 3600) * 1000);
+            
+            try {
+                localStorage.setItem('whoop_access_token', access_token);
+                if (refresh_token) {
+                    localStorage.setItem('whoop_refresh_token', refresh_token);
+                }
+                localStorage.setItem('whoop_token_expiry', this.tokenExpiry.toString());
+                
+                console.log('Successfully stored tokens:', {
+                    hasAccessToken: !!this.accessToken,
+                    hasRefreshToken: !!this.refreshToken,
+                    tokenExpiry: new Date(this.tokenExpiry).toISOString()
+                });
+            } catch (storageError) {
+                console.error('Error storing tokens in localStorage:', storageError);
+                throw new Error('Failed to store authentication tokens');
             }
         } catch (error) {
-            console.error('Error durante la autenticación:', error);
+            console.error('Error during authentication:', error);
+            this.logout(); // Clear any partial state
             throw error;
         }
     }
 
-    getHeaders() {
+    async refreshAccessToken() {
+        try {
+            if (!this.refreshToken) {
+                console.error('No refresh token available');
+                throw new Error('No hay token de actualización disponible');
+            }
+
+            console.log('Attempting to refresh token');
+            const response = await axios.post('http://localhost:5001/whoop/refresh', {
+                refresh_token: this.refreshToken
+            });
+            console.log('Token refresh response:', response.data);
+
+            const { access_token, refresh_token, expires_in } = response.data;
+            
+            if (!access_token) {
+                throw new Error('No access token received in refresh response');
+            }
+            
+            this.accessToken = access_token;
+            if (refresh_token) {
+                this.refreshToken = refresh_token;
+            }
+            this.tokenExpiry = Date.now() + ((expires_in || 3600) * 1000);
+            
+            try {
+                localStorage.setItem('whoop_access_token', access_token);
+                if (refresh_token) {
+                    localStorage.setItem('whoop_refresh_token', refresh_token);
+                }
+                localStorage.setItem('whoop_token_expiry', this.tokenExpiry.toString());
+                
+                console.log('Successfully refreshed tokens:', {
+                    hasAccessToken: !!this.accessToken,
+                    hasRefreshToken: !!this.refreshToken,
+                    tokenExpiry: new Date(this.tokenExpiry).toISOString()
+                });
+            } catch (storageError) {
+                console.error('Error storing refreshed tokens:', storageError);
+                throw new Error('Failed to store refreshed tokens');
+            }
+            
+            return access_token;
+        } catch (error) {
+            console.error('Error refreshing token:', error);
+            this.logout();
+            throw error;
+        }
+    }
+
+    async getHeaders() {
         if (!this.accessToken) {
             throw new Error('No autenticado');
         }
+
+        // Check if token is expired or about to expire (within 5 minutes)
+        if (this.tokenExpiry && Date.now() + 300000 > this.tokenExpiry) {
+            try {
+                await this.refreshAccessToken();
+            } catch (error) {
+                throw new Error('Error al actualizar el token de acceso');
+            }
+        }
+
         return {
             Authorization: `Bearer ${this.accessToken}`
         };
     }
 
+    async makeAuthenticatedRequest(method, endpoint, params = {}) {
+        try {
+            const queryParams = new URLSearchParams();
+            Object.entries(params).forEach(([key, value]) => {
+                if (value) queryParams.append(key, value);
+            });
+
+            const response = await axios({
+                method,
+                url: `${WHOOP_CONFIG.apiBaseUrl}${endpoint}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
+                headers: await this.getHeaders()
+            });
+
+            return response.data;
+        } catch (error) {
+            if (error.response?.status === 401) {
+                // Try to refresh the token once
+                try {
+                    await this.refreshAccessToken();
+                    // Retry the request with new token
+                    const response = await axios({
+                        method,
+                        url: `${WHOOP_CONFIG.apiBaseUrl}${endpoint}${queryParams.toString() ? `?${queryParams.toString()}` : ''}`,
+                        headers: await this.getHeaders()
+                    });
+                    return response.data;
+                } catch (refreshError) {
+                    console.error('Error al actualizar el token:', refreshError);
+                    this.logout();
+                    throw new Error('La sesión ha expirado. Por favor, vuelve a iniciar sesión.');
+                }
+            }
+            throw error;
+        }
+    }
+
     async getSleepData(start, end) {
         try {
-            const params = new URLSearchParams();
-            if (start) params.append('start', start);
-            if (end) params.append('end', end);
-            const response = await axios.get(
-                `${WHOOP_CONFIG.apiBaseUrl}/activity/sleep?${params.toString()}`,
-                { headers: this.getHeaders() }
-            );
-            return response.data;
+            return await this.makeAuthenticatedRequest('GET', '/activity/sleep', { start, end });
         } catch (error) {
             console.error('Error obteniendo datos de sueño:', error);
             throw error;
@@ -78,11 +214,7 @@ class WhoopService {
 
     async getProfile() {
         try {
-            const response = await axios.get(
-                `${WHOOP_CONFIG.apiBaseUrl}/user/profile/basic`,
-                { headers: this.getHeaders() }
-            );
-            return response.data;
+            return await this.makeAuthenticatedRequest('GET', '/user/profile/basic');
         } catch (error) {
             console.error('Error obteniendo perfil:', error);
             throw error;
@@ -91,23 +223,20 @@ class WhoopService {
 
     logout() {
         this.accessToken = null;
+        this.refreshToken = null;
+        this.tokenExpiry = null;
         localStorage.removeItem('whoop_access_token');
+        localStorage.removeItem('whoop_refresh_token');
+        localStorage.removeItem('whoop_token_expiry');
     }
 
     isAuthenticated() {
-        return !!this.accessToken;
+        return !!this.accessToken && (!this.tokenExpiry || Date.now() < this.tokenExpiry);
     }
 
     async getCycles(start, end) {
         try {
-            const params = new URLSearchParams();
-            if (start) params.append('start', start);
-            if (end) params.append('end', end);
-            const response = await axios.get(
-                `${WHOOP_CONFIG.apiBaseUrl}/cycle?${params.toString()}`,
-                { headers: this.getHeaders() }
-            );
-            return response.data;
+            return await this.makeAuthenticatedRequest('GET', '/cycle', { start, end });
         } catch (error) {
             console.error('Error obteniendo ciclos:', error);
             throw error;
@@ -116,14 +245,7 @@ class WhoopService {
 
     async getRecoveryData(start, end) {
         try {
-            const params = new URLSearchParams();
-            if (start) params.append('start', start);
-            if (end) params.append('end', end);
-            const response = await axios.get(
-                `${WHOOP_CONFIG.apiBaseUrl}/recovery?${params.toString()}`,
-                { headers: this.getHeaders() }
-            );
-            return response.data;
+            return await this.makeAuthenticatedRequest('GET', '/recovery', { start, end });
         } catch (error) {
             console.error('Error obteniendo recuperación:', error);
             throw error;
@@ -132,14 +254,7 @@ class WhoopService {
 
     async getWorkouts(start, end) {
         try {
-            const params = new URLSearchParams();
-            if (start) params.append('start', start);
-            if (end) params.append('end', end);
-            const response = await axios.get(
-                `${WHOOP_CONFIG.apiBaseUrl}/activity/workout?${params.toString()}`,
-                { headers: this.getHeaders() }
-            );
-            return response.data;
+            return await this.makeAuthenticatedRequest('GET', '/activity/workout', { start, end });
         } catch (error) {
             console.error('Error obteniendo workouts:', error);
             throw error;
