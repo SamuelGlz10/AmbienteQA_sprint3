@@ -53,6 +53,11 @@ const MainCard = ({label, value, color, onClick}) => {
   if (label === 'RECUPERACIÓN') english = 'Recovery';
   else if (label === 'DESEMPEÑO DEL SUEÑO') english = 'Sleep Performance';
   else if (label === 'ESFUERZO') english = 'Strain';
+  // Ajuste: el círculo de esfuerzo es proporcional a 21
+  const maxStrain = 21;
+  const circleLength = 339; // 2 * PI * r, r=54
+  const strainValue = label === 'ESFUERZO' ? Math.min(value, maxStrain) : value;
+  const strainDash = label === 'ESFUERZO' ? (strainValue / maxStrain) * circleLength : value * 3.39;
   return (
     <div className={`biometricos-main-card${onClick ? ' clickable' : ''}`} onClick={onClick}>
       <div className="biometricos-main-label">{label}</div>
@@ -65,7 +70,7 @@ const MainCard = ({label, value, color, onClick}) => {
           fill="none" 
           stroke={color} 
           strokeWidth="8"
-          strokeDasharray={`${value * 3.39} 339`}
+          strokeDasharray={`${strainDash} 339`}
           transform="rotate(-90 60 60)"
         />
         <text x="60" y="60" textAnchor="middle" dominantBaseline="middle" fill={color} style={{fontSize: '36px', fontWeight: '700'}}>
@@ -84,6 +89,7 @@ const Biometricos = () => {
   const [sleepData, setSleepData] = useState([]);
   const [cycleData, setCycleData] = useState([]);
   const [recoveryData, setRecoveryData] = useState([]);
+  const [workouts, setWorkouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState('day'); // 'day' o 'week'
@@ -92,6 +98,8 @@ const Biometricos = () => {
   const [showStrainPopup, setShowStrainPopup] = useState(false);
   const [showMetrics, setShowMetrics] = useState(false);
   const [expandedMetric, setExpandedMetric] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [showWorkoutPopup, setShowWorkoutPopup] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -103,14 +111,18 @@ const Biometricos = () => {
       try {
         const end = new Date();
         const start = new Date(Date.now() - 8 * 24 * 60 * 60 * 1000); // 8 días para asegurar semana completa
-        const [sleep, cycles, rec] = await Promise.all([
+        const [sleep, cycles, rec, profile, workoutsResp] = await Promise.all([
           whoopService.getSleepData(start.toISOString(), end.toISOString()),
           whoopService.getCycles(start.toISOString(), end.toISOString()),
-          whoopService.getRecoveryData(start.toISOString(), end.toISOString())
+          whoopService.getRecoveryData(start.toISOString(), end.toISOString()),
+          whoopService.getProfile(),
+          whoopService.getWorkouts(start.toISOString(), end.toISOString())
         ]);
         setSleepData(sleep?.records || []);
         setCycleData(cycles?.records || []);
         setRecoveryData(rec?.records || []);
+        setUserProfile(profile);
+        setWorkouts(workoutsResp?.records || []);
         setError(null);
       } catch (err) {
         setError('Error al obtener datos de WHOOP.');
@@ -197,6 +209,31 @@ const Biometricos = () => {
     }
     return 0;
   });
+
+  // --- DATOS SEMANALES DE WORKOUTS ---
+  // Filtrar workouts de la semana (score_state === 'SCORED')
+  const weekWorkouts = workouts.filter(w => w.score_state === 'SCORED');
+  // Map de deportes
+  const sportMap = {
+    '-1': 'Actividad', '0': 'Correr', '1': 'Ciclismo', '16': 'Béisbol', '17': 'Básquetbol', '18': 'Remo', '19': 'Esgrima', '20': 'Hockey', '21': 'Fútbol Americano', '22': 'Golf', '24': 'Hockey sobre hielo', '25': 'Lacrosse', '27': 'Rugby', '28': 'Vela', '29': 'Esquí', '30': 'Fútbol', '31': 'Softbol', '32': 'Squash', '33': 'Natación', '34': 'Tenis', '35': 'Atletismo', '36': 'Voleibol', '37': 'Waterpolo', '38': 'Lucha', '39': 'Boxeo', '42': 'Danza', '43': 'Pilates', '44': 'Yoga', '45': 'Pesas', '47': 'Esquí de fondo', '48': 'Fitness funcional', '49': 'Duatlón', '51': 'Gimnasia', '52': 'Senderismo', '53': 'Equitación', '55': 'Kayak', '56': 'Artes marciales', '57': 'Ciclismo de montaña', '59': 'Powerlifting', '60': 'Escalada', '61': 'Paddleboard', '62': 'Triatlón', '63': 'Caminata', '64': 'Surf', '65': 'Elíptica', '66': 'Stairmaster', '70': 'Meditación', '71': 'Otro', '73': 'Buceo', '74': 'Operaciones tácticas', '75': 'Operaciones médicas', '76': 'Operaciones aéreas', '77': 'Operaciones acuáticas', '82': 'Ultimate', '83': 'Escalador', '84': 'Saltar la cuerda', '85': 'Fútbol australiano', '86': 'Skateboarding', '87': 'Entrenador', '88': 'Baño de hielo', '89': 'Commuting', '90': 'Gaming', '91': 'Snowboard', '92': 'Motocross', '93': 'Caddie', '94': 'Carrera de obstáculos', '95': 'Motor Racing', '96': 'HIIT'
+  };
+  // Tipo de entrenamiento más frecuente
+  const sportCount = {};
+  weekWorkouts.forEach(w => {
+    const s = w.sport_id;
+    sportCount[s] = (sportCount[s] || 0) + 1;
+  });
+  const mostFrequentSportId = Object.entries(sportCount).sort((a,b)=>b[1]-a[1])[0]?.[0];
+  const mostFrequentSport = sportMap[mostFrequentSportId] || 'Otro';
+  // Esfuerzo total (strain), minutos y calorías
+  const totalStrain = weekWorkouts.reduce((a,w)=>a+(w.score?.strain||0),0);
+  const totalMinutes = weekWorkouts.reduce((a,w)=>a+((new Date(w.end)-new Date(w.start))/(1000*60)),0);
+  const totalCalories = weekWorkouts.reduce((a,w)=>a+(w.score?.calories || (w.score?.kilojoule ? w.score.kilojoule*0.239006 : 0)),0);
+  // Interpretación
+  let interpretacionWorkout = 'Actividad física baja esta semana.';
+  if (totalMinutes >= 150) interpretacionWorkout = '¡Excelente! Cumpliste la recomendación de actividad física semanal.';
+  else if (totalMinutes >= 90) interpretacionWorkout = 'Actividad física moderada, sigue así.';
+  else if (totalMinutes > 0) interpretacionWorkout = 'Podrías aumentar tu nivel de actividad física.';
 
   // --- COMPONENTE TARJETA SEMANAL ---
   const WeeklyMetricCard = ({title, icon, color, value, change, unit, onClick}) => (
@@ -427,6 +464,15 @@ const Biometricos = () => {
           unit="kcal"
           onClick={() => setExpandedMetric('Esfuerzo')}
         />
+        <WeeklyMetricCard
+          title="Actividad Física"
+          icon="directions_run"
+          color="#7a5a96"
+          value={totalStrain}
+          change={weekWorkouts.length}
+          unit="strain"
+          onClick={() => setShowWorkoutPopup(true)}
+        />
       </div>
     </div>
   );
@@ -510,7 +556,7 @@ const Biometricos = () => {
       doc.setTextColor(40, 40, 40);
       doc.text('REPORTE MÉDICO DE BIOMÉTRICOS', 105, 20, { align: 'center' });
       doc.setFontSize(12);
-      doc.text('Usuario: usuario', 10, 30);
+      doc.text(`Usuario: ${userProfile ? `${userProfile.first_name} ${userProfile.last_name}` : 'Usuario'}`, 10, 30);
       doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 150, 30);
       doc.setDrawColor(180, 166, 214);
       doc.setLineWidth(0.8);
@@ -602,6 +648,26 @@ const Biometricos = () => {
         });
         y = doc.lastAutoTable.finalY + 8;
       });
+      // --- NUEVO: Tarjeta semanal de actividad física ---
+      if (weekWorkouts.length > 0) {
+        doc.addPage();
+        let yAF = 20;
+        autoTable(doc, {
+          startY: yAF,
+          head: [['Tipo de actividad física', 'Fecha', 'Esfuerzo', 'Minutos', 'Calorías']],
+          body: weekWorkouts.map(w => [
+            sportMap[w.sport_id] || 'Otro',
+            new Date(w.start).toLocaleDateString('es-MX'),
+            w.score?.strain?.toFixed(1) ?? '-',
+            Math.round((new Date(w.end)-new Date(w.start))/(1000*60)),
+            w.score?.calories ? Math.round(w.score.calories) : (w.score?.kilojoule ? Math.round(w.score.kilojoule*0.239006) : '-')
+          ]),
+          theme: 'grid',
+          headStyles: { fillColor: [180, 166, 214] },
+          styles: { fontSize: 10, cellPadding: 2 }
+        });
+        y = doc.lastAutoTable.finalY + 8;
+      }
       // Salto de página para explicación y recomendaciones
       doc.addPage();
       y = 20;
@@ -656,6 +722,47 @@ const Biometricos = () => {
     }
   };
 
+  // Popup de desglose de entrenamientos
+  const WorkoutDetailPopup = ({open, onClose, workouts, sportMap}) => {
+    if (!open) return null;
+    return (
+      <div className="biometricos-popup-overlay" onClick={onClose}>
+        <div className="biometricos-popup-content" onClick={e=>e.stopPropagation()} style={{maxWidth: 900, width: '95vw', maxHeight: '90vh', overflowY: 'auto', padding: 40, borderRadius: 20}}>
+          <button className="biometricos-popup-close" onClick={onClose}>&times;</button>
+          <h2 className="biometricos-popup-title" style={{color: '#7a5a96', marginBottom: 24}}>Entrenamientos de la semana</h2>
+          <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 16}}>
+            <thead>
+              <tr style={{background: '#faf7fd', color: '#7a5a96'}}>
+                <th style={{padding: 8, borderBottom: '2px solid #ede3f6'}}>Tipo</th>
+                <th style={{padding: 8, borderBottom: '2px solid #ede3f6'}}>Fecha</th>
+                <th style={{padding: 8, borderBottom: '2px solid #ede3f6'}}>Esfuerzo</th>
+                <th style={{padding: 8, borderBottom: '2px solid #ede3f6'}}>Minutos</th>
+                <th style={{padding: 8, borderBottom: '2px solid #ede3f6'}}>Calorías</th>
+              </tr>
+            </thead>
+            <tbody>
+              {workouts.map((w, i) => (
+                <tr key={w.id} style={{background: i%2===0 ? '#fff' : '#f7f3fa'}}>
+                  <td style={{padding: 8}}>{sportMap[w.sport_id] || 'Otro'}</td>
+                  <td style={{padding: 8}}>{new Date(w.start).toLocaleString('es-MX', {dateStyle:'medium', timeStyle:'short'})}</td>
+                  <td style={{padding: 8}}>{w.score?.strain?.toFixed(1) ?? '-'}</td>
+                  <td style={{padding: 8}}>{Math.round((new Date(w.end)-new Date(w.start))/(1000*60))}</td>
+                  <td style={{padding: 8}}>{w.score?.calories ? Math.round(w.score.calories) : (w.score?.kilojoule ? Math.round(w.score.kilojoule*0.239006) : '-')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  // --- NUEVO: actividad física de ayer ---
+  const yesterdayWorkouts = workouts.filter(w => w.score_state === 'SCORED' && w.start.slice(0,10) === yesterdayStr);
+  const actividadFisicaAyer = yesterdayWorkouts.length > 0
+    ? `Actividad física: ${yesterdayWorkouts.map(w => sportMap[w.sport_id] || 'Otro').join(', ')}`
+    : 'No se realizó actividad física';
+
   // --- UI ---
   if (loading) return <div className="biometricos-loading">Cargando datos de WHOOP...</div>;
   if (error) return <div className="biometricos-error">{error}</div>;
@@ -664,7 +771,9 @@ const Biometricos = () => {
     <>
       <TopAppBar />
       <div className="main-title" style={{ marginBottom: '28px' }}>
-        <h1>Resumen Biométrico</h1>
+        <h1>
+          Biométricos{userProfile ? ` de ${userProfile.first_name} ${userProfile.last_name}` : ''}
+        </h1>
       </div>
       {/* Barra de tabs y botón de descargar alineados en la misma fila, dentro del container */}
       <div style={{
@@ -679,7 +788,7 @@ const Biometricos = () => {
           <button onClick={()=>setTab('day')} className={tab==='day' ? 'active' : ''}>Ayer</button>
           <button onClick={()=>setTab('week')} className={tab==='week' ? 'active' : ''}>Semana</button>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <button 
             className="download-button" 
             onClick={generatePDF}
@@ -735,9 +844,9 @@ const Biometricos = () => {
           <div className="biometricos-day-cards">
             <div className="biometricos-day-group">
               <MainCard
-                  label="RECUPERACIÓN"
+                label="RECUPERACIÓN"
                 value={recoveryPct}
-                  color="#a892c5"
+                color="#7a5a96"
                 onClick={()=>setShowRecoveryPopup(true)}
               />
                 {showMetrics && (
@@ -759,7 +868,7 @@ const Biometricos = () => {
             </div>
             <div className="biometricos-day-group">
               <MainCard
-                  label="DESEMPEÑO DEL SUEÑO"
+                label="DESEMPEÑO DEL SUEÑO"
                 value={sleepPerfPct}
                 color="#7a5a96"
                 onClick={()=>setShowSleepPopup(true)}
@@ -783,9 +892,9 @@ const Biometricos = () => {
             </div>
             <div className="biometricos-day-group">
               <MainCard
-                  label="ESFUERZO"
+                label="ESFUERZO"
                 value={strain}
-                  color="#a892c5"
+                color="#7a5a96"
                 onClick={()=>setShowStrainPopup(true)}
               />
                 {showMetrics && (
@@ -815,7 +924,7 @@ const Biometricos = () => {
         <SleepDetailPopup onClose={()=>setShowSleepPopup(false)} data={yesterdaySleep} />
       )}
       {showStrainPopup && yesterdayCycle && (
-        <StrainDetailPopup onClose={()=>setShowStrainPopup(false)} data={yesterdayCycle} />
+        <StrainDetailPopup onClose={()=>setShowStrainPopup(false)} data={yesterdayCycle} yesterdayWorkouts={yesterdayWorkouts} sportMap={sportMap} />
       )}
       {expandedMetric === 'Desempeño del Sueño' && (
         <WeeklyDetailPopup
@@ -850,6 +959,7 @@ const Biometricos = () => {
           unit="kcal"
         />
       )}
+      <WorkoutDetailPopup open={showWorkoutPopup} onClose={()=>setShowWorkoutPopup(false)} workouts={weekWorkouts} sportMap={sportMap} />
     </>
   );
 };
@@ -929,7 +1039,7 @@ const SleepDetailPopup = ({onClose, data}) => {
   );
 };
 
-const StrainDetailPopup = ({onClose, data}) => {
+const StrainDetailPopup = ({onClose, data, yesterdayWorkouts = [], sportMap = {}}) => {
   const score = data?.score || {};
   const metrics = [
     { label: 'Calorías', value: score.calories ? Math.round(score.calories) : (score.kilojoule ? Math.round(score.kilojoule * 0.239006) : undefined), unit: 'kcal' },
@@ -949,6 +1059,33 @@ const StrainDetailPopup = ({onClose, data}) => {
           {metrics.filter(m => m.value !== undefined).map(m => (
             <MetricRow key={m.label} label={m.label} value={m.value} unit={m.unit} />
           ))}
+        </div>
+        {/* Desglose de actividades físicas */}
+        <div style={{margin: '18px 0 0 0'}}>
+          {yesterdayWorkouts.length > 0 ? (
+            <table style={{width: '100%', borderCollapse: 'collapse', fontSize: 15, marginTop: 8}}>
+              <thead>
+                <tr style={{background: '#faf7fd', color: '#7a5a96'}}>
+                  <th style={{padding: 6, borderBottom: '2px solid #ede3f6'}}>Tipo</th>
+                  <th style={{padding: 6, borderBottom: '2px solid #ede3f6'}}>Esfuerzo</th>
+                  <th style={{padding: 6, borderBottom: '2px solid #ede3f6'}}>Minutos</th>
+                  <th style={{padding: 6, borderBottom: '2px solid #ede3f6'}}>Calorías</th>
+                </tr>
+              </thead>
+              <tbody>
+                {yesterdayWorkouts.map((w, i) => (
+                  <tr key={w.id} style={{background: i%2===0 ? '#fff' : '#f7f3fa'}}>
+                    <td style={{padding: 6}}>{sportMap[w.sport_id] || 'Otro'}</td>
+                    <td style={{padding: 6}}>{w.score?.strain?.toFixed(1) ?? '-'}</td>
+                    <td style={{padding: 6}}>{Math.round((new Date(w.end)-new Date(w.start))/(1000*60))}</td>
+                    <td style={{padding: 6}}>{w.score?.calories ? Math.round(w.score.calories) : (w.score?.kilojoule ? Math.round(w.score.kilojoule*0.239006) : '-')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div style={{color: '#7a5a96', fontWeight: 500, fontSize: 15, textAlign: 'center'}}>No se realizó actividad física</div>
+          )}
         </div>
         <div className="biometricos-popup-interpret">
           <span>Interpretación</span>
