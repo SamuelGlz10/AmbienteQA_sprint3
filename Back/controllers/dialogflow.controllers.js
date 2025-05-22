@@ -12,8 +12,6 @@ const keyFilename = path.join(__dirname, "../utils/dialogflow-key.json");
 
 const client = new SessionsClient({ keyFilename });
 
-
-
 export const handleWebhook = async (req, res) => {
   try {
     const agent = new WebhookClient({ request: req, response: res });
@@ -169,7 +167,6 @@ export const handleWebhook = async (req, res) => {
     await agent.handleRequest(intentMap);
   } catch (error) {
     console.error("Error in Dialogflow webhook:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error });
   }
 };
-
