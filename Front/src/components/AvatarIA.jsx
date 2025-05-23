@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../css/AvatarIA.css";
-import siteInfo from "../data/siteContext.json"; // <— nuevo import
 import chatbotImage from "../../public/icons/chatbot.png"; // Import the chatbot image
 
 const AvatarIA = () => {
