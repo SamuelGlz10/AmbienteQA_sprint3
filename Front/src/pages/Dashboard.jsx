@@ -151,7 +151,7 @@ const Dashboard = () => {
       const timer = setTimeout(() => {
         setSuccessMessage(null);
       }, 3000); // 3 segundos
-      
+
       return () => clearTimeout(timer);
     }
   }, [successMessage]);
@@ -178,10 +178,12 @@ const Dashboard = () => {
   const fetchProject = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setError("No se encontró un token de autenticación. Por favor, inicia sesión.");
+      setError(
+        "No se encontró un token de autenticación. Por favor, inicia sesión."
+      );
       return;
     }
-  
+
     try {
       const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
         method: "GET",
@@ -381,13 +383,13 @@ const Dashboard = () => {
 
   const handleSaveEdit = async () => {
     if (!selectedItem || !project) return;
-  
+
     try {
       setSaveStatus({ loading: true, error: null, success: false });
-  
+
       const updatedProject = {
         ...project,
-        [activeRequirement]: project[activeRequirement].map(item =>
+        [activeRequirement]: project[activeRequirement].map((item) =>
           item.id === selectedItem.id
             ? {
                 ...item,
@@ -397,7 +399,7 @@ const Dashboard = () => {
             : item
         ),
       };
-  
+
       const response = await fetch(`${BACKEND_URL}/projectsFB/${projectId}`, {
         method: "PUT",
         headers: {
@@ -410,20 +412,19 @@ const Dashboard = () => {
           [activeRequirement]: updatedProject[activeRequirement],
         }),
       });
-  
+
       const responseData = await response.json(); // Asegurarse de parsear la respuesta
-      
+
       if (!response.ok) {
-        throw new Error(responseData.message || "Error al guardar en el servidor");
+        throw new Error(
+          responseData.message || "Error al guardar en el servidor"
+        );
       }
-  
-      
-  
+
       setProject(updatedProject);
       setSaveStatus({ loading: false, error: null, success: true });
       setSuccessMessage("Cambios guardados exitosamente");
       setShowPopup(false);
-  
     } catch (error) {
       console.error("Error al guardar:", error);
       setSaveStatus({
@@ -694,14 +695,16 @@ const Dashboard = () => {
         console.error("El ID del proyecto no está definido");
         return;
       }
-  
+
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found. Please log in.");
-        setError("No se encontró un token de autenticación. Por favor, inicia sesión.");
+        setError(
+          "No se encontró un token de autenticación. Por favor, inicia sesión."
+        );
         return;
       }
-  
+
       try {
         const response = await fetch(
           `${import.meta.env.VITE_BACKEND_URL}/projectsFB/${projectId}/tasks`,
@@ -717,17 +720,20 @@ const Dashboard = () => {
             }),
           }
         );
-  
+
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Error al actualizar la tarea en Firestore:", errorData);
+          console.error(
+            "Error al actualizar la tarea en Firestore:",
+            errorData
+          );
           setError(errorData.message || "Error al actualizar la tarea.");
         }
       } catch (error) {
         console.error("Error al conectar con Firestore:", error);
         setError("Error al conectar con el servidor.");
       }
-  
+
       setDraggedTask(null);
     }
   };
@@ -978,14 +984,13 @@ const Dashboard = () => {
                 >
                   Eliminar Proyecto
                 </button>
-                
+
                 <button
                   className="popup-button primary"
                   onClick={() => setIsEditing(true)}
                 >
                   Editar Proyecto
                 </button>
-                
               </div>
             )}
           </>
@@ -1118,7 +1123,7 @@ const Dashboard = () => {
           </div>
           {(role === "admin" || role === "editor") && (
             <button className="edit-team-button" onClick={handleEditTeam}>
-              Agregar Miembros
+              Gestionar Equipo
             </button>
           )}
         </div>
@@ -1153,7 +1158,7 @@ const Dashboard = () => {
           })}
           setAllTasks={setAllTasks}
           onClose={handleCloseSprintDetails}
-          projectId={projectId} 
+          projectId={projectId}
         />
       )}
 

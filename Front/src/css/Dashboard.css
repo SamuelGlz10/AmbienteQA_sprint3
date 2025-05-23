@@ -828,10 +828,15 @@ td {
   font-size: 1.5rem;
   cursor: pointer;
   color: #666;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .team-edit-popup-close:hover {
   color: #333;
+  background-color: #f0e6ff;
 }
 
 .members-sections {
@@ -1785,5 +1790,5 @@ td {
   display: flex;
   align-items: center;
   margin-top: 20px;
-  gap: 10px; 
+  gap: 10px;
 }
