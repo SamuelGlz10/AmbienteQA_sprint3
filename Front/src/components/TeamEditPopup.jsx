@@ -123,115 +123,138 @@ const TeamEditPopup = ({
   );
 
   return (
-    <div className="team-edit-popup">
-      <div className="team-edit-popup-content">
-        <button className="team-edit-popup-close" onClick={handleCancelTeam}>
-          ×
-        </button>
-        <h2 className="team-edit-popup-title">Gestionar Equipo</h2>
+    <div
+      className="team-edit-popup-overlay"
+      onClick={handleCancelTeam}
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.3)",
+        zIndex: 100000,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <div className="team-edit-popup">
+        <div
+          className="team-edit-popup-content"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button className="team-edit-popup-close" onClick={handleCancelTeam}>
+            ×
+          </button>
+          <h2 className="team-edit-popup-title">Gestionar Equipo</h2>
 
-        <div className="drag-drop-container">
-          <div className="drag-drop-section">
-            <h3>Miembros Disponibles</h3>
-            <div className="search-bar-container">
-              <input
-                type="text"
-                placeholder="Buscar miembros disponibles..."
-                value={searchAvailable}
-                onChange={(e) => setSearchAvailable(e.target.value)}
-                className="search-bar"
-              />
-              {searchAvailable && (
-                <button
-                  className="clear-search-button"
-                  onClick={() => setSearchAvailable("")}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-            <DragAndDropTable
-              items={filteredAvailableList}
-              listId="available"
-              onDrop={handleDrop}
-              renderItem={(item) => (
-                <div
-                  className={`member-card ${
-                    removedMembers.some((m) => m.email === item.email)
-                      ? "removed-member"
-                      : ""
-                  }`}
-                >
-                  <div className="member-profile">{item.initials}</div>
-                  <div className="member-info">
-                    <div className="member-name">
-                      {item.name + " " + (item.lastname || "")}
+          <div className="drag-drop-container">
+            <div className="drag-drop-section">
+              <h3>Miembros Disponibles</h3>
+              <div className="search-bar-container">
+                <input
+                  type="text"
+                  placeholder="Buscar miembros disponibles..."
+                  value={searchAvailable}
+                  onChange={(e) => setSearchAvailable(e.target.value)}
+                  className="search-bar"
+                />
+                {searchAvailable && (
+                  <button
+                    className="clear-search-button"
+                    onClick={() => setSearchAvailable("")}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <DragAndDropTable
+                items={filteredAvailableList}
+                listId="available"
+                onDrop={handleDrop}
+                renderItem={(item) => (
+                  <div
+                    className={`member-card ${
+                      removedMembers.some((m) => m.email === item.email)
+                        ? "removed-member"
+                        : ""
+                    }`}
+                  >
+                    <div className="member-profile">{item.initials}</div>
+                    <div className="member-info">
+                      <div className="member-name">
+                        {item.name + " " + (item.lastname || "")}
+                      </div>
+                      <div className="member-role">{item.role}</div>
+                      <div className="member-email">{item.email}</div>
                     </div>
-                    <div className="member-role">{item.role}</div>
-                    <div className="member-email">{item.email}</div>
                   </div>
-                </div>
-              )}
-            />
+                )}
+              />
+            </div>
+
+            <div className="drag-drop-section">
+              <h3>Miembros del Equipo</h3>
+              <div className="search-bar-container">
+                <input
+                  type="text"
+                  placeholder="Buscar miembros del equipo..."
+                  value={searchTeam}
+                  onChange={(e) => setSearchTeam(e.target.value)}
+                  className="search-bar"
+                />
+                {searchTeam && (
+                  <button
+                    className="clear-search-button"
+                    onClick={() => setSearchTeam("")}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <DragAndDropTable
+                items={filteredTeamList}
+                listId="team"
+                onDrop={handleDrop}
+                renderItem={(item) => (
+                  <div
+                    className={`member-card ${
+                      addedMembers.some((m) => m.email === item.email)
+                        ? "new-member"
+                        : ""
+                    }`}
+                    draggable={item.id !== currentUserId}
+                  >
+                    <div className="member-profile">{item.initials}</div>
+                    <div className="member-info">
+                      <div className="member-name">
+                        {item.name + " " + (item.lastname || "")}
+                      </div>
+                      <div className="member-role">{item.role}</div>
+                      <div className="member-email">{item.email}</div>
+                    </div>
+                  </div>
+                )}
+              />
+            </div>
           </div>
 
-          <div className="drag-drop-section">
-            <h3>Miembros del Equipo</h3>
-            <div className="search-bar-container">
-              <input
-                type="text"
-                placeholder="Buscar miembros del equipo..."
-                value={searchTeam}
-                onChange={(e) => setSearchTeam(e.target.value)}
-                className="search-bar"
-              />
-              {searchTeam && (
-                <button
-                  className="clear-search-button"
-                  onClick={() => setSearchTeam("")}
-                >
-                  ×
-                </button>
-              )}
-            </div>
-            <DragAndDropTable
-              items={filteredTeamList}
-              listId="team"
-              onDrop={handleDrop}
-              renderItem={(item) => (
-                <div
-                  className={`member-card ${
-                    addedMembers.some((m) => m.email === item.email)
-                      ? "new-member"
-                      : ""
-                  }`}
-                  draggable={item.id !== currentUserId}
-                >
-                  <div className="member-profile">{item.initials}</div>
-                  <div className="member-info">
-                    <div className="member-name">
-                      {item.name + " " + (item.lastname || "")}
-                    </div>
-                    <div className="member-role">{item.role}</div>
-                    <div className="member-email">{item.email}</div>
-                  </div>
-                </div>
-              )}
-            />
+          <div className="popup-footer">
+            <button
+              className="popup-button secondary"
+              onClick={handleCancelTeam}
+            >
+              Cancelar
+            </button>
+            <button
+              className="popup-button primary"
+              onClick={handleSave}
+              disabled={!hasChanges}
+            >
+              Guardar Cambios
+            </button>
           </div>
-        </div>
-
-        <div className="popup-footer">
-          <button className="popup-button secondary" onClick={handleCancelTeam}>
-            Cancelar
-          </button>
-          <button
-            className="popup-button primary"
-            onClick={handleSave}
-            disabled={!hasChanges}
-          >
-            Guardar Cambios
-          </button>
         </div>
       </div>
     </div>
