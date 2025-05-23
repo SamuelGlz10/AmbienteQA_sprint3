@@ -2,9 +2,15 @@ import dialogflow from "@google-cloud/dialogflow";
 import path from "path";
 import { DialogflowService } from "../utils/dialogflow.js"; // Your DB logic
 
-const projectId = "stratedge-qkie";
-const keyFilename = path.join(process.cwd(), "utils/dialogflow-key.json");
-const sessionClient = new dialogflow.SessionsClient({ keyFilename });
+const dialogflowKey = JSON.parse(process.env.DIALOGFLOW_KEY);
+const projectId = dialogflowKey.project_id;
+
+const sessionClient = new dialogflow.SessionsClient({
+  credentials: {
+    client_email: dialogflowKey.client_email,
+    private_key: dialogflowKey.private_key.replace(/\\n/g, "\n"),
+  },
+});
 
 export const handleWebhook = async (req, res) => {
   try {
