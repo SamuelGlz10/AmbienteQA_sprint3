@@ -1,312 +1,198 @@
-/* Contenedor principal */
-.perfil-container {
-    min-height: 100vh;
-    background-color: #f8f9fa; 
-    font-family: "Poppins", sans-serif; 
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    padding: 40px; /* Aumentar el padding general */
+/* Contenedor principal compacto */
+.perfil-popup-container {
+  background-color: white;
+  border-radius: 12px;
+  width: 500px;
+  max-width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 25px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
-  
-/* Contenido principal */
+
+/* Contenido principal compacto */
 .perfil-content {
-    display: flex;
-    gap: 50px; /* Aumentar el espacio entre columnas */
-    width: 100%;
-    max-width: 1400px; /* Aumentar el ancho máximo */
-    margin: 0 auto;
-    padding: 40px 0; /* Aumentar el padding vertical */
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
-  
-/* Lado izquierdo: Información del perfil */
+
+/* Sección de perfil compacta */
 .perfil-left {
-    flex: 1;
-    max-width: 400px; /* Aumentar el ancho máximo */
-    background-color: white;
-    border-radius: 16px; /* Bordes más redondeados */
-    padding: 40px; /* Aumentar el padding interno */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
-    text-align: center;
+  background-color: white;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
 }
-  
+
+/* Foto de perfil optimizada */
 .perfil-picture {
-    width: 150px; /* Aumentar el tamaño de la imagen */
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px; /* Más espacio debajo de la imagen */
-    border: 3px solid #ddd; /* Borde más grueso */
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 2px solid #ddd;
 }
-  
+
+/* Información del perfil compacta */
 .perfil-info h2 {
-    font-size: 24px; /* Aumentar el tamaño del texto */
-    font-weight: 700; /* Hacer el texto más grueso */
-    color: #5d3a7f; 
-    margin-bottom: 15px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #5d3a7f;
+  margin-bottom: 10px;
 }
-  
+
 .perfil-info p {
-    font-size: 16px; /* Aumentar el tamaño del texto */
-    color: #666; 
-    margin: 10px 0; /* Más espacio entre líneas */
+  font-size: 14px;
+  color: #666;
+  margin: 8px 0;
 }
-  
-/* Botones de acción */
+
+/* Botones optimizados */
 .edit-info-button,
 .change-password-button {
-    background-color: #5d3a7f; 
-    color: white;
-    border: none;
-    padding: 15px 20px; /* Botones más grandes */
-    border-radius: 10px; /* Bordes más redondeados */
-    font-size: 16px; /* Texto más grande */
-    font-weight: 600; /* Texto más grueso */
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    width: 100%; 
-    max-width: 250px; /* Aumentar el ancho máximo */
-    text-align: center;
-    margin: 10px auto; /* Más espacio entre botones */
+  background-color: #5d3a7f;
+  color: white;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  width: 100%;
+  max-width: 200px;
+  margin: 8px auto;
+  display: block;
 }
-  
-.edit-info-button:hover,
-.change-password-button:hover {
-    background-color: #4a2f63;
-    transform: translateY(-3px); /* Efecto hover más pronunciado */
-}
-  
-/* Inputs en modo de edición */
+
+/* Modo edición compacto */
 .perfil-info label {
-    display: block;
-    margin-bottom: 15px;
-    font-size: 14px;
-    color: #333;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #333;
 }
-  
+
 .perfil-info input {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: "Poppins", sans-serif;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: border-color 0.3s ease;
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 4px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
 }
-  
-.perfil-info input:focus {
-    border-color: #5d3a7f;
-    outline: none;
-}
-  
-/* Botones en modo de edición */
+
 .edit-buttons {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-    justify-content: center; /* Centrar los botones */
+  display: flex;
+  gap: 8px;
+  margin-top: 15px;
+  justify-content: center;
 }
-  
+
 .save-button,
 .cancel-button {
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
+  padding: 8px 12px;
+  font-size: 13px;
 }
-  
-.save-button {
-    background-color: #5d3a7f;
-    color: white;
-}
-  
-.save-button:hover {
-    background-color: #4a2f63;
-}
-  
-.cancel-button {
-    background-color: #ccc;
-    color: #333;
-}
-  
-.cancel-button:hover {
-    background-color: #bbb;
-}
-  
-/* Lado derecho: Proyectos */
-.perfil-right {
-    flex: 2;
-    background-color: white;
-    border-radius: 16px; /* Bordes más redondeados */
-    padding: 40px; /* Aumentar el padding interno */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
-}
-  
-.perfil-right h2 {
-    font-size: 24px; /* Aumentar el tamaño del texto */
-    font-weight: 700;
-    color: #5d3a7f;
-    margin-bottom: 30px; /* Más espacio debajo del título */
-}
-  
-.project-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Aumentar el tamaño mínimo de las tarjetas */
-    gap: 30px; /* Más espacio entre tarjetas */
-}
-  
-.project-card {
-    background-color: #f8f9fa;
-    border: 1px solid #eee;
-    border-radius: 16px; /* Bordes más redondeados */
-    padding: 30px; /* Aumentar el padding interno */
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada */
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-  
-.project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Efecto hover más pronunciado */
-}
-  
-.project-card h3 {
-    font-size: 18px; /* Aumentar el tamaño del texto */
-    font-weight: 700;
-    color: #5d3a7f;
-    margin-bottom: 15px;
-}
-  
-.project-card p {
-    font-size: 16px; /* Aumentar el tamaño del texto */
-    color: #666;
-    margin-bottom: 20px; /* Más espacio debajo del texto */
-}
-  
-.view-project-button {
-    background-color: #9e72be; 
-    color: white;
-    border: none;
-    padding: 15px 20px; /* Botón más grande */
-    border-radius: 10px; /* Bordes más redondeados */
-    font-size: 16px; /* Texto más grande */
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-  
-.view-project-button:hover {
-    background-color: #8d60b4;
-    transform: translateY(-3px); /* Efecto hover más pronunciado */
-}
-  
-/* Popup general */
+
+/* Popups secundarios optimizados */
 .popup-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
 .popup-content {
-    background-color: white;
-    padding: 40px; /* Espaciado interno */
-    border-radius: 16px; /* Bordes redondeados */
-    width: 500px; /* Ancho del popup */
-    max-width: 90%; /* Adaptable a pantallas pequeñas */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Sombra pronunciada */
-    text-align: center;
-    animation: fadeIn 0.3s ease; /* Animación de entrada */
+  background-color: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
 }
 
-.popup-content h2 {
-    font-size: 24px; /* Tamaño del título */
-    font-weight: 700;
-    color: #5d3a7f; /* Color primario */
-    margin-bottom: 20px; /* Espaciado debajo del título */
+/* Elementos de carga optimizados */
+.loading-container {
+  padding: 15px 0;
 }
 
-.popup-content label {
-    display: block;
-    text-align: left;
-    font-size: 16px; /* Tamaño del texto */
-    color: #333;
-    margin-bottom: 10px;
+.spinner {
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  width: 30px;
+  height: 30px;
+  border-left-color: #5d3a7f;
 }
 
-.popup-content input {
-    width: 100%;
-    padding: 12px; /* Espaciado interno */
-    margin-bottom: 20px; /* Espaciado entre campos */
-    border: 1px solid #ddd;
-    border-radius: 8px; /* Bordes redondeados */
-    font-size: 14px;
-    font-family: "Poppins", sans-serif;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Sombra interna */
-    transition: border-color 0.3s ease;
+/* Cambiar imagen optimizado */
+.image-upload-container {
+  margin-top: 10px;
 }
 
-.popup-content input:focus {
-    border-color: #5d3a7f; /* Color al enfocar */
-    outline: none;
+.upload-label {
+  padding: 5px 10px;
+  font-size: 13px;
 }
 
-/* Botones del popup */
-.popup-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px; /* Espaciado entre botones */
-    margin-top: 20px;
+/* Efectos hover optimizados */
+.edit-info-button:hover,
+.change-password-button:hover,
+.save-button:hover {
+  background-color: #bbb;
 }
 
-.popup-buttons .cancel-button,
-.popup-buttons .save-button {
-    padding: 12px 20px; /* Tamaño de los botones */
-    border: none;
-    border-radius: 8px; /* Bordes redondeados */
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+.cancel-button:hover {
+  background-color: #bbb;
 }
 
-.popup-buttons .cancel-button {
-    background-color: #ccc;
-    color: #333;
+/* Media queries para responsividad */
+@media (max-width: 600px) {
+  .perfil-popup-container {
+    padding: 20px;
+  }
+  
+  .perfil-left {
+    padding: 20px;
+  }
+  
+  .perfil-picture {
+    width: 100px;
+    height: 100px;
+  }
 }
 
-.popup-buttons .cancel-button:hover {
-    background-color: #bbb;
-    transform: translateY(-2px); /* Efecto hover */
+/* Botón de cerrar sin fondo */
+.close-popup-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none; /* Elimina el fondo */
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666; /* Color del icono */
+  padding: 5px; /* Espacio para hacer más fácil el click */
+  line-height: 1;
+  transition: color 0.2s ease;
 }
 
-.popup-buttons .save-button {
-    background-color: #5d3a7f; /* Color primario */
-    color: white;
+.close-popup-button:hover {
+  color: #333; /* Color más oscuro al hacer hover */
+  background: none; /* Asegura que no tenga fondo al hacer hover */
 }
 
-.popup-buttons .save-button:hover {
-    background-color: #4a2f63;
-    transform: translateY(-2px); /* Efecto hover */
-}
-
-/* Animación de entrada */
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+/* Si usas un ícono SVG en lugar de texto (×) */
+.close-popup-button svg {
+  fill: currentColor; /* Hereda el color del botón */
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
 }

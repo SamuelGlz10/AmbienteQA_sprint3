@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import PerfilPopup from "./PerfilPopup";
 import "../css/index.css";
 
 const TopAppBar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showProfilePopup, setShowProfilePopup] = useState(false); // Estado para el popup de perfil
   const popupRef = useRef(null);
   const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
 
   const tabs = [
     { name: "Perfil", icon: "person" },
@@ -28,7 +31,8 @@ const TopAppBar = () => {
   const handleClick = (tab) => {
     switch (tab.name) {
       case "Perfil":
-        navigate("/perfil");
+        setShowProfilePopup(true); // Abre el popup de perfil
+        setIsOpen(false); // Cierra el menú desplegable
         break;
       case "Configuraciones":
         navigate("/settings");
@@ -58,44 +62,53 @@ const TopAppBar = () => {
   }, []);
 
   return (
-    <nav className="navbar">
-      <div className="navbar-content">
-        <div className="navbar-left">
-          <img
-            src="/softedge_logo2.png"
-            alt="SoftEdge Logo"
-            className="navbar-logo"
-            onClick={() => navigate("/home")}
-          />
-        </div>
-        
-        <div className="navbar-right">
-          <button className="home-button" onClick={() => navigate("/home")}>
-            <span className="material-icons">home</span>
-          </button>
-          <div className="profile-container" onClick={profilePopup}>
-            <div className="profile-avatar">
-              <span className="material-icons profile-icon">person</span>
-            </div>
+    <>
+      <nav className="navbar">
+        <div className="navbar-content">
+          <div className="navbar-left">
+            <img
+              src="/softedge_logo2.png"
+              alt="SoftEdge Logo"
+              className="navbar-logo"
+              onClick={() => navigate("/home")}
+            />
           </div>
           
-          {isOpen && (
-            <div className="profile-popup" ref={popupRef}>
-              {tabs.map((tab, index) => (
-                <div
-                  key={index}
-                  className="profile-popup-tab"
-                  onClick={() => handleClick(tab)}
-                >
-                  <span className="material-icons tab-icon">{tab.icon}</span>
-                  <span className="tab-text">{tab.name}</span>
-                </div>
-              ))}
+          <div className="navbar-right">
+            <button className="home-button" onClick={() => navigate("/home")}>
+              <span className="material-icons">home</span>
+            </button>
+            <div className="profile-container" onClick={profilePopup}>
+              <div className="profile-avatar">
+                <span className="material-icons profile-icon">person</span>
+              </div>
             </div>
-          )}
+            
+            {isOpen && (
+              <div className="profile-popup" ref={popupRef}>
+                {tabs.map((tab, index) => (
+                  <div
+                    key={index}
+                    className="profile-popup-tab"
+                    onClick={() => handleClick(tab)}
+                  >
+                    <span className="material-icons tab-icon">{tab.icon}</span>
+                    <span className="tab-text">{tab.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Componente PerfilPopup */}
+      <PerfilPopup
+        isOpen={showProfilePopup}
+        onClose={() => setShowProfilePopup(false)}
+        userId={userId}
+      />
+    </>
   );
 };
 
