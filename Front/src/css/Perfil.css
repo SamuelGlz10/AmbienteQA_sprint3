@@ -98,7 +98,7 @@
   font-size: 13px;
 }
 
-/* Popups secundarios optimizados */
+/* Password Popup Styles - Consistent with Perfil Popup */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -114,58 +114,96 @@
 
 .popup-content {
   background-color: white;
-  padding: 25px;
   border-radius: 12px;
   width: 400px;
-  max-width: 90%;
+  max-width: 95%;
+  padding: 25px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* Elementos de carga optimizados */
-.loading-container {
-  padding: 15px 0;
+.popup-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #5d3a7f;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
-.spinner {
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  width: 30px;
-  height: 30px;
-  border-left-color: #5d3a7f;
+.popup-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #333;
 }
 
-/* Cambiar imagen optimizado */
-.image-upload-container {
-  margin-top: 10px;
-}
-
-.upload-label {
-  padding: 5px 10px;
+.popup-content input {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   font-size: 13px;
 }
 
-/* Efectos hover optimizados */
-.edit-info-button:hover,
-.change-password-button:hover,
-.save-button:hover {
-  background-color: #bbb;
+.popup-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: center;
 }
 
-.cancel-button:hover {
-  background-color: #bbb;
+.popup-buttons .save-button {
+  background-color: #5d3a7f;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex: 1;
+  max-width: 150px;
 }
 
-/* Media queries para responsividad */
-@media (max-width: 600px) {
-  .perfil-popup-container {
+.popup-buttons .cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex: 1;
+  max-width: 150px;
+}
+
+.popup-buttons .save-button:hover {
+  background-color: #4a2d66;
+}
+
+.popup-buttons .cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .popup-content {
     padding: 20px;
+    width: 90%;
   }
   
-  .perfil-left {
-    padding: 20px;
+  .popup-buttons {
+    flex-direction: column;
   }
   
-  .perfil-picture {
-    width: 100px;
-    height: 100px;
+  .popup-buttons .save-button,
+  .popup-buttons .cancel-button {
+    max-width: 100%;
+    width: 100%;
   }
 }
 
@@ -196,3 +234,4 @@
   height: 1em;
   vertical-align: middle;
 }
+
