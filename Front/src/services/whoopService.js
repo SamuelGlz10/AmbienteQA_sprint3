@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const FRONT_URL = process.env.VITE_FRONT_URL;
-const BACK_URL = process.env.VITE_BACK_URL;
+const FRONT_URL = import.meta.env.VITE_FRONT_URL;
+const BACK_URL = import.meta.env.VITE_BACK_URL;
 
 const WHOOP_CONFIG = {
   clientId: "4a7cd98e-1a62-45c4-ad24-59011db56b9f",
