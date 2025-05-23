@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../css/AvatarIA.css";
 import siteInfo from "../data/siteContext.json"; // <— nuevo import
+import chatbotImage from "../../public/icons/chatbot.png"; // Import the chatbot image
 
 const AvatarIA = () => {
   const [sessionId] = useState(() => {
@@ -14,6 +15,7 @@ const AvatarIA = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [popupAnimation, setPopupAnimation] = useState(""); // nueva variable para animación
   const [showChat, setShowChat] = useState(false);
+  const [showVoicePopup, setShowVoicePopup] = useState(false);
   const [messages, setMessages] = useState([
     { text: "¿En qué te puedo ayudar?", sender: "other" },
   ]);
@@ -21,6 +23,8 @@ const AvatarIA = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [voices, setVoices] = useState([]);
   const [isRecording, setIsRecording] = useState(false); // State for recording
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false); // State for processing voice
+  const [isSpeaking, setIsSpeaking] = useState(false); // State for TTS playback
   const recognitionRef = useRef(null); // Ref for SpeechRecognition instance
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -58,24 +62,78 @@ const AvatarIA = () => {
     };
   }, []);
 
+  const handleVoiceMessage = async (text) => {
+    if (!text || isLoading) return;
+    setIsProcessingVoice(false); // Clear processing state
+    setIsLoading(true);
+    setMessages((prev) => [...prev, { text, sender: "user" }]);
+
+    try {
+      const response = await fetch(`${BACKEND_URL}/dialogflow/webhook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+        }),
+      });
+
+      const { fulfillmentText } = await response.json();
+      setMessages((prev) => [
+        ...prev,
+        { text: fulfillmentText, sender: "other" },
+      ]);
+
+      // Establecer isSpeaking antes de quitar isLoading para evitar el parpadeo
+      setIsSpeaking(true);
+      setIsLoading(false);
+
+      // Reproducir respuesta automáticamente en modo voz
+      setTimeout(() => {
+        handleReadMessage(fulfillmentText);
+        // Mantener el popup abierto para continuar la conversación
+      }, 100); // Reducir el delay para una transición más rápida
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        { text: "Error al comunicarse con Dialogflow.", sender: "other" },
+      ]);
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if ("webkitSpeechRecognition" in window) {
       const recognition = new window.webkitSpeechRecognition();
-      recognition.lang = "es-MX"; // Set language to Spanish (Mexico)
+      recognition.lang = "es-MX";
       recognition.interimResults = false;
+      recognition.continuous = false;
       recognitionRef.current = recognition;
 
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
-        setCurrentMessage(transcript); // Set the transcribed text
-        handleSendMessage(); // Send the message
+        setIsRecording(false);
+        setIsProcessingVoice(false);
+        
+        if (showVoicePopup) {
+          handleVoiceMessage(transcript);
+        } else {
+          setCurrentMessage(transcript);
+          setTimeout(() => handleSendMessage(), 100);
+        }
       };
 
       recognition.onerror = (event) => {
         console.error("Speech recognition error:", event.error);
+        setIsRecording(false);
+        setIsProcessingVoice(false);
+      };
+
+      recognition.onend = () => {
+        setIsRecording(false);
+        // No clear processing here, let onresult or onerror handle it
       };
     }
-  }, []);
+  }, [showVoicePopup, handleVoiceMessage]);
 
   const handleTogglePopup = () => {
     if (!showPopup) {
@@ -85,9 +143,14 @@ const AvatarIA = () => {
       setPopupAnimation("slideOut");
       setTimeout(() => {
         setShowPopup(false);
-      }, 300); // duración de la animación
-      setShowChat(false); // Cerrar el chat si el popup se cierra
+        setShowVoicePopup(false); // Cerrar popup de voz también
+      }, 300);
+      setShowChat(false);
     }
+  };
+
+  const handleOpenVoice = () => {
+    setShowVoicePopup(true);
   };
 
   // cargar contexto de proyecto y tareas al abrir chat
@@ -127,7 +190,7 @@ const AvatarIA = () => {
 
   const handleSendMessage = async () => {
     const text = currentMessage.trim();
-    if (!text || isLoading || isRecording) return; // bloquea durante carga o grabación
+    if (!text || isLoading || isRecording) return;
     setIsLoading(true);
     setMessages((prev) => [...prev, { text, sender: "user" }]);
     setCurrentMessage("");
@@ -170,26 +233,43 @@ const AvatarIA = () => {
     if (selectedVoice) {
       utterance.voice = selectedVoice;
     }
+
+    // isSpeaking ya está establecido en handleVoiceMessage
+    
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+    
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+    };
+
     window.speechSynthesis.speak(utterance);
   };
 
   const handleStartRecording = () => {
-    if (recognitionRef.current) {
-      setIsRecording(true);
-      recognitionRef.current.start();
+    if (recognitionRef.current && !isRecording) {
+      try {
+        setIsRecording(true);
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error("Error starting recognition:", error);
+        setIsRecording(false);
+      }
     }
   };
 
   const handleStopRecording = () => {
-    if (recognitionRef.current) {
-      setIsRecording(false);
-      recognitionRef.current.stop();
-
-      
-      setTimeout(() => {
-        const sendBtn = document.querySelector('.chat-send-button');
-        if (sendBtn) sendBtn.click();
-      }, 250); 
+    if (recognitionRef.current && isRecording) {
+      try {
+        setIsRecording(false); // Set recording to false immediately
+        setIsProcessingVoice(true); // Set processing state
+        recognitionRef.current.stop();
+      } catch (error) {
+        console.error("Error stopping recognition:", error);
+        setIsRecording(false);
+        setIsProcessingVoice(false);
+      }
     }
   };
 
@@ -204,7 +284,7 @@ const AvatarIA = () => {
   return (
     <>
       <button className="avatar-ia" onClick={handleTogglePopup}>
-        IA
+        <img src={chatbotImage} alt="Chatbot" className="avatar-ia-image" />
       </button>
       {showPopup && (
         <div className="ia-popup-overlay" onClick={handleTogglePopup}>
@@ -212,11 +292,11 @@ const AvatarIA = () => {
             className={`ia-popup-sidebar ${popupAnimation}`}
             onClick={(e) => e.stopPropagation()}
           >
-            {!showChat ? (
+            {!showChat && !showVoicePopup ? (
               <>
                 <h2>¿En qué te puedo ayudar?</h2>
                 <div className="ia-popup-buttons">
-                  <button className="ia-popup-button">
+                  <button className="ia-popup-button" onClick={handleOpenVoice}>
                     <span className="material-icons">mic</span>
                   </button>
                   <button className="ia-popup-button" onClick={handleOpenChat}>
@@ -227,6 +307,58 @@ const AvatarIA = () => {
                   ×
                 </button>
               </>
+            ) : showVoicePopup ? (
+              <div className="voice-container">
+                <h2>Asistente de Voz</h2>
+                <div className="voice-content">
+                  <div className="voice-visualization">
+                    <div className={`voice-circle ${isRecording ? 'recording' : ''} ${isLoading || isProcessingVoice ? 'processing' : ''}`}>
+                      <div className="voice-inner-circle">
+                        <span className="material-icons voice-icon">
+                          {isLoading || isProcessingVoice ? 'hourglass_empty' : 'mic'}
+                        </span>
+                      </div>
+                      {isRecording && (
+                        <div className="voice-waves">
+                          <div className="wave wave1"></div>
+                          <div className="wave wave2"></div>
+                          <div className="wave wave3"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="voice-status">
+                    {isRecording ? (
+                      <p className="status-text recording-text">🎤 Grabando... Toca para detener</p>
+                    ) : isProcessingVoice ? (
+                      <p className="status-text processing-text">⏳ Procesando tu mensaje...</p>
+                    ) : isLoading ? (
+                      <p className="status-text processing-text">⏳ Procesando tu mensaje...</p>
+                    ) : isSpeaking ? (
+                      <p className="status-text speaking-text">🔊 Reproduciendo mensaje...</p>
+                    ) : (
+                      <p className="status-text ready-text">💬 Toca el micrófono para hablar</p>
+                    )}
+                  </div>
+
+                  {/* Solo mostrar el botón si no está procesando ni hablando */}
+                  {!isProcessingVoice && !isLoading && !isSpeaking && (
+                    <button
+                      className={`voice-record-btn-large ${isRecording ? 'recording' : ''}`}
+                      onClick={handleMicButtonClick}
+                    >
+                      <span className="material-icons">
+                        {isRecording ? 'stop' : 'mic'}
+                      </span>
+                    </button>
+                  )}
+                </div>
+                
+                <button className="ia-popup-back" onClick={() => setShowVoicePopup(false)}>
+                  ←
+                </button>
+              </div>
             ) : (
               <div className="chat-container">
                 <h2>Chat</h2>

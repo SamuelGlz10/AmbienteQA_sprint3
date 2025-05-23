@@ -4,25 +4,31 @@
   right: 20px;
   width: 60px;
   height: 60px;
-  background-color: #9e72be;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  font-size: 18px;
-  font-weight: bold;
+  background: none; /* Remove background color */
+  border: none; /* Remove border */
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, background-color 0.3s ease;
   z-index: 1000;
+  padding: 0; /* Remove padding */
+  outline: none; /* Remove focus outline */
+}
+
+.avatar-ia:focus {
+  outline: none; /* Ensure no outline on focus */
 }
 
 .avatar-ia:hover {
-  background-color: #7a5a96;
   transform: scale(1.1);
+  background: none; 
 }
 
 .avatar-ia:active {
-  transform: scale(0.95);
+  transform: scale(0.95); /* Keep active effect */
+}
+
+.avatar-ia-image {
+  width: 100%; /* Make the image fill the button */
+  height: 100%;
+  object-fit: contain; /* Ensure the image scales properly */
 }
 
 .ia-popup-overlay {
@@ -234,7 +240,176 @@
   background-color: #ff0000; /* Change hover color when recording */
 }
 
-/* Animaciones para el popup */
+/* Estilos para el contenedor de voz */
+.voice-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 40px 20px;
+}
+
+.voice-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 30px;
+}
+
+.voice-visualization {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.voice-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.voice-circle.recording {
+  background-color: rgba(247, 1, 1, 0.3);
+  animation: pulse 1.5s infinite;
+}
+
+.voice-circle.processing {
+  background-color: rgba(122, 90, 150, 0.3);
+  animation: spin 2s linear infinite;
+}
+
+.voice-inner-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-icon {
+  font-size: 40px;
+  color: #9e72be;
+}
+
+.voice-waves {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.wave {
+  position: absolute;
+  border: 2px solid rgba(247, 1, 1, 0.6);
+  border-radius: 50%;
+  animation: wave 2s infinite;
+}
+
+.wave1 {
+  width: 140px;
+  height: 140px;
+  top: -10px;
+  left: -10px;
+  animation-delay: 0s;
+}
+
+.wave2 {
+  width: 160px;
+  height: 160px;
+  top: -20px;
+  left: -20px;
+  animation-delay: 0.5s;
+}
+
+.wave3 {
+  width: 180px;
+  height: 180px;
+  top: -30px;
+  left: -30px;
+  animation-delay: 1s;
+}
+
+.voice-status {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.status-text {
+  font-size: 1.2rem;
+  color: white;
+  margin: 0;
+  font-weight: 500;
+}
+
+.recording-text {
+  color: #ff6b6b;
+}
+
+.processing-text {
+  color: #ffd93d;
+}
+
+.ready-text {
+  color: #6bcf7f;
+}
+
+.speaking-text {
+  color: #4fc3f7;
+}
+
+/* Botón grande circular para grabar */
+.voice-record-btn-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: none;
+  background-color: #9e72be;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(158, 114, 190, 0.4);
+}
+
+.voice-record-btn-large:hover {
+  background-color: #7a5a96;
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(158, 114, 190, 0.6);
+}
+
+.voice-record-btn-large:active {
+  transform: scale(0.95);
+}
+
+.voice-record-btn-large.recording {
+  background-color: #f70101;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-record-btn-large.recording:hover {
+  background-color: #d60000;
+}
+
+.voice-record-btn-large .material-icons {
+  font-size: 48px;
+}
+
+/* Animaciones */
 @keyframes slideIn {
   from {
     transform: translateX(-100%);
@@ -322,4 +497,40 @@
   color: #9e72be;
   transform: scale(1.2);
   background: none; /* Ensure no background on hover */
+}
+
+/* Animaciones */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(247, 1, 1, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 30px rgba(247, 1, 1, 0.7);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(247, 1, 1, 0.4);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
 }
