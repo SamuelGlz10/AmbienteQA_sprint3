@@ -167,6 +167,7 @@
 
 .chat-input-container {
   display: flex;
+  align-items: center;
   gap: 10px;
 }
 
@@ -198,6 +199,39 @@
 
 .chat-send-button .material-icons {
   font-size: 24px; /* Tamaño del ícono */
+}
+
+.chat-mic-button {
+  background-color: #9e72be;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.chat-mic-button:hover {
+  background-color: #7a5a96;
+  transform: scale(1.1);
+}
+
+.chat-mic-button:active {
+  background-color: #5d3a7f;
+  transform: scale(0.95);
+}
+
+.chat-mic-button.recording {
+  background-color: #f70101; /* Slightly darker purple to indicate recording */
+  color: white;
+}
+
+.chat-mic-button.recording:hover {
+  background-color: #ff0000; /* Change hover color when recording */
 }
 
 /* Animaciones para el popup */
@@ -266,4 +300,26 @@
   0% { opacity: 0; }
   50% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+.read-message-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  color: #7a5a96;
+  font-size: 16px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle; 
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.read-message-button:hover {
+  color: #9e72be;
+  transform: scale(1.2);
+  background: none; /* Ensure no background on hover */
 }

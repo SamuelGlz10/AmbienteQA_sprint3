@@ -19,6 +19,9 @@ const AvatarIA = () => {
   ]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [voices, setVoices] = useState([]);
+  const [isRecording, setIsRecording] = useState(false); // State for recording
+  const recognitionRef = useRef(null); // Ref for SpeechRecognition instance
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
   // ref para el contenedor de mensajes
@@ -37,6 +40,42 @@ const AvatarIA = () => {
       messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
   }, [showChat]);
+
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      setVoices(availableVoices);
+    };
+
+    if (window.speechSynthesis.getVoices().length) {
+      loadVoices();
+    } else {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if ("webkitSpeechRecognition" in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.lang = "es-MX"; // Set language to Spanish (Mexico)
+      recognition.interimResults = false;
+      recognitionRef.current = recognition;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setCurrentMessage(transcript); // Set the transcribed text
+        handleSendMessage(); // Send the message
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+      };
+    }
+  }, []);
 
   const handleTogglePopup = () => {
     if (!showPopup) {
@@ -88,7 +127,7 @@ const AvatarIA = () => {
 
   const handleSendMessage = async () => {
     const text = currentMessage.trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || isRecording) return; // bloquea durante carga o grabación
     setIsLoading(true);
     setMessages((prev) => [...prev, { text, sender: "user" }]);
     setCurrentMessage("");
@@ -120,6 +159,45 @@ const AvatarIA = () => {
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       handleSendMessage();
+    }
+  };
+
+  const handleReadMessage = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "es-MX"; // Set language to Spanish (Mexico)
+    const selectedVoice =
+      voices.find((voice) => voice.name.includes("Microsoft Sabina")) || voices[0];
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleStartRecording = () => {
+    if (recognitionRef.current) {
+      setIsRecording(true);
+      recognitionRef.current.start();
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (recognitionRef.current) {
+      setIsRecording(false);
+      recognitionRef.current.stop();
+
+      
+      setTimeout(() => {
+        const sendBtn = document.querySelector('.chat-send-button');
+        if (sendBtn) sendBtn.click();
+      }, 250); 
+    }
+  };
+
+  const handleMicButtonClick = () => {
+    if (isRecording) {
+      handleStopRecording(); // Stop recording and send the message
+    } else {
+      handleStartRecording(); // Start recording
     }
   };
 
@@ -161,6 +239,14 @@ const AvatarIA = () => {
                       }`}
                     >
                       {msg.text}
+                      {msg.sender === "other" && (
+                        <button
+                          className="read-message-button"
+                          onClick={() => handleReadMessage(msg.text)}
+                        >
+                          <span className="material-icons">volume_up</span>
+                        </button>
+                      )}
                     </p>
                   ))}
                   {isLoading && (
@@ -172,6 +258,12 @@ const AvatarIA = () => {
                   )}
                 </div>
                 <div className="chat-input-container">
+                  <button
+                    className={`chat-mic-button ${isRecording ? "recording" : ""}`}
+                    onClick={handleMicButtonClick}
+                  >
+                    <span className="material-icons">mic</span> {/* Always show "mic" icon */}
+                  </button>
                   <input
                     type="text"
                     className="chat-input"
@@ -179,15 +271,15 @@ const AvatarIA = () => {
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    disabled={isLoading}
+                    disabled={isLoading || isRecording} // bloquea input durante grabación
                   />
                   <button
                     className="chat-send-button"
                     onClick={handleSendMessage}
-                    disabled={isLoading}
+                    disabled={isLoading || isRecording} // bloquea envío durante grabación
                   >
                     <span className="material-icons">
-                      {isLoading ? "hourglass_empty" : "arrow_upward"}
+                      {isRecording ? "mic" : isLoading ? "hourglass_empty" : "arrow_upward"} {/* Cambia ícono */}
                     </span>
                   </button>
                 </div>
