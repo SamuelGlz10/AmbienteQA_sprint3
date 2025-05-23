@@ -12,7 +12,7 @@ const SuccessPopup = ({ message, onClose }) => {
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
+    
     return () => {
       window.removeEventListener("keydown", handleKeyDown); // Clean up the listener
     };

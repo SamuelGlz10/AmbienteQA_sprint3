@@ -11,22 +11,22 @@ function Generate() {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
-  const [selectedOption, setSelectedOption] = useState("MIN"); // Estado para controlar la opción seleccionada
-  const [limit, setLimit] = useState(1); // Estado para controlar el límite
-  const [history, setHistory] = useState([]); // Estado para controlar el historial
-  const [loading, setLoading] = useState(false); // Estado para controlar el estado de carga
-  const [error, setError] = useState(null); // Estado para manejar el mensaje de error
-  const [successMessage, setSuccessMessage] = useState(null); // Estado para manejar el mensaje de éxito
-  const [sprints, setSprints] = useState(1); // Estado para controlar el número de sprints
+  const [selectedOption, setSelectedOption] = useState("MIN");
+  const [limit, setLimit] = useState(1);
+  const [tasksPerStory, setTasksPerStory] = useState(3);
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [sprints, setSprints] = useState(1);
   const [copyButtonText, setCopyButtonText] = useState("Copiar");
   const [pasteButtonText, setPasteButtonText] = useState("Pegar");
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [deleteAction, setDeleteAction] = useState(""); // "history" or "prompt"
+  const [deleteAction, setDeleteAction] = useState("");
 
   const userID = localStorage.getItem("UserID");
 
   useEffect(() => {
-    // Cargar el historial del localStorage al iniciar
     if (!userID) return;
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
     const userHistory = allHistories[userID] || [];
@@ -34,7 +34,6 @@ function Generate() {
   }, [userID]);
 
   useEffect(() => {
-    // Guardar el historial en el localStorage cada vez que cambia
     if (!userID) return;
     const allHistories = JSON.parse(localStorage.getItem("history")) || {};
     allHistories[userID] = history;
@@ -51,70 +50,56 @@ function Generate() {
      {
        "id": "EP01",
        "titulo": "Título de la épica",
-       "data": "Descripción de la épica",
-       ]
+       "data": "Descripción de la épica"
      }
-     // ...más épicas...
    ],
-   'RF': [
-       {
-        'id': 'RF01',
-        'titulo': 'Titulo de Requerimiento',
-        'data': 'Descricpcion de requerimiento',
-       ]
+   "RF": [
+     {
+       "id": "RF01",
+       "titulo": "Titulo de Requerimiento",
+       "data": "Descricpcion de requerimiento"
      }
-     // ...más requerimientos funcionales... }
-     ],
-     'RNF': [
-       {
-        'id': 'RNF01',
-        'titulo': 'Titulo de Requerimiento',
-        'data': 'Descricpcion de requerimiento',
-       ]
+   ],
+   "RNF": [
+     {
+       "id": "RNF01",
+       "titulo": "Titulo de Requerimiento",
+       "data": "Descricpcion de requerimiento"
      }
-     // ...más requerimientos no funcionales... } }
-     ],
-     'HU': [
-       {
-        'id': 'HU01',
-        'titulo': 'Titulo de historia de usuario',
-        'data': 'Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])',
-        'epica': 'EP01',
-        'criteriosAceptacion':
-        [
-          {
-            'criterio': 'Criterio de aceptacion 1',
-          }
-          // ...más criterios de aceptación...
-        ],
-        'tasks':
-        [
+   ],
+   "HU": [
+     {
+       "id": "HU01",
+       "titulo": "Titulo de historia de usuario",
+       "data": "Descripcion de historia de usuario (usar estructura [Yo como X quiero X para X])",
+       "epica": "EP01",
+       "criteriosAceptacion": [
          {
-           "id": "T04",
+           "criterio": "Criterio de aceptacion 1"
+         }
+       ],
+       "tasks": [
+         {
+           "id": "T01",
            "titulo": "Título de tarea",
            "descripcion": "Descripción de la tarea",
            "prioridad": "alta/ media/ baja",
            "asignado": "NULL",
            "estado": "En progreso",
-           "sprint": "1",
+           "sprint": "1"
          }
-         // ...más tareas...
        ]
      }
-     // ...más historias de usuario... } }
-     ]
+   ]
  }
- The number of elements in each list should be ${selectedOption} ${limit}, respecting any constraints given by MAX or MIN values.
- Only User Stories may have tasks. Tasks are not limited by the limit, but should be generated based on the user stories.
- You MUST include the 'sprintNumber' for the generated project, and it should always be equal to ${sprints}.
- The 'sprintNumber' should be at the same level as 'nombreProyecto', 'descripcion', and 'estatus', and is not the same as the 'sprint' field in tasks.
- You are allowed to provide more than the requested number of elements if enough data is available.
- The tasks should be generated based on the user stories, and each task should have a unique ID.
- The task ID should be in the format "T01", "T02", etc. Task IDs should be unique within the project.
- The 'epica' field in each user story should reference the ID of the corresponding epic.
- The sprint number inside each task should be a number between 1 and ${sprints}, and be sure to distribute all tasks across the sprints.
-  Please do not include \`\`\`json or \`\`\` markers in the response.
-  Do not include additional text inside or outside the JSON. Do not make up data that has not been asked: `;
+ The number of elements in each list should be ${selectedOption} ${limit}.
+ Each user story should have ${tasksPerStory} tasks.
+ Tasks should be meaningful and cover all acceptance criteria.
+ You MUST include the 'sprintNumber' for the generated project (value: ${sprints}).
+ Task IDs should be unique within the project (format: T01, T02, etc.).
+ Distribute tasks evenly across ${sprints} sprints.
+ Do not include \`\`\`json or \`\`\` markers in the response.
+ Response must be valid JSON only.`;
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -127,8 +112,19 @@ function Generate() {
       const response = await fetch(`${BACKEND_URL}/generateEpic`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, rules: promptRules, sprints, limit }),
+        body: JSON.stringify({ 
+          prompt, 
+          rules: promptRules, 
+          sprints, 
+          limit,
+          tasksPerStory 
+        }),
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const { data } = await response.json();
 
       const cleanJSON = data
@@ -136,7 +132,7 @@ function Generate() {
         .replace(/'/g, '"')
         .trim();
 
-      JSON.parse(cleanJSON);
+      JSON.parse(cleanJSON); // Validar que sea JSON válido
       addToHistory(prompt);
       setSuccessMessage("Proyecto generado exitosamente");
       navigate("/revisionIA", { state: { generatedText: cleanJSON } });
@@ -152,7 +148,7 @@ function Generate() {
     await navigator.clipboard.writeText(prompt);
     e.target.blur();
     setCopyButtonText("¡Texto copiado!");
-    setTimeout(() => setCopyButtonText("Copiar"), 3000); // Reset after 3 seconds
+    setTimeout(() => setCopyButtonText("Copiar"), 3000);
   };
 
   const handlePaste = async (e) => {
@@ -161,7 +157,7 @@ function Generate() {
       setPrompt(prompt + text);
       setPasteButtonText("¡Texto pegado!");
       e.target.blur();
-      setTimeout(() => setPasteButtonText("Pegar"), 3000); // Reset after 3 seconds
+      setTimeout(() => setPasteButtonText("Pegar"), 3000);
     } catch (err) {
       setError("No se pudo acceder al portapapeles");
     }
@@ -189,33 +185,28 @@ function Generate() {
     setShowDeleteConfirmation(false);
   };
 
-  const cancelErase = () => {
-    setShowConfirmationPopup(false); // Close the popup without clearing
-  };
-
   const addToHistory = (prompt) => {
     setHistory((prevHistory) => {
-      const newHistory = [prompt, ...prevHistory]; // Agregar el nuevo prompt al historial
+      const newHistory = [prompt, ...prevHistory];
       return newHistory.slice(0, 4);
     });
   };
 
   useEffect(() => {
-    // Manejar el evento de teclado para cerrar el popup de confirmación
     if (!showDeleteConfirmation) return;
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        setShowDeleteConfirmation(false); // Close the popup on Esc
+        setShowDeleteConfirmation(false);
       } else if (e.key === "Enter") {
-        confirmDelete(); // Confirm delete on Enter
+        confirmDelete();
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown); // Clean up the listener
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [showDeleteConfirmation, confirmDelete]);
 
@@ -302,6 +293,7 @@ function Generate() {
           <div className="right-container">
             <div className="prompt-options">
               <h3 className="options-title">Configuración de Generación</h3>
+              
               <div className="option-group">
                 <span className="option-label">Número de Sprints</span>
                 <input
@@ -356,6 +348,25 @@ function Generate() {
                   max={10}
                 />
               </div>
+
+              <div className="option-group">
+                <span className="option-label">Tareas por HU (referencia)</span>
+                <input
+                  type="number"
+                  className="option-input"
+                  value={tasksPerStory || ""}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === "") {
+                      setTasksPerStory(0);
+                    } else {
+                      setTasksPerStory(Math.max(1, Math.min(10, Number(value))));
+                    }
+                  }}
+                  min={1}
+                  max={10}
+                />
+              </div>
             </div>
 
             <div className="history-section">
@@ -371,6 +382,14 @@ function Generate() {
                   </div>
                 ))}
               </div>
+              {history.length > 0 && (
+                <button
+                  className="clear-history-button"
+                  onClick={handleDeleteHistory}
+                >
+                  Limpiar Historial
+                </button>
+              )}
             </div>
           </div>
         </div>

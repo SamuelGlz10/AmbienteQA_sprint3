@@ -1,37 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import TopAppBar from "../components/TopAppBar";
-import ErrorPopup from "../components/ErrorPopup"; 
-import SuccessPopup from "../components/SuccessPopup"; 
+import ErrorPopup from "../components/ErrorPopup";
+import SuccessPopup from "../components/SuccessPopup";
 import "../css/Perfil.css";
 
 function Perfil() {
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL; // URL del backend
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
 
   const [userData, setUserData] = useState(null);
   const [projects, setProjects] = useState([]);
-  const [isEditing, setIsEditing] = useState(false); 
+  const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
-  const [previewImage, setPreviewImage] = useState(""); // Previsualización de la imagen
-  const [showPasswordPopup, setShowPasswordPopup] = useState(false); // Estado para el popup de contraseña
+  const [previewImage, setPreviewImage] = useState(
+    localStorage.getItem("profileImage") || "/default-profile.png"
+  );
+  const [showPasswordPopup, setShowPasswordPopup] = useState(false);
   const [loadingProjects, setLoadingProjects] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(""); // Estado para la búsqueda
+  const [searchQuery, setSearchQuery] = useState("");
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-
-  const [errorMessage, setErrorMessage] = useState(""); 
-  const [successMessage, setSuccessMessage] = useState(""); 
-
-  const userId = localStorage.getItem("userId"); // Obtener el ID del usuario del almacenamiento local
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem("token"); // Retrieve the token from localStorage
+        const token = localStorage.getItem("token");
 
         const [userResponse, projectsResponse] = await Promise.all([
           fetch(`${BACKEND_URL}/users/${userId}`, {
@@ -54,11 +54,14 @@ function Perfil() {
 
         const userData = await userResponse.json();
         const projectsData = await projectsResponse.json();
-        console.log("Projects Data:", projectsData);
 
         if (userData.success) {
           setUserData(userData.user);
           setEditData(userData.user);
+          if (userData.user.profileImage) {
+            setPreviewImage(userData.user.profileImage);
+            localStorage.setItem("profileImage", userData.user.profileImage);
+          }
         }
 
         if (projectsData.success) {
@@ -68,49 +71,43 @@ function Perfil() {
         console.error("Error fetching user data:", error);
         setErrorMessage("Error al cargar los datos del usuario.");
       } finally {
-        setLoadingProjects(false); // Cambiar el estado de carga a falso después de la solicitud
+        setLoadingProjects(false);
       }
     };
 
     fetchUserData();
-  }, [userId]);
+  }, [userId, BACKEND_URL]);
 
-  // Filtrar proyectos según la búsqueda
   const filteredProjects = projects.filter(
     (project) =>
-      project.nombreProyecto
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
+      project.nombreProyecto.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (project.userTitle &&
         project.userTitle.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // Manejar cambios en los campos del formulario
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     if (name === "phone") {
-      const numericValue = value.replace(/\D/g, ""); 
-      if (numericValue.length > 10) return; 
+      const numericValue = value.replace(/\D/g, "");
+      if (numericValue.length > 10) return;
       setEditData((prev) => ({ ...prev, [name]: numericValue }));
     } else {
       setEditData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  // Manejar cambios en la imagen de perfil
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setPreviewImage(reader.result); 
+        setPreviewImage(reader.result);
+        localStorage.setItem("profileImage", reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Guardar los cambios de información
   const handleSaveChanges = async () => {
     if (!editData.username || !editData.email || !editData.phone) {
       setErrorMessage("Todos los campos son obligatorios.");
@@ -118,19 +115,29 @@ function Perfil() {
     }
 
     try {
+      const formData = new FormData();
+      formData.append("username", editData.username);
+      formData.append("lastname", editData.lastname);
+      formData.append("email", editData.email);
+      formData.append("phone", editData.phone);
+
+      if (previewImage && previewImage.startsWith("data:image")) {
+        const blob = await fetch(previewImage).then((res) => res.blob());
+        formData.append("profileImage", blob);
+      }
+
       const response = await fetch(`${BACKEND_URL}/users/${userId}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify(editData),
+        body: formData,
       });
 
       const result = await response.json();
 
       if (result.success) {
-        setUserData(editData);
+        setUserData({ ...editData, profileImage: previewImage });
         setIsEditing(false);
         setSuccessMessage("¡Los datos se han actualizado con éxito!");
       } else {
@@ -138,48 +145,64 @@ function Perfil() {
       }
     } catch (error) {
       console.error("Error updating user data:", error);
-      setErrorMessage(
-        "Error al actualizar los datos. Por favor, intenta de nuevo."
-      );
+      setErrorMessage("Error al actualizar los datos. Por favor, intenta de nuevo.");
     }
   };
 
-  // Manejar cambios en los campos del popup de contraseña
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Guardar los cambios de contraseña
   const handleSavePassword = () => {
     if (
       !passwordData.currentPassword ||
       !passwordData.newPassword ||
       !passwordData.confirmPassword
     ) {
-      setErrorMessage("Todos los campos de contraseña son obligatorios."); 
+      setErrorMessage("Todos los campos de contraseña son obligatorios.");
       return;
     }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setErrorMessage("Las contraseñas no coinciden."); 
+      setErrorMessage("Las contraseñas no coinciden.");
       return;
     }
     console.log("Contraseña cambiada:", passwordData);
-    setShowPasswordPopup(false); 
-    setSuccessMessage("¡La contraseña se ha cambiado con éxito!"); 
+    setShowPasswordPopup(false);
+    setSuccessMessage("¡La contraseña se ha cambiado con éxito!");
   };
 
   return (
     <div className="perfil-container">
       <TopAppBar />
       <div className="perfil-content">
-        {/* Lado izquierdo: Foto de perfil y datos del usuario */}
         <div className="perfil-left">
-          <img
-            src={previewImage}
-            alt="Foto de perfil"
-            className="perfil-picture"
-          />
+          <div className="profile-picture-container">
+            <img
+              /**src={previewImage}
+              alt="Foto de perfil"**/
+              className="perfil-picture"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/default-profile.png";
+              }}
+            />
+            {isEditing && (
+              <div className="image-upload-container">
+                <label htmlFor="profile-image-upload" className="upload-label">
+                  Cambiar imagen
+                </label>
+                <input
+                  id="profile-image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  style={{ display: "none" }}
+                />
+              </div>
+            )}
+          </div>
+
           <div className="perfil-info">
             {isEditing ? (
               <>
@@ -230,7 +253,7 @@ function Perfil() {
                   <button
                     className="cancel-button"
                     onClick={() => {
-                      setEditData(userData); 
+                      setEditData(userData);
                       setIsEditing(false);
                     }}
                   >
@@ -238,7 +261,7 @@ function Perfil() {
                   </button>
                 </div>
               </>
-            ) : userData ? ( // Verificar si userData no es nulo
+            ) : userData ? (
               <>
                 <h2>
                   {userData.username || "X"} {userData.lastname || ""}
@@ -257,7 +280,6 @@ function Perfil() {
                 </button>
               </>
             ) : (
-              // Mostrar mensaje de carga si userData es nulo
               <div
                 style={{
                   display: "flex",
@@ -278,13 +300,9 @@ function Perfil() {
           </div>
         </div>
 
-        {/* Lado derecho: Proyectos */}
         <div className="perfil-right">
           <h2>Proyectos</h2>
-          <div
-            className="search-bar-container"
-            style={{ marginBottom: "20px" }}
-          >
+          <div className="search-bar-container" style={{ marginBottom: "20px" }}>
             <input
               type="text"
               placeholder="Buscar proyectos por nombre o título..."
@@ -335,7 +353,6 @@ function Perfil() {
         </div>
       </div>
 
-      {/* Popup para cambiar contraseña */}
       {showPasswordPopup && (
         <div
           className="popup-overlay"
@@ -343,7 +360,7 @@ function Perfil() {
         >
           <div
             className="popup-content"
-            onClick={(e) => e.stopPropagation()} // Evitar cerrar el popup al hacer clic dentro
+            onClick={(e) => e.stopPropagation()}
           >
             <h2>Cambiar Contraseña</h2>
             <label>
@@ -388,19 +405,17 @@ function Perfil() {
         </div>
       )}
 
-      {/* Mostrar popup de error */}
       {errorMessage && (
         <ErrorPopup
           message={errorMessage}
-          onClose={() => setErrorMessage("")} // Cerrar el popup
+          onClose={() => setErrorMessage("")}
         />
       )}
 
-      {/* Mostrar popup de éxito */}
       {successMessage && (
         <SuccessPopup
           message={successMessage}
-          onClose={() => setSuccessMessage("")} // Cerrar el popup
+          onClose={() => setSuccessMessage("")}
         />
       )}
     </div>
